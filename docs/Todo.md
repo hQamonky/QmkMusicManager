@@ -1,6 +1,4 @@
 # Version 1.0
-- Create github repo
-- Copy / paste html files from YtMusicDownloader
 - Develop endpoints
 - Implement database, DAO and models
 - Implement proper update handling with the database
