@@ -1,5 +1,4 @@
 # Version 1.0
-- Develop endpoints
 - Implement database, DAO and models
 - Implement proper update handling with the database
 - Implement factory reset

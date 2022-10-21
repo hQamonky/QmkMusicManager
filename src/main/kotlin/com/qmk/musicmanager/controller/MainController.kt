@@ -17,9 +17,24 @@ import org.springframework.web.bind.annotation.*
  */
 
 
-@RequestMapping("/naming-rule")
 @RestController
 class MainController {
+
+    @GetMapping("/factory-reset")
+    fun factoryReset() {
+
+    }
+
+    @GetMapping("/youtube-dl/update")
+    fun updateYoutubeDl() {
+
+    }
+
+
+
+
+    /* EXAMPLES ------------------------------------------------------------------
+
     private var namingRules = mutableListOf(
         NamingRule(1, " / ", " ", 1),
         NamingRule(2, " ‒ ", " - ", 1),
@@ -44,7 +59,7 @@ class MainController {
             replace = namingRule.replace,
             replaceBy = namingRule.replaceBy,
             priority = namingRule.priority
-        ) // 6
+        )
         namingRules.add(newRule)
         return newRule
     }
@@ -55,4 +70,5 @@ class MainController {
         return namingRule ?: throw NamingRuleNotFoundException()
     }
 
+     --------------------------------------------------------------------------- */
 }

@@ -9,10 +9,10 @@ import javax.servlet.http.HttpServletRequest
 @ControllerAdvice
 class NamingRuleErrorHandler {
     @ExceptionHandler(NamingRuleNotFoundException::class)
-    fun handleNFTNotFoundException(
+    fun handleNamingRuleNotFoundException(
         servletRequest: HttpServletRequest,
         exception: Exception
     ): ResponseEntity<String> {
-        return ResponseEntity("Naming Rule not found", HttpStatus.NOT_FOUND)
+        return ResponseEntity("Naming rule not found", HttpStatus.NOT_FOUND)
     }
 }
