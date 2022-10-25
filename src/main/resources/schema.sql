@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS Playlists (
-id       INTEGER  PRIMARY KEY AUTO_INCREMENT,
+id text PRIMARY KEY,
 youtube_id text,
 name text,
 uploader text
@@ -17,7 +17,7 @@ is_new      integer
 
 CREATE TABLE IF NOT EXISTS Playlist_Music (
 id          INTEGER  PRIMARY KEY AUTO_INCREMENT,
-id_playlist integer,
+id_playlist text,
 id_music    integer
 );
 

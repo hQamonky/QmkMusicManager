@@ -1,6 +1,7 @@
 package com.qmk.musicmanager.controller
 
 import com.qmk.musicmanager.data.PlaylistService
+import com.qmk.musicmanager.exception.PlaylistNotFoundException
 import com.qmk.musicmanager.model.Playlist
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
@@ -24,8 +25,9 @@ class PlaylistController(val service: PlaylistService) {
     }
 
     @GetMapping("/{id}")
-    fun getPlaylist(@PathVariable id: Int) {
-        service.findById(id)
+    fun getPlaylist(@PathVariable id: String): Playlist {
+        val playlist = service.findById(id).firstOrNull { it.id == id }
+        return playlist ?: throw PlaylistNotFoundException()
     }
 
     @PostMapping("/{id}")
@@ -34,7 +36,7 @@ class PlaylistController(val service: PlaylistService) {
     }
 
     @DeleteMapping("/{id}")
-    fun deletePlaylist(@PathVariable id: Int) {
+    fun deletePlaylist(@PathVariable id: String) {
         service.remove(id)
     }
 

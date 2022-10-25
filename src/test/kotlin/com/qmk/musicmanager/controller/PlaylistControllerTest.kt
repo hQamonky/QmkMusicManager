@@ -1,6 +1,7 @@
 package com.qmk.musicmanager.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.qmk.musicmanager.model.Playlist
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -10,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
+import org.springframework.test.web.servlet.post
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -33,6 +35,35 @@ internal class PlaylistControllerTest(
 
     @Test
     fun postPlaylists() {
+        mockMvc.get("/playlists/1")
+            .andExpect {
+                status { isNotFound() }
+            }
+        mockMvc.get("/playlists")
+            .andExpect {
+                status { isOk() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+            }
+        val playlist = Playlist(
+            youtubeId = "youtubeId",
+            name = "MyPlaylist",
+            channelId = 1
+        )
+        mockMvc.post("/playlists") {
+            contentType = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(playlist)
+        }
+            .andExpect {
+                status { isCreated() }
+            }
+        mockMvc.get("/playlists")
+            .andExpect {
+                status { isOk() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+                jsonPath("$[0].youtubeId") { value("youtubeId") }
+                jsonPath("$[0].name") { value("MyPlaylist") }
+                jsonPath("$[0].channelId") { value(1) }
+            }
     }
 
     @Test

@@ -1,4 +1,5 @@
 # Version 1.0
+- Change all models ids to UUID instead of integer auto_increment
 - Implement proper update handling with the database
 - Implement factory reset
 - Implement youtube downloads 
