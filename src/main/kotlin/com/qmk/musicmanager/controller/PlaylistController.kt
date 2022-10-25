@@ -24,7 +24,7 @@ class PlaylistController(val service: PlaylistService) {
     }
 
     @GetMapping("/{id}")
-    fun getPlaylist(@PathVariable id: String) {
+    fun getPlaylist(@PathVariable id: Int) {
         service.findById(id)
     }
 
@@ -34,7 +34,7 @@ class PlaylistController(val service: PlaylistService) {
     }
 
     @DeleteMapping("/{id}")
-    fun deletePlaylist(@PathVariable id: String) {
+    fun deletePlaylist(@PathVariable id: Int) {
         service.remove(id)
     }
 

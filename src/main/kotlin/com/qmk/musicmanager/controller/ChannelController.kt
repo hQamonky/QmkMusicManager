@@ -19,7 +19,7 @@ class ChannelController(val service: ChannelService) {
     }
 
     @GetMapping("/{id}")
-    fun getChannel(@PathVariable id: String) {
+    fun getChannel(@PathVariable id: Int) {
         service.findById(id)
     }
 
@@ -32,7 +32,7 @@ class ChannelController(val service: ChannelService) {
     }
 
     @DeleteMapping("/{id}")
-    fun deleteChannel(@PathVariable name: String) {
-        service.remove(name)
+    fun deleteChannel(@PathVariable id: Int) {
+        service.remove(id)
     }
 }

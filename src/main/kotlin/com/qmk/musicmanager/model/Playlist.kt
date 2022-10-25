@@ -1,7 +1,7 @@
 package com.qmk.musicmanager.model
 
 data class Playlist(
-    val id : String,
+    val id : Int,
     val youtubeId: String,
     val name: String,
     val musicIds: List<String>,

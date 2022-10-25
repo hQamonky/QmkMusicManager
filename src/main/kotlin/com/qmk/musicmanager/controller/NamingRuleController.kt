@@ -19,7 +19,7 @@ class NamingRuleController(val service: NamingRuleService) {
     }
 
     @GetMapping("/{id}")
-    fun getNamingRule(@PathVariable id: String) {
+    fun getNamingRule(@PathVariable id: Int) {
         service.findById(id)
     }
 
@@ -32,7 +32,7 @@ class NamingRuleController(val service: NamingRuleService) {
     }
 
     @DeleteMapping("/{id}")
-    fun deleteNamingRule(@PathVariable id: String) {
+    fun deleteNamingRule(@PathVariable id: Int) {
         service.remove(id)
     }
 }

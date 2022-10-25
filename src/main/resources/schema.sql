@@ -1,12 +1,12 @@
 CREATE TABLE IF NOT EXISTS Playlists (
-id          INTEGER PRIMARY KEY     AUTOINCREMENT,
-youtube_id  text,
-name        text,
-uploader    text
+id       INTEGER  PRIMARY KEY AUTO_INCREMENT,
+youtube_id text,
+name text,
+uploader text
 );
 
 CREATE TABLE IF NOT EXISTS Music (
-id          text        PRIMARY KEY,
+id          INTEGER  PRIMARY KEY AUTO_INCREMENT,
 name        text,
 title       text,
 artist      text,
@@ -16,19 +16,20 @@ is_new      integer
 );
 
 CREATE TABLE IF NOT EXISTS Playlist_Music (
-id          INTEGER PRIMARY KEY     AUTOINCREMENT,
-id_playlist text,
-id_music    text
+id          INTEGER  PRIMARY KEY AUTO_INCREMENT,
+id_playlist integer,
+id_music    integer
 );
 
 CREATE TABLE IF NOT EXISTS Channels (
-channel             text    PRIMARY KEY,
+id                  INTEGER  PRIMARY KEY AUTO_INCREMENT,
+channel             text,
 separator           text,
-artist_before_title integer
+artist_before_title boolean
 );
 
 CREATE TABLE IF NOT EXISTS NamingRules (
-id          INTEGER PRIMARY KEY     AUTOINCREMENT,
+id          INTEGER  PRIMARY KEY AUTO_INCREMENT,
 replace     text,
 replace_by  text,
 priority    integer
