@@ -4,6 +4,6 @@ data class Playlist(
     val id : String,
     val youtubeId: String,
     val name: String,
-    val elements: List<String>,
+    val musicIds: List<String>,
     val channelId: String
 )

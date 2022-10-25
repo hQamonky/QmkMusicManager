@@ -1,18 +1,18 @@
 package com.qmk.musicmanager.controller
 
+import com.qmk.musicmanager.data.MusicService
 import com.qmk.musicmanager.model.Music
 import org.springframework.web.bind.annotation.*
 
 @RequestMapping("/music")
 @RestController
-class MusicController {
-    private var musicList = emptyList<Music>()
+class MusicController(val service: MusicService) {
 
     @GetMapping("/new")
-    fun getNewMusic() = musicList
+    fun getNewMusic() = service.findNew()
 
     @PostMapping("/{id}")
-    fun postMusic(@PathVariable id: String) {
-
+    fun postMusic(@PathVariable music: Music) {
+        service.save(music)
     }
 }

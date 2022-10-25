@@ -29,46 +29,4 @@ class MainController {
     fun updateYoutubeDl() {
 
     }
-
-
-
-
-    /* EXAMPLES ------------------------------------------------------------------
-
-    private var namingRules = mutableListOf(
-        NamingRule(1, " / ", " ", 1),
-        NamingRule(2, " ‒ ", " - ", 1),
-        NamingRule(3, " [NCS Release]", "", 2),
-        NamingRule(4, " [Monstercat Release]", "", 2),
-        NamingRule(5, " [Diversity Release]", "", 2),
-    )
-
-    @GetMapping("/homepage")
-    fun getHomePage() = "Music Manager"
-
-    @GetMapping("")
-    fun getNamingRules() = namingRules
-
-    @PostMapping("")
-    @ResponseStatus(HttpStatus.CREATED)
-    fun postNamingRule(@RequestBody namingRule: NamingRule): NamingRule {
-        val maxId = namingRules.maxOfOrNull { it.id } ?: 0
-        val nextId = maxId + 1
-        val newRule = NamingRule(
-            id = nextId,
-            replace = namingRule.replace,
-            replaceBy = namingRule.replaceBy,
-            priority = namingRule.priority
-        )
-        namingRules.add(newRule)
-        return newRule
-    }
-
-    @GetMapping("/{id}")
-    fun getNamingRuleById(@PathVariable id: Int) : NamingRule? {
-        val namingRule = namingRules.firstOrNull { it.id == id }
-        return namingRule ?: throw NamingRuleNotFoundException()
-    }
-
-     --------------------------------------------------------------------------- */
 }

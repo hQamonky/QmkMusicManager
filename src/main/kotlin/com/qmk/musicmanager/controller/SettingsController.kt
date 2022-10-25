@@ -16,7 +16,7 @@ class SettingsController {
     }
 
     @PostMapping("/naming-format")
-    fun postNamingFormat(@PathVariable namingFormat: NamingFormat) {
+    fun postNamingSeparator(@PathVariable namingFormat: NamingFormat) {
 
     }
 

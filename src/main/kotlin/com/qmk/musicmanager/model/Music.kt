@@ -7,5 +7,6 @@ data class Music(
     val artist: String,
     val channelId: String,
     val uploadDate: String,
-    val isNew: Boolean
+    val isNew: Boolean,
+    val playlistIds: List<String>
 )
