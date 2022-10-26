@@ -34,7 +34,7 @@ class PlaylistService(val db: JdbcTemplate) {
                 response.getString("youtube_id"),
                 response.getString("name"),
                 selectMusic(db, response.getString("id")),
-                response.getInt("uploader")
+                response.getString("uploader")
             )
         }
 
@@ -45,33 +45,34 @@ class PlaylistService(val db: JdbcTemplate) {
                 response.getString("youtube_id"),
                 response.getString("name"),
                 selectMusic(db, response.getString("id")),
-                response.getInt("uploader")
+                response.getString("uploader")
             )
         }
 
-    private fun insert(db: JdbcTemplate, id: String, youtube_id: String, name: String, channelId: Int): Int =
+    private fun insert(db: JdbcTemplate, id: String, youtube_id: String, name: String, channelId: String): Int =
         db.update("INSERT INTO Playlists (id, youtube_id, name, uploader) VALUES (?, ?, ?, ?)", id, youtube_id, name, channelId)
 
-    private fun update(db: JdbcTemplate, identifier: String, youtube_id: String, name: String, channelId: Int): Int =
+    private fun update(db: JdbcTemplate, identifier: String, youtubeId: String, name: String, channelId: String): Int =
         db.update(
             "UPDATE Playlists SET " +
-                    "youtube_id = $youtube_id, " +
-                    "name = $name, " +
-                    "uploader = $channelId " +
-                    "WHERE id = $identifier"
+                    "youtube_id = ?, " +
+                    "name = ?, " +
+                    "uploader = ? " +
+                    "WHERE id = ?",
+            youtubeId, name, channelId, identifier
         )
 
     private fun delete(db: JdbcTemplate, identifier: String): Int {
-        db.update("DELETE FROM Playlists WHERE id = $identifier")
+        db.update("DELETE FROM Playlists WHERE id = ?", identifier)
         deletePlaylistMusic(db, identifier)
         return 0 // TODO : Handle error
     }
 
-    private fun selectMusic(db: JdbcTemplate, identifier: String): List<Int> =
+    private fun selectMusic(db: JdbcTemplate, identifier: String): List<String> =
         db.query("SELECT * FROM Playlist_Music WHERE id_playlist = ?", identifier) { response, _ ->
-            response.getInt("id_music")
+            response.getString("id_music")
         }
 
     private fun deletePlaylistMusic(db: JdbcTemplate, identifier: String): Int =
-        db.update("DELETE FROM Playlist_Music WHERE id_playlist = $identifier")
+        db.update("DELETE FROM Playlist_Music WHERE id_playlist = ?", identifier)
 }

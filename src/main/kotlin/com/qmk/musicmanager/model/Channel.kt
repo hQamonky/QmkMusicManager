@@ -1,7 +1,7 @@
 package com.qmk.musicmanager.model
 
 data class Channel(
-    val id: Int,
+    val id: String? = null,
     val name: String,
     val namingFormat: NamingFormat
 )

@@ -1,6 +1,8 @@
 package com.qmk.musicmanager.controller
 
 import com.qmk.musicmanager.data.NamingRuleService
+import com.qmk.musicmanager.exception.ChannelNotFoundException
+import com.qmk.musicmanager.exception.NamingRuleNotFoundException
 import com.qmk.musicmanager.model.NamingRule
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
@@ -19,8 +21,9 @@ class NamingRuleController(val service: NamingRuleService) {
     }
 
     @GetMapping("/{id}")
-    fun getNamingRule(@PathVariable id: Int) {
-        service.findById(id)
+    fun getNamingRule(@PathVariable id: String): NamingRule {
+        val namingRule = service.findById(id).firstOrNull { it.id == id }
+        return namingRule ?: throw NamingRuleNotFoundException()
     }
 
     @PostMapping("/{id}")
@@ -32,7 +35,7 @@ class NamingRuleController(val service: NamingRuleService) {
     }
 
     @DeleteMapping("/{id}")
-    fun deleteNamingRule(@PathVariable id: Int) {
+    fun deleteNamingRule(@PathVariable id: String) {
         service.remove(id)
     }
 }

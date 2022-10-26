@@ -1,8 +1,8 @@
 package com.qmk.musicmanager.model
 
 data class NamingRule(
-    val id: Int,
+    val id: String? = null,
     val replace: String,
-    val replaceBy: String,
-    val priority: Int
+    val replaceBy: String = "",
+    val priority: Int = 2
     )
