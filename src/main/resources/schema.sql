@@ -1,6 +1,5 @@
 CREATE TABLE IF NOT EXISTS Playlists (
 id          text PRIMARY KEY,
-youtube_id  text,
 name        text,
 uploader    text
 );
@@ -10,7 +9,7 @@ id          text  PRIMARY KEY,
 name        text,
 title       text,
 artist      text,
-channel     text,
+uploader     text,
 upload_date text,
 is_new      boolean
 );
@@ -21,9 +20,9 @@ id_playlist text,
 id_music    text
 );
 
-CREATE TABLE IF NOT EXISTS Channels (
+CREATE TABLE IF NOT EXISTS Uploaders (
 id                  text  PRIMARY KEY,
-channel             text,
+name                text,
 separator           text,
 artist_before_title boolean
 );

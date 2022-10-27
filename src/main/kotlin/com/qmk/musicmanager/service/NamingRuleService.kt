@@ -1,4 +1,4 @@
-package com.qmk.musicmanager.data
+package com.qmk.musicmanager.service
 
 import com.qmk.musicmanager.model.NamingRule
 import org.springframework.jdbc.core.JdbcTemplate

@@ -1,6 +1,6 @@
 package com.qmk.musicmanager.controller
 
-import com.qmk.musicmanager.data.MusicService
+import com.qmk.musicmanager.service.MusicService
 import com.qmk.musicmanager.model.Music
 import org.springframework.web.bind.annotation.*
 

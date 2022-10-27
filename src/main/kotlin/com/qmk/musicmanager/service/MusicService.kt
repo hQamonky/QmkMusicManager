@@ -1,4 +1,4 @@
-package com.qmk.musicmanager.data
+package com.qmk.musicmanager.service
 
 import com.qmk.musicmanager.model.Music
 import org.springframework.jdbc.core.JdbcTemplate
@@ -14,7 +14,7 @@ class MusicService(val db: JdbcTemplate) {
     fun findNew(): List<Music> = selectNew(db)
 
     fun new(music: Music) {
-        insert(db, music.id, music.name, music.title, music.artist, music.channelId)
+        insert(db, music.id, music.name, music.title, music.artist, music.uploaderId)
         music.playlistIds.forEach {
             insertPlaylist(db, it, music.id)
         }
@@ -37,7 +37,7 @@ class MusicService(val db: JdbcTemplate) {
                 response.getString("name"),
                 response.getString("title"),
                 response.getString("artist"),
-                response.getString("channel"),
+                response.getString("uploader"),
                 response.getString("upload_date"),
                 response.getBoolean("isNew"),
                 selectPlaylist(db, response.getString("id"))
@@ -51,7 +51,7 @@ class MusicService(val db: JdbcTemplate) {
                 response.getString("name"),
                 response.getString("title"),
                 response.getString("artist"),
-                response.getString("channel"),
+                response.getString("uploader"),
                 response.getString("upload_date"),
                 response.getBoolean("isNew"),
                 selectPlaylist(db, response.getString("id"))
@@ -65,7 +65,7 @@ class MusicService(val db: JdbcTemplate) {
                 response.getString("name"),
                 response.getString("title"),
                 response.getString("artist"),
-                response.getString("channel"),
+                response.getString("uploader"),
                 response.getString("upload_date"),
                 response.getBoolean("is_new"),
                 selectPlaylist(db, response.getString("id"))
@@ -78,8 +78,8 @@ class MusicService(val db: JdbcTemplate) {
         name: String,
         title: String,
         artist: String,
-        channel: String
-    ): Int = db.update("INSERT INTO Music VALUES (?, ?, ?, ?, ?, 'true')", identifier, name, title, artist, channel)
+        uploader: String
+    ): Int = db.update("INSERT INTO Music VALUES (?, ?, ?, ?, ?, 'true')", identifier, name, title, artist, uploader)
 
     private fun update(db: JdbcTemplate, identifier: String, title: String, artist: String, isNew: Boolean): Int =
         db.update(

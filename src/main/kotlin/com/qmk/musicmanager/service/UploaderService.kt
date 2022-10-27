@@ -1,33 +1,25 @@
-package com.qmk.musicmanager.data
+package com.qmk.musicmanager.service
 
-import com.qmk.musicmanager.model.Channel
+import com.qmk.musicmanager.model.Uploader
 import com.qmk.musicmanager.model.NamingFormat
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.query
 import org.springframework.stereotype.Service
-import java.util.*
 
 @Service
-class ChannelService(val db: JdbcTemplate) {
-    fun find(): List<Channel> = selectAll(db)
+class UploaderService(val db: JdbcTemplate) {
+    fun find(): List<Uploader> = selectAll(db)
 
-    fun findById(id: String): List<Channel> {
+    fun findById(id: String): List<Uploader> {
         return select(db, id)
     }
 
-    fun new(channel: Channel) {
-        insert(
-            db,
-            UUID.randomUUID().toString(),
-            channel.name,
-            channel.namingFormat.separator,
-            channel.namingFormat.artist_before_title
-        )
+    fun new(uploader: Uploader) {
+        insert(db, uploader.id, uploader.name, uploader.namingFormat.separator, uploader.namingFormat.artist_before_title)
     }
 
-    fun save(channel: Channel) {
-        val id = channel.id ?: UUID.randomUUID().toString()
-        update(db, id, channel.name, channel.namingFormat.separator, channel.namingFormat.artist_before_title)
+    fun save(uploader: Uploader) {
+        update(db, uploader.id, uploader.name, uploader.namingFormat.separator, uploader.namingFormat.artist_before_title)
     }
 
     fun remove(id: String) {
@@ -36,11 +28,11 @@ class ChannelService(val db: JdbcTemplate) {
 
     // --- Requests ---
 
-    private fun selectAll(db: JdbcTemplate): List<Channel> =
-        db.query("SELECT * FROM Channels") { response, _ ->
-            Channel(
+    private fun selectAll(db: JdbcTemplate): List<Uploader> =
+        db.query("SELECT * FROM Uploaders") { response, _ ->
+            Uploader(
                 response.getString("id"),
-                response.getString("channel"),
+                response.getString("name"),
                 NamingFormat(
                     response.getString("separator"),
                     response.getBoolean("artist_before_title")
@@ -48,11 +40,11 @@ class ChannelService(val db: JdbcTemplate) {
             )
         }
 
-    private fun select(db: JdbcTemplate, identifier: String): List<Channel> {
-        return db.query("SELECT * FROM Channels WHERE id = ?", identifier) { response, _ ->
-            Channel(
+    private fun select(db: JdbcTemplate, identifier: String): List<Uploader> {
+        return db.query("SELECT * FROM Uploaders WHERE id = ?", identifier) { response, _ ->
+            Uploader(
                 response.getString("id"),
-                response.getString("channel"),
+                response.getString("name"),
                 NamingFormat(
                     response.getString("separator"),
                     response.getBoolean("artist_before_title")
@@ -64,10 +56,10 @@ class ChannelService(val db: JdbcTemplate) {
     private fun insert(
         db: JdbcTemplate,
         id: String,
-        channel: String,
+        name: String,
         separator: String,
         artist_before_title: Boolean
-    ): Int = db.update("INSERT INTO Channels VALUES (?, ?, ?, ?)", id, channel, separator, artist_before_title)
+    ): Int = db.update("INSERT INTO Uploaders VALUES (?, ?, ?, ?)", id, name, separator, artist_before_title)
 
     private fun update(
         db: JdbcTemplate,
@@ -77,8 +69,8 @@ class ChannelService(val db: JdbcTemplate) {
        artist_before_title: Boolean
     ): Int =
         db.update(
-            "UPDATE Channels SET " +
-                    "channel = ?, " +
+            "UPDATE Uploaders SET " +
+                    "name = ?, " +
                     "separator = ?, " +
                     "artist_before_title = ? " +
                     "WHERE " +
@@ -87,7 +79,7 @@ class ChannelService(val db: JdbcTemplate) {
         )
 
     private fun delete(db: JdbcTemplate, id: String): Int =
-        db.update("DELETE FROM Channels WHERE id = ?", id)
+        db.update("DELETE FROM Uploaders WHERE id = ?", id)
 }
 
 

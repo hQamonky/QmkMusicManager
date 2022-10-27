@@ -1,7 +1,6 @@
 package com.qmk.musicmanager.controller
 
-import com.qmk.musicmanager.data.NamingRuleService
-import com.qmk.musicmanager.exception.ChannelNotFoundException
+import com.qmk.musicmanager.service.NamingRuleService
 import com.qmk.musicmanager.exception.NamingRuleNotFoundException
 import com.qmk.musicmanager.model.NamingRule
 import org.springframework.http.HttpStatus

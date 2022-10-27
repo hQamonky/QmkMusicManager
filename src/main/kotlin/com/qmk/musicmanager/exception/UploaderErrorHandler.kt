@@ -7,12 +7,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import javax.servlet.http.HttpServletRequest
 
 @ControllerAdvice
-class ChannelErrorHandler {
-    @ExceptionHandler(ChannelNotFoundException::class)
-    fun handleChannelNotFoundException(
+class UploaderErrorHandler {
+    @ExceptionHandler(UploaderNotFoundException::class)
+    fun handleUploaderNotFoundException(
         servletRequest: HttpServletRequest,
         exception: Exception
     ): ResponseEntity<String> {
-        return ResponseEntity("Channel not found", HttpStatus.NOT_FOUND)
+        return ResponseEntity("Uploader not found", HttpStatus.NOT_FOUND)
     }
 }

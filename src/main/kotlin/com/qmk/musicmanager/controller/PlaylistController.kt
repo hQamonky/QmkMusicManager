@@ -1,27 +1,41 @@
 package com.qmk.musicmanager.controller
 
-import com.qmk.musicmanager.data.PlaylistService
+import com.qmk.musicmanager.service.PlaylistService
 import com.qmk.musicmanager.exception.PlaylistNotFoundException
+import com.qmk.musicmanager.manager.PlaylistManager
 import com.qmk.musicmanager.model.Playlist
+import com.qmk.musicmanager.model.PlaylistEntry
+import com.qmk.musicmanager.service.UploaderService
+import com.qmk.musicmanager.youtube.YoutubeController
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
 @RequestMapping("/playlists")
 @RestController
-class PlaylistController(val service: PlaylistService) {
+class PlaylistController(private val service: PlaylistService, uploaderService: UploaderService) {
+    private final val youtubeController = YoutubeController()
+    val manager = PlaylistManager(service, uploaderService, youtubeController)
 
     @GetMapping
     fun getPlaylists() = service.find()
 
     @GetMapping("/download")
-    fun downloadPlaylists() {
+    fun downloadPlaylists(): String {
         // TODO
+        val playlists = service.find()
+        var result = ""
+        playlists.forEach { playlist ->
+            println("Starting download of playlist : ${playlist.id}")
+            result = youtubeController.downloadPlaylist(playlist) ?: "null"
+            println(result)
+        }
+        return result
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    fun postPlaylists(@RequestBody playlist: Playlist) {
-        service.new(playlist)
+    fun postPlaylists(@RequestBody entry: PlaylistEntry): Playlist? {
+        return manager.createPlaylist(entry.name, entry.url)
     }
 
     @GetMapping("/{id}")
