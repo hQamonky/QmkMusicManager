@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service
 class MusicService(val db: JdbcTemplate) {
     fun find(): List<Music> = selectAll(db)
 
-    fun findById(id: Int): List<Music> = select(db, id)
+    fun findById(id: String): List<Music> = select(db, id)
 
     fun findNew(): List<Music> = selectNew(db)
 
@@ -44,7 +44,7 @@ class MusicService(val db: JdbcTemplate) {
             )
         }
 
-    private fun select(db: JdbcTemplate, identifier: Int): List<Music> =
+    private fun select(db: JdbcTemplate, identifier: String): List<Music> =
         db.query("SELECT * FROM Music WHERE id = ?", identifier) { response, _ ->
             Music(
                 response.getString("id"),

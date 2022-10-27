@@ -6,7 +6,7 @@ import com.qmk.musicmanager.model.Playlist
 class YoutubeController(private val youtubeDl: String = "youtube-dl") {
 
     private val videoUrl = "https://www.youtube.com/watch?v="
-    private val playlistUrl = "https://www.youtube.com/playlist?list="
+    val playlistUrl = "https://www.youtube.com/playlist?list="
 
     fun pwd(): String? {
         return "pwd".runCommand()
@@ -29,9 +29,9 @@ class YoutubeController(private val youtubeDl: String = "youtube-dl") {
         return "$youtubeDl -ci --flat-playlist -J $url".runCommand()
     }
 
-    fun getVideoInfo(url: String, usingYoutubeDl: Boolean = true): String? {
-        return if (usingYoutubeDl) "$youtubeDl -ci -J $url".runCommand()
-        else "https://www.youtube.com/oembed?url=$url&format=json".runCommand()
+    fun getVideoInfo(videoId: String, usingYoutubeDl: Boolean = true): String? {
+        return if (usingYoutubeDl) "$youtubeDl -ci -J $videoUrl$videoId".runCommand()
+        else "https://www.youtube.com/oembed?url=$videoId&format=json".runCommand()
     }
 
     fun downloadMusic(url: String, outputDir: String): String? {

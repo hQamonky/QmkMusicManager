@@ -12,6 +12,11 @@ data class PlaylistEntry(
 )
 
 data class PlaylistInfo(
+    val entries: List<Entry>,
     val id: String,
     val title: String
+)
+
+data class Entry(
+    val id: String
 )

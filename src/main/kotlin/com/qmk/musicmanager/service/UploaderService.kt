@@ -10,8 +10,10 @@ import org.springframework.stereotype.Service
 class UploaderService(val db: JdbcTemplate) {
     fun find(): List<Uploader> = selectAll(db)
 
-    fun findById(id: String): List<Uploader> {
-        return select(db, id)
+    fun findById(id: String): Uploader? {
+        val uploaderById = select(db, id)
+        return if (uploaderById.isNotEmpty()) uploaderById[0]
+        else null
     }
 
     fun new(uploader: Uploader) {

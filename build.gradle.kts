@@ -17,6 +17,7 @@ repositories {
 
 dependencies {
 	implementation("com.google.code.gson:gson:2.10")
+	implementation("net.jthink:jaudiotagger:3.0.1")
 	implementation("org.springframework.boot:spring-boot-starter-jdbc")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.data:spring-data-commons")
