@@ -1,7 +1,6 @@
 CREATE TABLE IF NOT EXISTS Playlists (
 id          text PRIMARY KEY,
-name        text,
-uploader    text
+name        text
 );
 
 CREATE TABLE IF NOT EXISTS Music (

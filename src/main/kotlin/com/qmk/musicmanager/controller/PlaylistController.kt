@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.*
 
 @RequestMapping("/playlists")
 @RestController
-class PlaylistController(private val service: PlaylistService, uploaderService: UploaderService) {
+class PlaylistController(private val service: PlaylistService) {
     private final val youtubeController = YoutubeController()
-    val manager = PlaylistManager(service, uploaderService, youtubeController)
+    val manager = PlaylistManager(service, youtubeController)
 
     @GetMapping
     fun getPlaylists() = service.find()

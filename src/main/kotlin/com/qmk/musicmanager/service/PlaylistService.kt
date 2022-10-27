@@ -12,11 +12,11 @@ class PlaylistService(val db: JdbcTemplate) {
     fun findById(id: String): List<Playlist> = select(db, id)
 
     fun new(playlist: Playlist): Int {
-        return insert(db, playlist.id, playlist.name, playlist.uploaderId)
+        return insert(db, playlist.id, playlist.name)
     }
 
     fun save(playlist: Playlist) {
-        update(db, playlist.id, playlist.name, playlist.uploaderId)
+        update(db, playlist.id, playlist.name)
     }
 
     fun remove(id: String) {
@@ -30,8 +30,7 @@ class PlaylistService(val db: JdbcTemplate) {
             Playlist(
                 response.getString("id"),
                 response.getString("name"),
-                selectMusic(db, response.getString("id")),
-                response.getString("uploader")
+                selectMusic(db, response.getString("id"))
             )
         }
 
@@ -40,21 +39,19 @@ class PlaylistService(val db: JdbcTemplate) {
             Playlist(
                 response.getString("id"),
                 response.getString("name"),
-                selectMusic(db, response.getString("id")),
-                response.getString("uploader")
+                selectMusic(db, response.getString("id"))
             )
         }
 
-    private fun insert(db: JdbcTemplate, id: String, name: String, uploaderId: String): Int =
-        db.update("INSERT INTO Playlists (id, name, uploader) VALUES (?, ?, ?)", id, name, uploaderId)
+    private fun insert(db: JdbcTemplate, id: String, name: String): Int =
+        db.update("INSERT INTO Playlists (id, name) VALUES (?, ?)", id, name)
 
-    private fun update(db: JdbcTemplate, identifier: String, name: String, uploaderId: String): Int =
+    private fun update(db: JdbcTemplate, identifier: String, name: String): Int =
         db.update(
             "UPDATE Playlists SET " +
-                    "name = ?, " +
-                    "uploader = ? " +
+                    "name = ? " +
                     "WHERE id = ?",
-            name, uploaderId, identifier
+            name, identifier
         )
 
     private fun delete(db: JdbcTemplate, identifier: String): Int {

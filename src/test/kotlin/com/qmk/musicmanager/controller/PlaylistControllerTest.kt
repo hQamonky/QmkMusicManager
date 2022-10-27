@@ -41,27 +41,6 @@ internal class PlaylistControllerTest(
                 status { isCreated() }
                 jsonPath("$.id") { value("PLCVGGn6GhhDtYoqlNGqGFdg3ODeofpkLl") }
                 jsonPath("$.name") { value("MyPlaylist") }
-                jsonPath("$.uploaderId") { value("UCT8Y-bugDyR4ADHoQ-FOluw") }
-            }
-        // Get all uploaders
-        mockMvc.get("/uploaders")
-            .andExpect {
-                status { isOk() }
-                content { contentType(MediaType.APPLICATION_JSON) }
-                jsonPath("$[0].id") { value("UCT8Y-bugDyR4ADHoQ-FOluw") }
-                jsonPath("$[0].name") { value("William Herlicq") }
-                jsonPath("$[0].namingFormat.separator") { value(" - ") }
-                jsonPath("$[0].namingFormat.artist_before_title") { value(true) }
-            }
-        // Get uploader by id
-        mockMvc.get("/uploaders/UCT8Y-bugDyR4ADHoQ-FOluw")
-            .andExpect {
-                status { isOk() }
-                content { contentType(MediaType.APPLICATION_JSON) }
-                jsonPath("$.id") { value("UCT8Y-bugDyR4ADHoQ-FOluw") }
-                jsonPath("$.name") { value("William Herlicq") }
-                jsonPath("$.namingFormat.separator") { value(" - ") }
-                jsonPath("$.namingFormat.artist_before_title") { value(true) }
             }
         // Get all playlists
         mockMvc.get("/playlists")
@@ -70,15 +49,13 @@ internal class PlaylistControllerTest(
                 content { contentType(MediaType.APPLICATION_JSON) }
                 jsonPath("$[0].id") { value("PLCVGGn6GhhDtYoqlNGqGFdg3ODeofpkLl") }
                 jsonPath("$[0].name") { value("MyPlaylist") }
-                jsonPath("$[0].uploaderId") { value("UCT8Y-bugDyR4ADHoQ-FOluw") }
             }
         // Edit playlist
         mockMvc.post("/playlists/PLCVGGn6GhhDtYoqlNGqGFdg3ODeofpkLl") {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(Playlist(
                 id = "PLCVGGn6GhhDtYoqlNGqGFdg3ODeofpkLl",
-                name = "New playlist name",
-                uploaderId = "UCT8Y-bugDyR4ADHoQ-FOluw"
+                name = "New playlist name"
             ))
         }
             .andExpect {
@@ -91,10 +68,29 @@ internal class PlaylistControllerTest(
                 content { contentType(MediaType.APPLICATION_JSON) }
                 jsonPath("$.id") { value("PLCVGGn6GhhDtYoqlNGqGFdg3ODeofpkLl") }
                 jsonPath("$.name") { value("New playlist name") }
-                jsonPath("$.uploaderId") { value("UCT8Y-bugDyR4ADHoQ-FOluw") }
             }
         // Download playlist
 
+        // Get all uploaders
+//        mockMvc.get("/uploaders")
+//            .andExpect {
+//                status { isOk() }
+//                content { contentType(MediaType.APPLICATION_JSON) }
+//                jsonPath("$[0].id") { value("UCT8Y-bugDyR4ADHoQ-FOluw") }
+//                jsonPath("$[0].name") { value("William Herlicq") }
+//                jsonPath("$[0].namingFormat.separator") { value(" - ") }
+//                jsonPath("$[0].namingFormat.artist_before_title") { value(true) }
+//            }
+//        // Get uploader by id
+//        mockMvc.get("/uploaders/UCT8Y-bugDyR4ADHoQ-FOluw")
+//            .andExpect {
+//                status { isOk() }
+//                content { contentType(MediaType.APPLICATION_JSON) }
+//                jsonPath("$.id") { value("UCT8Y-bugDyR4ADHoQ-FOluw") }
+//                jsonPath("$.name") { value("William Herlicq") }
+//                jsonPath("$.namingFormat.separator") { value(" - ") }
+//                jsonPath("$.namingFormat.artist_before_title") { value(true) }
+//            }
         // Get new music
         // Edit music
         // Delete playlist
