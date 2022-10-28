@@ -7,8 +7,8 @@ data class Music(
     val artist: String,
     val uploaderId: String,
     val uploadDate: String,
-    val isNew: Boolean,
-    val playlistIds: List<String>
+    val isNew: Boolean = true,
+    val playlistIds: List<String> = emptyList()
 )
 
 data class MusicInfo(
@@ -20,9 +20,15 @@ data class MusicInfo(
 )
 
 data class Metadata(
+    val name: String,
     val title: String,
     val artist: String,
     val album: String,
     val year: String,
     val comment: String
+)
+
+data class MusicResult(
+    val music: Music,
+    val logs: String
 )

@@ -9,7 +9,11 @@ import org.springframework.stereotype.Service
 class MusicService(val db: JdbcTemplate) {
     fun find(): List<Music> = selectAll(db)
 
-    fun findById(id: String): List<Music> = select(db, id)
+    fun findById(id: String): Music? {
+        val musicById = select(db, id)
+        return if (musicById.isNotEmpty()) musicById[0]
+        else null
+    }
 
     fun findNew(): List<Music> = selectNew(db)
 
@@ -26,6 +30,10 @@ class MusicService(val db: JdbcTemplate) {
 
     fun remove(id: String) {
         delete(db, id)
+    }
+
+    fun newPlaylist(playlistId: String, musicId: String) {
+        insertPlaylist(db, playlistId, musicId)
     }
 
     // --- Requests ---

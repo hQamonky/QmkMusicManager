@@ -59,18 +59,25 @@ class PlaylistManager(
         ).entries
             .map{ it.id }
             .forEach { musicId ->
-                val musicById = musicService.findById(musicId)
-                result += if (musicById.isNotEmpty()) {
-                    "Not downloading ${musicById[0].name} because is has already been done.\n"
+                var music = musicService.findById(musicId)
+                if (music == null) {
+                    val musicResult = downloadAndProcessMusic(musicId, playlistId)
+                    music = musicResult.music
+                    result += musicResult.logs
                 } else {
-                    downloadAndProcessMusic(musicId)
+                    result += "Not downloading ${music.name} because is has already been done.\n"
+                    if (!music.playlistIds.contains(playlistId)) {
+                        result += "Adding ${playlist.name} to music.\n"
+                        musicService.newPlaylist(playlistId, musicId)
+                    } else {
+                        result += "${music.name} is already in ${playlist.name}.\n"
+                    }
                 }
             }
-        // TODO : Add music_playlist if not exist
         return result
     }
 
-    private fun downloadAndProcessMusic(videoId: String): String {
+    private fun downloadAndProcessMusic(videoId: String, playlistId: String): MusicResult {
         // Get video info
         var result = "Getting info for $videoId...\n"
         val musicInfo = Gson().fromJson(youtubeController.getVideoInfo(videoId), MusicInfo::class.java)
@@ -96,8 +103,19 @@ class PlaylistManager(
                 "album = ${metadata.album}\n" +
                 "year = ${metadata.year}\n" +
                 "comment = ${metadata.comment}\n"
-        // TODO : Insert music in database
-        return result
+        // Insert music in database
+        val music = Music(
+            id = musicInfo.id,
+            name = metadata.name,
+            title = metadata.title,
+            artist = metadata.artist,
+            uploaderId = uploader.id,
+            uploadDate = musicInfo.upload_date,
+            playlistIds = listOf(playlistId)
+        )
+        musicService.new(music)
+        result += "Music ${music.id} was created.\n"
+        return MusicResult(music, result)
     }
 
     private fun setMetadata(
@@ -107,11 +125,11 @@ class PlaylistManager(
     ): Metadata {
         // Naming rules
         val namingRules = namingRuleService.find()
-        var formattedTitle = videoInfo.title
+        var name = videoInfo.title
         namingRules.forEach {rule ->
-            formattedTitle = formattedTitle.replace(rule.replace, rule.replaceBy)
+            name = name.replace(rule.replace, rule.replaceBy)
         }
-        val splitTitle = formattedTitle.split(namingFormat.separator)
+        val splitTitle = name.split(namingFormat.separator)
 
         // ID3 tags example here : http://www.jthink.net/jaudiotagger/examples_write.jsp
         val f = AudioFileIO.read(file)
@@ -121,7 +139,7 @@ class PlaylistManager(
         val title = if (splitTitle.size >= 2) {
             if (namingFormat.artist_before_title) splitTitle[1] else splitTitle[0]
         } else {
-            formattedTitle
+            name
         }
         tag.setField(FieldKey.TITLE, title)
 
@@ -147,6 +165,6 @@ class PlaylistManager(
 
         f.commit()
 
-        return Metadata(title, artist, album, year, comment)
+        return Metadata(name, title, artist, album, year, comment)
     }
 }
