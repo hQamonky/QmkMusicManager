@@ -2,26 +2,29 @@ package com.qmk.musicmanager.controller
 
 import com.qmk.musicmanager.model.NamingFormat
 import com.qmk.musicmanager.model.Settings
+import com.qmk.musicmanager.service.SettingsService
 import org.springframework.web.bind.annotation.*
 
 @RequestMapping("/settings")
 @RestController
-class SettingsController {
-//    private var settings: Settings = Settings()
-
-
+class SettingsController(private val service: SettingsService) {
     @GetMapping
-    fun getSettings() {
-
+    fun getSettings(): Settings {
+        return service.getConfiguration()
     }
 
-    @PostMapping("/naming-format")
-    fun postNamingSeparator(@PathVariable namingFormat: NamingFormat) {
-
+    @PostMapping
+    fun postSettings(@RequestBody settings: Settings) {
+        service.setConfiguration(settings)
     }
 
-    @PostMapping("/download-occurrence")
-    fun postDownloadOccurrence(@PathVariable occurrence: Int) {
+    @PostMapping("/music-folder")
+    fun postMusicFolder(@RequestBody path: String) {
+        service.setMusicFolder(path)
+    }
 
+    @PostMapping("download-occurrence")
+    fun postDownloadOccurrence(@RequestBody occurrence: Int) {
+        service.setDownloadOccurrence(occurrence)
     }
 }

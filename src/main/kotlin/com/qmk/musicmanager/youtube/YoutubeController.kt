@@ -34,8 +34,8 @@ class YoutubeController(private val youtubeDl: String = "youtube-dl") {
         else "https://www.youtube.com/oembed?url=$videoId&format=json".runCommand()
     }
 
-    fun downloadMusic(url: String, outputDir: String): String? {
-        return "$youtubeDl -ci -x --audio-format mp3 --embed-thumbnail -o $outputDir $url".runCommand()
+    fun downloadMusic(url: String): String? {
+        return "$youtubeDl -ci -x --audio-format mp3 --embed-thumbnail -o ./workDir/tmp.'%(ext)s' $url".runCommand()
     }
 
     fun downloadPlaylist(playlist: Playlist): String? {

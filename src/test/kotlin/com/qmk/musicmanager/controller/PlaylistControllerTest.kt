@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.gson.Gson
 import com.qmk.musicmanager.model.Playlist
 import com.qmk.musicmanager.model.PlaylistEntry
+import com.qmk.musicmanager.model.Settings
 import com.qmk.musicmanager.youtube.YoutubeController
 import org.json.JSONArray
 import org.json.JSONObject
@@ -69,28 +70,44 @@ internal class PlaylistControllerTest(
                 jsonPath("$.id") { value("PLCVGGn6GhhDtYoqlNGqGFdg3ODeofpkLl") }
                 jsonPath("$.name") { value("New playlist name") }
             }
+        // Change music folder
+        mockMvc.post("/settings") {
+            contentType = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(
+                Settings(
+                    musicFolder = "src/test/MusicTestDir",
+                    downloadOccurrence = 1
+                )
+            )
+        }
+            .andExpect {
+                status { isOk() }
+            }
         // Download playlist
-
+        mockMvc.get("/playlists/PLCVGGn6GhhDtYoqlNGqGFdg3ODeofpkLl/download")
+            .andExpect {
+                status { isOk() }
+            }
         // Get all uploaders
-//        mockMvc.get("/uploaders")
-//            .andExpect {
-//                status { isOk() }
-//                content { contentType(MediaType.APPLICATION_JSON) }
-//                jsonPath("$[0].id") { value("UCT8Y-bugDyR4ADHoQ-FOluw") }
-//                jsonPath("$[0].name") { value("William Herlicq") }
-//                jsonPath("$[0].namingFormat.separator") { value(" - ") }
-//                jsonPath("$[0].namingFormat.artist_before_title") { value(true) }
-//            }
-//        // Get uploader by id
-//        mockMvc.get("/uploaders/UCT8Y-bugDyR4ADHoQ-FOluw")
-//            .andExpect {
-//                status { isOk() }
-//                content { contentType(MediaType.APPLICATION_JSON) }
-//                jsonPath("$.id") { value("UCT8Y-bugDyR4ADHoQ-FOluw") }
-//                jsonPath("$.name") { value("William Herlicq") }
-//                jsonPath("$.namingFormat.separator") { value(" - ") }
-//                jsonPath("$.namingFormat.artist_before_title") { value(true) }
-//            }
+        mockMvc.get("/uploaders")
+            .andExpect {
+                status { isOk() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+                jsonPath("$[0].id") { value("UCT8Y-bugDyR4ADHoQ-FOluw") }
+                jsonPath("$[0].name") { value("William Herlicq") }
+                jsonPath("$[0].namingFormat.separator") { value(" - ") }
+                jsonPath("$[0].namingFormat.artist_before_title") { value(true) }
+            }
+        // Get uploader by id
+        mockMvc.get("/uploaders/UCT8Y-bugDyR4ADHoQ-FOluw")
+            .andExpect {
+                status { isOk() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+                jsonPath("$.id") { value("UCT8Y-bugDyR4ADHoQ-FOluw") }
+                jsonPath("$.name") { value("William Herlicq") }
+                jsonPath("$.namingFormat.separator") { value(" - ") }
+                jsonPath("$.namingFormat.artist_before_title") { value(true) }
+            }
         // Get new music
         // Edit music
         // Delete playlist

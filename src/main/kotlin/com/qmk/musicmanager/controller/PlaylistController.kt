@@ -6,6 +6,7 @@ import com.qmk.musicmanager.manager.PlaylistManager
 import com.qmk.musicmanager.model.Playlist
 import com.qmk.musicmanager.model.PlaylistEntry
 import com.qmk.musicmanager.service.MusicService
+import com.qmk.musicmanager.service.NamingRuleService
 import com.qmk.musicmanager.service.UploaderService
 import com.qmk.musicmanager.youtube.YoutubeController
 import org.springframework.http.HttpStatus
@@ -17,10 +18,17 @@ import java.io.File
 class PlaylistController(
     private val service: PlaylistService,
     musicService: MusicService,
-    uploaderService: UploaderService
+    uploaderService: UploaderService,
+    namingRuleService: NamingRuleService
 ) {
     private final val youtubeController = YoutubeController()
-    val manager = PlaylistManager(service, musicService, uploaderService, youtubeController, File("."))
+    val manager = PlaylistManager(
+        service,
+        musicService,
+        uploaderService,
+        namingRuleService,
+        youtubeController
+    )
 
     @GetMapping
     fun getPlaylists() = service.find()

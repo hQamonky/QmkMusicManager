@@ -8,7 +8,7 @@ id          text  PRIMARY KEY,
 name        text,
 title       text,
 artist      text,
-uploader     text,
+uploader    text,
 upload_date text,
 is_new      boolean
 );

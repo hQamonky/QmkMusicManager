@@ -1,5 +1,6 @@
 package com.qmk.musicmanager.extension
 
+import com.qmk.musicmanager.model.NamingRule
 import java.io.File
 import java.util.concurrent.TimeUnit
 
@@ -15,3 +16,11 @@ fun String.runCommand(
         .start().also { it.waitFor(timeoutAmount, timeoutUnit) }
         .inputStream.bufferedReader().readText()
 }.onFailure { it.printStackTrace() }.getOrNull()
+
+fun String.applyNamingRules(namingRules: List<NamingRule>): String {
+    var formattedText = this
+    namingRules.forEach {rule ->
+        formattedText = formattedText.replace(rule.replace, rule.replaceBy)
+    }
+    return formattedText
+}

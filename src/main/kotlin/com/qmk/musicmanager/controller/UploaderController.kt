@@ -15,7 +15,7 @@ class UploaderController(val service: UploaderService) {
 
     @GetMapping("/{id}")
     fun getUploader(@PathVariable id: String): Uploader {
-        val uploader = service.findById(id).firstOrNull { it.id == id }
+        val uploader = service.findById(id)
         return uploader ?: throw UploaderNotFoundException()
     }
 

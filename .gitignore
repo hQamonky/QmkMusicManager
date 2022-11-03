@@ -35,3 +35,10 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Custom ###
+*.db
+*.webm
+*.webp
+*.mp3
+*.jpg

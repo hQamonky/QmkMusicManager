@@ -4,6 +4,7 @@ import com.qmk.musicmanager.model.Music
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.query
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class MusicService(val db: JdbcTemplate) {
@@ -18,9 +19,9 @@ class MusicService(val db: JdbcTemplate) {
     fun findNew(): List<Music> = selectNew(db)
 
     fun new(music: Music) {
-        insert(db, music.id, music.name, music.title, music.artist, music.uploaderId)
+        insert(db, music.id, music.name, music.title, music.artist, music.uploaderId, music.uploadDate)
         music.playlistIds.forEach {
-            insertPlaylist(db, it, music.id)
+            insertPlaylist(db, UUID.randomUUID().toString(), it, music.id)
         }
     }
 
@@ -33,7 +34,7 @@ class MusicService(val db: JdbcTemplate) {
     }
 
     fun newPlaylist(playlistId: String, musicId: String) {
-        insertPlaylist(db, playlistId, musicId)
+        insertPlaylist(db, UUID.randomUUID().toString(), playlistId, musicId)
     }
 
     // --- Requests ---
@@ -86,8 +87,10 @@ class MusicService(val db: JdbcTemplate) {
         name: String,
         title: String,
         artist: String,
-        uploader: String
-    ): Int = db.update("INSERT INTO Music VALUES (?, ?, ?, ?, ?, 'true')", identifier, name, title, artist, uploader)
+        uploader: String,
+        uploadDate: String
+    ): Int = db.update("INSERT INTO Music VALUES (?, ?, ?, ?, ?, ?, 'true')",
+        identifier, name, title, artist, uploader, uploadDate)
 
     private fun update(db: JdbcTemplate, identifier: String, title: String, artist: String, isNew: Boolean): Int =
         db.update(
@@ -108,6 +111,7 @@ class MusicService(val db: JdbcTemplate) {
             response.getString("id_playlist")
         }
 
-    private fun insertPlaylist(db: JdbcTemplate, id_playlist: String, id_music: String): Int =
-        db.update("INSERT INTO Playlist_Music (id_playlist, id_music) VALUES (?, ?)", id_playlist, id_music)
+    private fun insertPlaylist(db: JdbcTemplate, id: String, id_playlist: String, id_music: String): Int =
+        db.update("INSERT INTO Playlist_Music (id, id_playlist, id_music) VALUES (?, ?, ?)",
+            id, id_playlist, id_music)
 }
