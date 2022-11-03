@@ -48,7 +48,7 @@ class MusicService(val db: JdbcTemplate) {
                 response.getString("artist"),
                 response.getString("uploader"),
                 response.getString("upload_date"),
-                response.getBoolean("isNew"),
+                response.getBoolean("is_new"),
                 selectPlaylist(db, response.getString("id"))
             )
         }
@@ -62,13 +62,13 @@ class MusicService(val db: JdbcTemplate) {
                 response.getString("artist"),
                 response.getString("uploader"),
                 response.getString("upload_date"),
-                response.getBoolean("isNew"),
+                response.getBoolean("is_new"),
                 selectPlaylist(db, response.getString("id"))
             )
         }
 
     private fun selectNew(db: JdbcTemplate): List<Music> =
-        db.query("SELECT * FROM Music WHERE new = 'true'") { response, _ ->
+        db.query("SELECT * FROM Music WHERE is_new = true") { response, _ ->
             Music(
                 response.getString("id"),
                 response.getString("name"),

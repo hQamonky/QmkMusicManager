@@ -1,16 +1,12 @@
 package com.qmk.musicmanager.manager
 
 import com.google.gson.Gson
-import com.qmk.musicmanager.extension.applyNamingRules
 import com.qmk.musicmanager.model.*
 import com.qmk.musicmanager.service.MusicService
 import com.qmk.musicmanager.service.NamingRuleService
 import com.qmk.musicmanager.service.PlaylistService
 import com.qmk.musicmanager.service.UploaderService
 import com.qmk.musicmanager.youtube.YoutubeController
-import org.jaudiotagger.audio.AudioFileIO
-import org.jaudiotagger.tag.FieldKey
-import org.jaudiotagger.tag.Tag
 import java.io.File
 
 
@@ -20,7 +16,8 @@ class PlaylistManager(
     private val uploaderService: UploaderService,
     private val namingRuleService: NamingRuleService,
     private val youtubeController: YoutubeController,
-    private val configurationManager: ConfigurationManager = ConfigurationManager()
+    private val configurationManager: ConfigurationManager = ConfigurationManager(),
+    private val id3Manager: Id3Manager = Id3Manager()
 ) {
     fun createPlaylist(name: String, url: String): Playlist {
         val gson = Gson()
@@ -92,13 +89,13 @@ class PlaylistManager(
         result += "$downloadResult\n"
         // Set metadata
         result += "Setting ID3 tags...\n"
-        val metadata = getMetadata(musicInfo, uploader.namingFormat)
+        val metadata = id3Manager.getMetadata(musicInfo, uploader.namingFormat, namingRuleService.find())
         result += "title = ${metadata.title}\n" +
                 "artist = ${metadata.artist}\n" +
                 "album = ${metadata.album}\n" +
                 "year = ${metadata.year}\n" +
                 "comment = ${metadata.comment}\n"
-        setMetadata(File(outputFile), metadata)
+        id3Manager.setMetadata(File(outputFile), metadata)
         // Insert music in database
         val music = Music(
             id = musicInfo.id,
@@ -114,43 +111,9 @@ class PlaylistManager(
         // Move final file to music folder
         val musicFolder = configurationManager.getConfiguration().musicFolder
         File(outputFile).let { sourceFile ->
-            sourceFile.copyTo(File("${musicFolder}/${musicInfo.title}.mp3"))
+            sourceFile.copyTo(target = File("${musicFolder}/${metadata.name}.mp3"), overwrite = true)
             sourceFile.delete()
         }
         return result
-    }
-
-    private fun getMetadata(videoInfo: MusicInfo, namingFormat: NamingFormat): Metadata {
-        val name = videoInfo.title.applyNamingRules(namingRuleService.find())
-        val splitTitle = name.split(namingFormat.separator)
-        val title = if (splitTitle.size >= 2) {
-            if (namingFormat.artist_before_title) splitTitle[1] else splitTitle[0]
-        } else {
-            name
-        }
-        val artist = if (splitTitle.size >= 2) {
-            if (namingFormat.artist_before_title) splitTitle[0] else splitTitle[1]
-        } else {
-            videoInfo.channel
-        }
-        val album = videoInfo.channel
-        val year = videoInfo.upload_date.take(4)
-        val comment = "{\"platform\": \"youtube\", \"id\": \"${videoInfo.id}\"}"
-        return Metadata(name, title, artist, album, year, comment)
-    }
-
-    private fun setMetadata(
-        file: File,
-        metadata: Metadata
-    ) {
-        // ID3 tags example here : http://www.jthink.net/jaudiotagger/examples_write.jsp
-        val f = AudioFileIO.read(file)
-        val tag: Tag = f.tag
-        tag.setField(FieldKey.TITLE, metadata.title)
-        tag.setField(FieldKey.ARTIST, metadata.artist)
-        tag.setField(FieldKey.ALBUM, metadata.album)
-        tag.setField(FieldKey.YEAR, metadata.year)
-        tag.setField(FieldKey.COMMENT, metadata.comment)
-        f.commit()
     }
 }

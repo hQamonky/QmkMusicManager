@@ -2,14 +2,12 @@ package com.qmk.musicmanager.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import com.qmk.musicmanager.model.Music
 import com.qmk.musicmanager.model.Playlist
 import com.qmk.musicmanager.model.PlaylistEntry
 import com.qmk.musicmanager.model.Settings
-import com.qmk.musicmanager.youtube.YoutubeController
-import org.json.JSONArray
-import org.json.JSONObject
 import org.junit.jupiter.api.Test
-
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
@@ -19,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.delete
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
+import java.lang.reflect.Type
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -88,6 +87,11 @@ internal class PlaylistControllerTest(
             .andExpect {
                 status { isOk() }
             }
+        // Download playlists (already downloaded music should not download again)
+        mockMvc.get("/playlists/download")
+            .andExpect {
+                status { isOk() }
+            }
         // Get all uploaders
         mockMvc.get("/uploaders")
             .andExpect {
@@ -109,7 +113,37 @@ internal class PlaylistControllerTest(
                 jsonPath("$.namingFormat.artist_before_title") { value(true) }
             }
         // Get new music
+        val jsonMusic = mockMvc.get("/music/new")
+            .andExpect {
+                status { isOk() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+                jsonPath("$[0].id") { value("VFWJd69f9F0") }
+                jsonPath("$[0].isNew") { value(true) }
+            }.andReturn().response.contentAsString
         // Edit music
+        val musicArray: Array<Music> = Gson().fromJson(jsonMusic, Array<Music>::class.java)
+        val music = musicArray[0]
+        mockMvc.post("/music/VFWJd69f9F0") {
+            contentType = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(
+                music.copy(
+                    title = "new title",
+                    artist = "new artist",
+                    isNew = false
+                )
+            )
+        }
+            .andExpect {
+                status { isOk() }
+            }
+        // Check that music was edited
+        val jsonMusicEmpty = mockMvc.get("/music/new")
+            .andExpect {
+                status { isOk() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+            }.andReturn().response.contentAsString
+        val musicEmptyArray: Array<Music> = Gson().fromJson(jsonMusicEmpty, Array<Music>::class.java)
+        assert(musicEmptyArray.isEmpty())
         // Delete playlist
         mockMvc.delete("/playlists/PLCVGGn6GhhDtYoqlNGqGFdg3ODeofpkLl")
             .andExpect {
@@ -120,26 +154,5 @@ internal class PlaylistControllerTest(
             .andExpect {
                 status { isNotFound() }
             }
-    }
-
-    @Test
-    fun downloadPlaylist() {
-        val youtubeDl = YoutubeController()
-        val url = "https://www.youtube.com/playlist?list=PLCVGGn6GhhDtYoqlNGqGFdg3ODeofpkLl"
-        val playlistInfo = youtubeDl.getPlaylistInfo(url)
-        println(playlistInfo)
-//        val playlist = Playlist(
-//            youtubeId = playlistId,
-//            name = "test playlist 1",
-//            uploaderId = "uploaderId"
-//        )
-//        // Create playlist
-//        mockMvc.post("/playlists") {
-//            contentType = MediaType.APPLICATION_JSON
-//            content = objectMapper.writeValueAsString(playlist)
-//        }
-//            .andExpect {
-//                status { isCreated() }
-//            }
     }
 }
