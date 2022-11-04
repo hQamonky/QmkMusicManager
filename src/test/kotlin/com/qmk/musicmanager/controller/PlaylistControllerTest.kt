@@ -32,6 +32,19 @@ internal class PlaylistControllerTest(
             "MyPlaylist",
             "https://www.youtube.com/playlist?list=PLCVGGn6GhhDtYoqlNGqGFdg3ODeofpkLl"
         )
+        // Change music folder
+        mockMvc.post("/settings") {
+            contentType = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(
+                Settings(
+                    musicFolder = "src/test/MusicTestDir",
+                    downloadOccurrence = 1
+                )
+            )
+        }
+            .andExpect {
+                status { isOk() }
+            }
         // Create playlist
         mockMvc.post("/playlists") {
             contentType = MediaType.APPLICATION_JSON
@@ -68,19 +81,6 @@ internal class PlaylistControllerTest(
                 content { contentType(MediaType.APPLICATION_JSON) }
                 jsonPath("$.id") { value("PLCVGGn6GhhDtYoqlNGqGFdg3ODeofpkLl") }
                 jsonPath("$.name") { value("New playlist name") }
-            }
-        // Change music folder
-        mockMvc.post("/settings") {
-            contentType = MediaType.APPLICATION_JSON
-            content = objectMapper.writeValueAsString(
-                Settings(
-                    musicFolder = "src/test/MusicTestDir",
-                    downloadOccurrence = 1
-                )
-            )
-        }
-            .andExpect {
-                status { isOk() }
             }
         // Download playlist
         mockMvc.get("/playlists/PLCVGGn6GhhDtYoqlNGqGFdg3ODeofpkLl/download")

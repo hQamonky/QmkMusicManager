@@ -19,7 +19,16 @@ class MusicService(val db: JdbcTemplate) {
     fun findNew(): List<Music> = selectNew(db)
 
     fun new(music: Music) {
-        insert(db, music.id, music.name, music.title, music.artist, music.uploaderId, music.uploadDate)
+        insert(
+            db,
+            music.id,
+            music.fileName,
+            music.fileExtension,
+            music.title,
+            music.artist,
+            music.uploaderId,
+            music.uploadDate
+        )
         music.playlistIds.forEach {
             insertPlaylist(db, UUID.randomUUID().toString(), it, music.id)
         }
@@ -43,7 +52,8 @@ class MusicService(val db: JdbcTemplate) {
         db.query("SELECT * FROM Music") { response, _ ->
             Music(
                 response.getString("id"),
-                response.getString("name"),
+                response.getString("file_name"),
+                response.getString("file_extension"),
                 response.getString("title"),
                 response.getString("artist"),
                 response.getString("uploader"),
@@ -57,7 +67,8 @@ class MusicService(val db: JdbcTemplate) {
         db.query("SELECT * FROM Music WHERE id = ?", identifier) { response, _ ->
             Music(
                 response.getString("id"),
-                response.getString("name"),
+                response.getString("file_name"),
+                response.getString("file_extension"),
                 response.getString("title"),
                 response.getString("artist"),
                 response.getString("uploader"),
@@ -71,7 +82,8 @@ class MusicService(val db: JdbcTemplate) {
         db.query("SELECT * FROM Music WHERE is_new = true") { response, _ ->
             Music(
                 response.getString("id"),
-                response.getString("name"),
+                response.getString("file_name"),
+                response.getString("file_extension"),
                 response.getString("title"),
                 response.getString("artist"),
                 response.getString("uploader"),
@@ -84,13 +96,14 @@ class MusicService(val db: JdbcTemplate) {
     private fun insert(
         db: JdbcTemplate,
         identifier: String,
-        name: String,
+        fileName: String,
+        fileExtension: String,
         title: String,
         artist: String,
         uploader: String,
         uploadDate: String
-    ): Int = db.update("INSERT INTO Music VALUES (?, ?, ?, ?, ?, ?, 'true')",
-        identifier, name, title, artist, uploader, uploadDate)
+    ): Int = db.update("INSERT INTO Music VALUES (?, ?, ?, ?, ?, ?, ?, 'true')",
+        identifier, fileName, fileExtension, title, artist, uploader, uploadDate)
 
     private fun update(db: JdbcTemplate, identifier: String, title: String, artist: String, isNew: Boolean): Int =
         db.update(

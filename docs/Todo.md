@@ -1,10 +1,6 @@
 # Version 1.0
 - Implement proper update handling with the database
 - Implement factory reset
-- Implement youtube downloads 
-- Implement setting ID3 tags
-- Implement Mopidy playlist generation
-- Implement PowerAmp playlist generation
 - Implement periodic downloading
 - Implement archiving
 - Enhance UI (handle loading progress, make it easier to add a naming rule from new music, etc.)

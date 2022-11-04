@@ -11,7 +11,7 @@ class MusicManager(private val service: MusicService,
 ) {
     fun editMusic(music: Music) {
         val musicFolder = configurationManager.getConfiguration().musicFolder
-        val file = File("${musicFolder}/${music.name}.mp3")
+        val file = File("${musicFolder}/${music.fileName}.${music.fileExtension}")
         id3Manager.updateMetadata(
             file,
             music.title,

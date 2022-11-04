@@ -9,7 +9,11 @@ import org.springframework.stereotype.Service
 class PlaylistService(val db: JdbcTemplate) {
     fun find(): List<Playlist> = selectAll(db)
 
-    fun findById(id: String): List<Playlist> = select(db, id)
+    fun findById(id: String): Playlist? {
+        val playlistById = select(db, id)
+        return if (playlistById.isNotEmpty()) playlistById[0]
+        else null
+    }
 
     fun new(playlist: Playlist): Int {
         return insert(db, playlist.id, playlist.name)

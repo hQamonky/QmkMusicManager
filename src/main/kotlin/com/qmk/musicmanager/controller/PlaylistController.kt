@@ -11,7 +11,6 @@ import com.qmk.musicmanager.service.UploaderService
 import com.qmk.musicmanager.youtube.YoutubeController
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
-import java.io.File
 
 @RequestMapping("/playlists")
 @RestController
@@ -35,24 +34,24 @@ class PlaylistController(
 
     @GetMapping("/download")
     fun downloadPlaylists(): String {
-        return manager.downloadPlaylists()
+        return manager.download()
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun postPlaylists(@RequestBody entry: PlaylistEntry): Playlist? {
-        return manager.createPlaylist(entry.name, entry.url)
+        return manager.create(entry.name, entry.url)
     }
 
     @GetMapping("/{id}")
     fun getPlaylist(@PathVariable id: String): Playlist {
-        val playlist = service.findById(id).firstOrNull { it.id == id }
+        val playlist = service.findById(id)
         return playlist ?: throw PlaylistNotFoundException()
     }
 
     @PostMapping("/{id}")
     fun postPlaylist(@RequestBody playlist: Playlist) {
-        service.save(playlist)
+        manager.edit(playlist)
     }
 
     @DeleteMapping("/{id}")
@@ -62,6 +61,6 @@ class PlaylistController(
 
     @GetMapping("/{id}/download")
     fun downloadPlaylist(@PathVariable id: String) {
-        manager.downloadPlaylist(id)
+        manager.download(id)
     }
 }

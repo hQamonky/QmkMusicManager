@@ -1,6 +1,7 @@
 package com.qmk.musicmanager.manager
 
 import com.google.gson.Gson
+import com.qmk.musicmanager.extension.moveTo
 import com.qmk.musicmanager.model.*
 import com.qmk.musicmanager.service.MusicService
 import com.qmk.musicmanager.service.NamingRuleService
@@ -17,37 +18,49 @@ class PlaylistManager(
     private val namingRuleService: NamingRuleService,
     private val youtubeController: YoutubeController,
     private val configurationManager: ConfigurationManager = ConfigurationManager(),
-    private val id3Manager: Id3Manager = Id3Manager()
+    private val id3Manager: Id3Manager = Id3Manager(),
+    private val mopidyManager: MopidyManager = MopidyManager(),
+    private val powerAmpManager: PowerAmpManager = PowerAmpManager()
 ) {
-    fun createPlaylist(name: String, url: String): Playlist {
+    fun create(name: String, url: String): Playlist {
         val gson = Gson()
         val playlistInfo = gson.fromJson(youtubeController.getPlaylistInfo(url), PlaylistInfo::class.java)
         val playlist = Playlist(
             id = playlistInfo.id,
             name = name
         )
-        val doesNotExist = playlistService.findById(playlist.id).isEmpty()
-        if (doesNotExist) playlistService.new(playlist)
+        val doesNotExist = playlistService.findById(playlist.id) == null
+        if (doesNotExist) {
+            playlistService.new(playlist)
+            mopidyManager.createPlaylist(playlist.name)
+            powerAmpManager.createPlaylist(playlist.name)
+        }
         return playlist
     }
 
-    fun downloadPlaylists(): String {
+    fun edit(playlist: Playlist) {
+        val oldPlaylist = playlistService.findById(playlist.id) ?: return
+        if (oldPlaylist.name != playlist.name) {
+            mopidyManager.renamePlaylist(oldPlaylist.name, playlist.name)
+            powerAmpManager.renamePlaylist(oldPlaylist.name, playlist.name)
+        }
+        playlistService.save(playlist)
+    }
+
+    fun download(): String {
         val playlists = playlistService.find()
         if (playlists.isEmpty()) return "Error : no playlists found."
         var result = "${playlists.size} found.\n"
         playlists.forEach { playlist ->
             result += "Start process for ${playlist.name} :\n"
-            result += downloadPlaylist(playlist.id)
+            result += download(playlist.id)
         }
         return result
     }
 
-    fun downloadPlaylist(playlistId: String): String {
+    fun download(playlistId: String): String {
         var result = ""
-        val playlistById = playlistService.findById(playlistId)
-        if (playlistById.isEmpty())
-            return "Error : playlist not found."
-        val playlist = playlistById[0]
+        val playlist = playlistService.findById(playlistId) ?: return "Error : playlist not found."
         result += "Downloading ${playlist.name}...\n"
         val gson = Gson()
         gson.fromJson(
@@ -58,21 +71,22 @@ class PlaylistManager(
             .forEach { musicId ->
                 val music = musicService.findById(musicId)
                 if (music != null) {
-                    result += "Not downloading ${music.name} because is has already been done.\n"
+                    result += "Not downloading ${music.fileName} because is has already been done.\n"
                     if (!music.playlistIds.contains(playlistId)) {
                         result += "Adding ${playlist.name} to music.\n"
                         musicService.newPlaylist(playlistId, musicId)
                     } else {
-                        result += "${music.name} is already in ${playlist.name}.\n"
+                        result += "${music.fileName} is already in ${playlist.name}.\n"
                     }
                 } else {
-                    result += downloadAndProcessMusic(musicId, playlistId)
+                    result += downloadAndProcessMusic(musicId, playlist)
                 }
             }
         return result
     }
 
-    private fun downloadAndProcessMusic(videoId: String, playlistId: String): String {
+    private fun downloadAndProcessMusic(videoId: String, playlist: Playlist): String {
+        val playlistId = playlist.id
         // Get video info
         var result = "Getting info for $videoId...\n"
         val musicInfo = Gson().fromJson(youtubeController.getVideoInfo(videoId), MusicInfo::class.java)
@@ -99,7 +113,7 @@ class PlaylistManager(
         // Insert music in database
         val music = Music(
             id = musicInfo.id,
-            name = metadata.name,
+            fileName = metadata.name,
             title = metadata.title,
             artist = metadata.artist,
             uploaderId = uploader.id,
@@ -107,13 +121,16 @@ class PlaylistManager(
             playlistIds = listOf(playlistId)
         )
         musicService.new(music)
+        mopidyManager.addMusicToPlaylist(music, playlist.name)
+        powerAmpManager.addMusicToPlaylist(music, playlist.name)
         result += "Music ${music.id} was created.\n"
         // Move final file to music folder
         val musicFolder = configurationManager.getConfiguration().musicFolder
-        File(outputFile).let { sourceFile ->
-            sourceFile.copyTo(target = File("${musicFolder}/${metadata.name}.mp3"), overwrite = true)
-            sourceFile.delete()
-        }
+        File(outputFile).moveTo("${musicFolder}/${metadata.name}.${music.fileExtension}", true)
         return result
+    }
+
+    fun archiveMusic() {
+        // TODO
     }
 }

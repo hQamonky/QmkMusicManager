@@ -2,7 +2,8 @@ package com.qmk.musicmanager.model
 
 data class Music(
     val id: String,
-    val name: String,
+    val fileName: String,
+    val fileExtension: String = "mp3",
     val title: String,
     val artist: String,
     val uploaderId: String,

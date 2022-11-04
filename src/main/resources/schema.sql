@@ -5,7 +5,8 @@ name        text
 
 CREATE TABLE IF NOT EXISTS Music (
 id          text  PRIMARY KEY,
-name        text,
+file_name    text,
+file_extension    text,
 title       text,
 artist      text,
 uploader    text,
