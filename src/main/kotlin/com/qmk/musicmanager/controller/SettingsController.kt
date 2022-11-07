@@ -23,7 +23,7 @@ class SettingsController(private val service: SettingsService) {
         service.setMusicFolder(path)
     }
 
-    @PostMapping("download-occurrence")
+    @PostMapping("/download-occurrence")
     fun postDownloadOccurrence(@RequestBody occurrence: Int) {
         service.setDownloadOccurrence(occurrence)
     }

@@ -5,6 +5,7 @@ Manage, through this API, a daemon that automatically downloads music from YouTu
     - Add/Remove playlists
     - Edit playlists
     - Trigger playlist download
+    - Generate playlist files for Mopidy and PowerAmp
 - Set interval time between each automatic download
 - Handle newly downloaded music :
     - See list of downloaded music "not seen yet"
@@ -17,22 +18,21 @@ Manage, through this API, a daemon that automatically downloads music from YouTu
     - Set title/artist default format to apply for new channels
 ## List of endpoints
 - `/`
-- `/configure`
-- `/configuration/user`
-- `/configuration/naming-format`
+- `/settings`
+- `/settings/music-folder`
+- `/settings/download-occurrence`
 - `/factory-reset`
-- `/auto-download`
 - `/youtube-dl/update`
 - `/playlists`
 - `/playlists/download`
-- `/playlist/<identifier>`
-- `/playlist/<identifier>/download`
+- `/playlists/<identifier>`
+- `/playlists/<identifier>/download`
 - `/music/new`
 - `/music/<identifier>`
 - `/naming-rules`
-- `/naming-rule/<identifier>`
-- `/channels`
-- `/channel/<identifier>`
+- `/naming-rules/<identifier>`
+- `/uploaders`
+- `/uploaders/<identifier>`
 ## Usage
 All requests will have the `Application/json` header.  
 All `POST` requests will take a `json` as a body.  
@@ -46,59 +46,47 @@ All responses will have the form :
 Subsequent response definitions will only detail the expected value of the `data field`.  
 Also, they will only define the responses of `GET` request. Post requests usually return the full json object that was modified.  
 
-## `/configuration`
+## `/settings`
 ### `GET`  
 Get the configuration file.  
 *Response*  
 ```json
 {
-    "version": "0.1", 
-    "interval": "12",
-    "use_custom_user": "false",
-    "naming_format": {
-        "separator": " - ", 
-        "artist_before_title": "true"
-    }
+    "musicFolder": "~/Music",
+    "downloadOccurrence": 1
 }
 ```
-
-## `/configuration/user`
 ### `POST`  
-Set if you want the downloaded files to be owned by the user that was set during the docker build.  
-If you set as false, the files will be owned by root, but will be readable and writable by everyone.  
+Set the configuration.  
 *Body*  
 ```json
 {
-    "use_custom_user": "true"
+    "musicFolder": "~/Music",
+    "downloadOccurrence": 1
 }
 ```
 
-## `/configuration/naming-format`
+## `/settings/music-folder`
 ### `POST`  
-Set the default naming format for songs. The naming format is uses to determine the title and artist by using the name of the video.  
+Set the path to the music library.  
 *Body*  
 ```json
-{
-    "separator": " - ", 
-    "artist_before_title": "true"
-}
+"~/Music"
 ```
 
-## `/factory-reset`
-### `POST`  
-Reset configuration and database to default.  
-
-## `/auto-download`
-### `POST`  
+## `/settings/download-occurrence`
+### `POST`
 Give an interval of time for when the service will automatically download all the playlists.  
 The interval is defined in hours and the default is 12. Set it at -1 to disable it.  
 The first download will occur in an amount of time equal to the "interval" value, starting from the execution of this command.  
 *Body*  
 ```json
-{
-    "interval": "12"
-}
+1
 ```
+
+## `/factory-reset`
+### `POST`  
+Reset configuration and database to default. 
 
 ## `/youtube-dl/update`
 If you get an internal server error, updating youtube-dl might be a quick fix.  
@@ -111,82 +99,78 @@ Get information on the registered playlists in the database.
 ```json
 [
     {
-        "id": "0",
-        "youtube_id": "PLCVGGn6GhhDu_4yn_9eN3xBYB4POkLBYT",
-        "name": "Best of Willy tracks",
-        "uploader": "William Herlicq",
-        "folder": "/Music/Best of WillyTracks"
+        "id": "PLCVGGn6GhhDu_4yn_9eN3xBYB4POkLBYT",
+        "name": "Best of Willi tracks",
+        "musicIds": []
     },{
-        "id": "1",
-        "youtube_id": "PLCVGGn6GhhDtHxCJcPNymXhCtyEisxERY",
+        "id": "PLCVGGn6GhhDtHxCJcPNymXhCtyEisxERY",
         "name": "Best of Chill Music",
-        "uploader": "William Herlicq",
-        "folder": "/Music/Chill"
+        "musicIds": []
     }
 ]
 ```
 ### `POST`  
 Register a playlist in the database.  
-**Note that the root of the folder (here /Music) must match with the one that was configured during the docker run command of the setup!**  
 *Body*  
 ```json
 {
-    "url": "https://www.youtube.com/playlist?list=PLCVGGn6GhhDu_4yn_9eN3xBYB4POkLBYT",
     "name": "Best of Willy tracks",
-    "folder": "/Music/Best of WillyTracks"
+    "url": "https://www.youtube.com/playlist?list=PLCVGGn6GhhDu_4yn_9eN3xBYB4POkLBYT"
 }
 ```
 
 ## `/playlists/download`
 *Response*  
-### `POST`  
+### `GET`  
 Trigger download of all registered playlists.   
 
-## `/playlist/<identifier>`
+## `/playlists/<identifier>`
+### `GET`
+Get specified playlist
 ### `POST`  
 Edit a specified playlist.  
 *Body*  
 ```json
 {
-    "url": "https://www.youtube.com/playlist?list=PLCVGGn6GhhDu_4yn_9eN3xBYB4POkLBYT",
     "name": "Best of Willy tracks",
-    "folder": "/Music/Best of WillyTracks"
+    "url": "https://www.youtube.com/playlist?list=PLCVGGn6GhhDu_4yn_9eN3xBYB4POkLBYT"
 }
 ```
 ### `DELETE`
 Remove a registered playlist from the database. Downloaded files from this playlist are not touched.  
-If you re-register a removed playlist, it will re-download all the music (including those that were already downloaded).   
+If you re-register a removed playlist, it will re-download all the music (excluding those that were already downloaded).   
 
-## `/playlist/<identifier>/download`
-*Response*  
-### `POST`  
+## `/playlists/<identifier>/download`  
+### `GET`  
 Trigger download of the specified playlist.  
 
 ## `/music/new`
 ### `GET`  
-Returns list of "not seen" music (where the "new" parameter equals "true").  
+Returns list of "not seen" music (where the "isNew" parameter equals "true").  
 *Response*  
 ```json
 [
     {
         "id": "ftshNCG_RPk",
-        "file_name": "Bad Computer - Riddle [Monstercat Release]",
+        "fileName": "Bad Computer - Riddle [Monstercat Release]",
+        "fileExtension": "mp3",
         "title": "Riddle",
         "artist": "Bad Computer",
-        "channel": "Monstercat: Uncaged",
-        "upload_date": "13/04/2020",
-        "folders": ["/Music/Best of WillyTracks/"],
-        "new": "true"
+        "uploaderId": "Monstercat: Uncaged",
+        "uploadDate": "13/04/2020",
+        "isNew": "true",
+        "playlistIds": ["PLCVGGn6GhhDu_4yn_9eN3xBYB4POkLBYT"]
     },
     {
         "id": "5S5zfXao-h0",
-        "file_name": "Netrum - Colorblind (feat. Halvorsen) [NCS Release]",
+        "fileName": "Netrum - Colorblind (feat. Halvorsen) [NCS Release]",
+        "fileExtension": "mp3",
         "title": "Colorblind (feat. Halvorsen)",
         "artist": "Netrum",
-        "channel": "NoCopyrightSounds",
-        "upload_date": "14/04/2020",
-        "folder": "/Music/Best of WillyTracks/",
-        "new": "true"
+        "uploaderId": "NoCopyrightSounds",
+        "uploadDate": "14/04/2020",
+        "isNew": "true",
+        "playlistIds": ["PLCVGGn6GhhDu_4yn_9eN3xBYB4POkLBYT"]
     }
 ]
 ```
@@ -194,13 +178,12 @@ Returns list of "not seen" music (where the "new" parameter equals "true").
 ## `/music/<identifier>`
 ### `POST`  
 - Rename a musics title and artist.  
-Not hat every parameter is required.  
 *Body*  
 ```json
 {
     "title": "Riddle",
     "artist": "Bad Computer",
-    "new": "false"
+    "isNew": "false"
 }
 ```
 
@@ -245,7 +228,7 @@ Add a new rule with the following parameters :
 }
 ```
 
-## `/naming-rule/<identifier>`
+## `/naming-rules/<identifier>`
 ### `GET`  
 Get the specified rule.
 *Response*  
@@ -269,48 +252,44 @@ Edit the specified rule.
 ### `DELETE`
 Delete the specified rule.  
 
-## `/channels`
+## `/uploaders`
 ### `GET`  
 Get the list of channels registered in the database. For each channel there is a naming format that applies.  
-The first time that a video is downloaded from a channel, the channel is automatically registered with the default naming rule defined in the configuration file (accessible and manageable through the /configuration.naming-rule endpoint).  
+The first time that a video is downloaded from a channel, the channel is automatically registered.  
 *Response*  
 ```json
 [
     {
-        "channel": "Monstercat: Uncaged",
-        "separator": " - ",
-        "artist_before_title": "true"
+        "id": "sdfkjgnsower",
+        "name": "Monstercat: Uncaged",
+        "namingFormat": {
+            "separator": " - ",
+            "artist_before_title": "false"
+        }
     },
     {
-        "channel": "Pegboard Nerds",
-        "separator": " - ",
-        "artist_before_title": "false"
+        "id": "pmwsfbvhgbvsfdgsdoq",
+        "name": "Pegboard Nerds",
+        "namingFormat": {
+            "separator": " - ",
+            "artist_before_title": "false"
+        }
     }
 ]
 ```
-### `POST`
-*Body*  
-- List of rules with the following parameters :
-    - `channel` *(rule applies only if video comes from specified YT channel)*
-    - `separator` *(string that separates title and artist)*
-    - `artist_before_title` *(`true` if artist name is before the title name in video name. Otherwise `false`)*
-```json
-{
-    "channel": "Monstercat: Uncaged",
-    "separator": " - ",
-    "artist_before_title": "true"
-}
-```
 
-## `/channel/<identifier>`
+## `/uploaders/<identifier>`
 ### `GET`  
 Get the specified channel.  
 *Response*  
 ```json
 {
-    "channel": "Monstercat: Uncaged",
-    "separator": " - ",
-    "artist_before_title": "true"
+    "id": "sdfkjgnsower",
+    "name": "Monstercat: Uncaged",
+    "namingFormat": {
+        "separator": " - ",
+        "artist_before_title": "false"
+    }
 }
 ```
 ### `POST`
@@ -322,6 +301,4 @@ Edit the naming format for the specified channel.
     "artist_before_title": "true"
 }
 ```
-### `DELETE`
-Remove a channel from the database.  
 
