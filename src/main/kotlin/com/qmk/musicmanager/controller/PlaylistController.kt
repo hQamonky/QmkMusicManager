@@ -10,6 +10,7 @@ import com.qmk.musicmanager.service.MusicService
 import com.qmk.musicmanager.service.NamingRuleService
 import com.qmk.musicmanager.service.UploaderService
 import com.qmk.musicmanager.manager.YoutubeManager
+import com.qmk.musicmanager.model.DownloadResult
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import java.util.concurrent.Executors
@@ -47,12 +48,12 @@ class PlaylistController(
     fun getPlaylists() = service.find()
 
     @GetMapping("/download")
-    fun downloadPlaylists(): String {
+    fun downloadPlaylists(): List<DownloadResult> {
         return manager.download()
     }
 
     @GetMapping("/archive-music")
-    fun archiveMusic(): String {
+    fun archiveMusic(): List<String> {
         return manager.archiveMusic()
     }
 
@@ -79,7 +80,7 @@ class PlaylistController(
     }
 
     @GetMapping("/{id}/download")
-    fun downloadPlaylist(@PathVariable id: String) {
-        manager.download(id)
+    fun downloadPlaylist(@PathVariable id: String): DownloadResult {
+        return manager.download(id) ?: DownloadResult(id)
     }
 }

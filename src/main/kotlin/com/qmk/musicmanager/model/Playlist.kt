@@ -20,3 +20,9 @@ data class PlaylistInfo(
 data class Entry(
     val id: String
 )
+
+data class DownloadResult(
+    val playlist: String,
+    val skipped: MutableList<String> = mutableListOf(),
+    val downloaded: MutableList<String> = mutableListOf()
+)

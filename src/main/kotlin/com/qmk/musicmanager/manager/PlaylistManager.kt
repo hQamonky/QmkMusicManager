@@ -46,21 +46,26 @@ class PlaylistManager(
         playlistService.save(playlist)
     }
 
-    fun download(): String {
+    fun download(): List<DownloadResult> {
         val playlists = playlistService.find()
-        if (playlists.isEmpty()) return "Error : no playlists found."
-        var result = "${playlists.size} found.\n"
+        if (playlists.isEmpty()) println("Error : no playlists found.")
+        println("${playlists.size} found.")
+        val result = mutableListOf<DownloadResult>()
         playlists.forEach { playlist ->
-            result += "Start process for ${playlist.name} :\n"
-            result += download(playlist.id)
+            println("Start process for ${playlist.name} :")
+            download(playlist.id)?.let { result.add(it) }
         }
         return result
     }
 
-    fun download(playlistId: String): String {
-        var result = ""
-        val playlist = playlistService.findById(playlistId) ?: return "Error : playlist not found."
-        result += "Downloading ${playlist.name}...\n"
+    fun download(playlistId: String): DownloadResult? {
+        val playlist = playlistService.findById(playlistId)
+        if (playlist == null) {
+            println("Error : playlist not found.")
+            return null
+        }
+        println("Downloading ${playlist.name}...")
+        val result = DownloadResult(playlist = playlist.name)
         val gson = Gson()
         gson.fromJson(
             youtubeManager.getPlaylistInfo("${youtubeManager.playlistUrl}${playlist.id}"),
@@ -68,26 +73,28 @@ class PlaylistManager(
         ).entries
             .map { it.id }
             .forEach { musicId ->
-                val music = musicService.findById(musicId)
+                var music = musicService.findById(musicId)
                 if (music != null) {
-                    result += "Not downloading ${music.fileName} because is has already been done.\n"
+                    println("Not downloading ${music.fileName} because is has already been done.")
+                    result.skipped.add(music.fileName)
                     if (!music.playlistIds.contains(playlistId)) {
-                        result += "Adding ${playlist.name} to music.\n"
+                        println("Adding ${playlist.name} to music.")
                         musicService.newPlaylist(playlistId, musicId)
                     } else {
-                        result += "${music.fileName} is already in ${playlist.name}.\n"
+                        println("${music.fileName} is already in ${playlist.name}.")
                     }
                 } else {
-                    result += downloadAndProcessMusic(musicId, playlist)
+                    music = downloadAndProcessMusic(musicId, playlist)
+                    result.downloaded.add(music.fileName)
                 }
             }
         return result
     }
 
-    private fun downloadAndProcessMusic(videoId: String, playlist: Playlist): String {
+    private fun downloadAndProcessMusic(videoId: String, playlist: Playlist): Music {
         val playlistId = playlist.id
         // Get video info
-        var result = "Getting info for $videoId...\n"
+        println("Getting info for $videoId...")
         val musicInfo = Gson().fromJson(youtubeManager.getVideoInfo(videoId), MusicInfo::class.java)
         // Create uploader if not exist
         var uploader = uploaderService.findById(musicInfo.channel_id)
@@ -96,18 +103,18 @@ class PlaylistManager(
             uploaderService.new(uploader)
         }
         // Download music
-        result += "Downloading ${musicInfo.title}...\n"
+        println("Downloading ${musicInfo.title}...")
         val outputFile = "./workDir/tmp.mp3"
         val downloadResult = youtubeManager.downloadMusic(musicInfo.id)
-        result += "$downloadResult\n"
+        println("$downloadResult")
         // Set metadata
-        result += "Setting ID3 tags...\n"
+        println("Setting ID3 tags...")
         val metadata = id3Manager.getMetadata(musicInfo, uploader.namingFormat, namingRuleService.find())
-        result += "title = ${metadata.title}\n" +
+        println("title = ${metadata.title}\n" +
                 "artist = ${metadata.artist}\n" +
                 "album = ${metadata.album}\n" +
                 "year = ${metadata.year}\n" +
-                "comment = ${metadata.comment}\n"
+                "comment = ${metadata.comment}")
         id3Manager.setMetadata(File(outputFile), metadata)
         // Insert music in database
         val music = Music(
@@ -122,14 +129,14 @@ class PlaylistManager(
         musicService.new(music)
         mopidyManager.addMusicToPlaylist(music, playlist.name)
         powerAmpManager.addMusicToPlaylist(music, playlist.name)
-        result += "Music ${music.id} was created.\n"
+        println("Music ${music.id} was created.")
         // Move final file to music folder
         val musicFolder = configurationManager.getConfiguration().musicFolder
         File(outputFile).moveTo("${musicFolder}/${metadata.name}.${music.fileExtension}", true)
-        return result
+        return music
     }
 
-    fun archiveMusic(): String {
+    fun archiveMusic(): List<String> {
         val musicFolder = configurationManager.getConfiguration().musicFolder
         val archivePlaylist = mopidyManager.archivePlaylistName
         val archiveFolder = File("$musicFolder/$archivePlaylist")
@@ -139,10 +146,12 @@ class PlaylistManager(
         powerAmpManager.convertMopidyPlaylist(archivePlaylist)
         mopidyManager.archiveMusic()
         powerAmpManager.archiveMusic()
+        val result = mutableListOf<String>()
         musicToArchive.forEach {
             val music = File(it)
             music.moveTo("${archiveFolder.path}/${music.name}")
+            result.add(music.name)
         }
-        return "Archived music."
+        return result
     }
 }
