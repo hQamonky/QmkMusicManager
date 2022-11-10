@@ -27,4 +27,9 @@ class SettingsController(private val service: SettingsService) {
     fun postDownloadOccurrence(@RequestBody occurrence: Int) {
         service.setDownloadOccurrence(occurrence)
     }
+
+    @PostMapping("/auto-download")
+    fun postAutoDownload(@RequestBody autoDownload: Boolean) {
+        service.setAutoDownload(autoDownload)
+    }
 }

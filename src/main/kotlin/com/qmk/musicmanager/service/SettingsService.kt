@@ -25,4 +25,8 @@ class SettingsService(
     fun setDownloadOccurrence(occurrence: Int) {
         manager.setDownloadOccurrence(occurrence)
     }
+
+    fun setAutoDownload(autoDownload: Boolean) {
+        manager.setAutoDownload(autoDownload)
+    }
 }

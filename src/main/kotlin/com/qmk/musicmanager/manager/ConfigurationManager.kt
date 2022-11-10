@@ -30,4 +30,8 @@ class ConfigurationManager(
     fun setDownloadOccurrence(occurrence: Int) {
         setConfiguration(getConfiguration().copy(downloadOccurrence = occurrence))
     }
+
+    fun setAutoDownload(autoDownload: Boolean) {
+        setConfiguration(getConfiguration().copy(autoDownload = autoDownload))
+    }
 }

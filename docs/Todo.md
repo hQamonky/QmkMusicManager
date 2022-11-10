@@ -1,5 +1,4 @@
 # Version 1.0
-- Implement periodic downloading
 - Make UI
 - Handle errors and display error messages
 - Write tests
