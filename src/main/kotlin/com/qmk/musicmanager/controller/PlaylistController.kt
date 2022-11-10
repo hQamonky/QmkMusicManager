@@ -8,7 +8,7 @@ import com.qmk.musicmanager.model.PlaylistEntry
 import com.qmk.musicmanager.service.MusicService
 import com.qmk.musicmanager.service.NamingRuleService
 import com.qmk.musicmanager.service.UploaderService
-import com.qmk.musicmanager.youtube.YoutubeController
+import com.qmk.musicmanager.manager.YoutubeManager
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
@@ -20,13 +20,13 @@ class PlaylistController(
     uploaderService: UploaderService,
     namingRuleService: NamingRuleService
 ) {
-    private final val youtubeController = YoutubeController()
+    private final val youtubeManager = YoutubeManager()
     val manager = PlaylistManager(
         service,
         musicService,
         uploaderService,
         namingRuleService,
-        youtubeController
+        youtubeManager
     )
 
     @GetMapping

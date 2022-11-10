@@ -7,7 +7,6 @@ import com.qmk.musicmanager.service.MusicService
 import com.qmk.musicmanager.service.NamingRuleService
 import com.qmk.musicmanager.service.PlaylistService
 import com.qmk.musicmanager.service.UploaderService
-import com.qmk.musicmanager.youtube.YoutubeController
 import java.io.File
 
 
@@ -16,7 +15,7 @@ class PlaylistManager(
     private val musicService: MusicService,
     private val uploaderService: UploaderService,
     private val namingRuleService: NamingRuleService,
-    private val youtubeController: YoutubeController,
+    private val youtubeManager: YoutubeManager,
     private val configurationManager: ConfigurationManager = ConfigurationManager(),
     private val id3Manager: Id3Manager = Id3Manager(),
     private val mopidyManager: MopidyManager = MopidyManager(),
@@ -24,7 +23,7 @@ class PlaylistManager(
 ) {
     fun create(name: String, url: String): Playlist {
         val gson = Gson()
-        val playlistInfo = gson.fromJson(youtubeController.getPlaylistInfo(url), PlaylistInfo::class.java)
+        val playlistInfo = gson.fromJson(youtubeManager.getPlaylistInfo(url), PlaylistInfo::class.java)
         val playlist = Playlist(
             id = playlistInfo.id,
             name = name
@@ -64,7 +63,7 @@ class PlaylistManager(
         result += "Downloading ${playlist.name}...\n"
         val gson = Gson()
         gson.fromJson(
-            youtubeController.getPlaylistInfo("${youtubeController.playlistUrl}${playlist.id}"),
+            youtubeManager.getPlaylistInfo("${youtubeManager.playlistUrl}${playlist.id}"),
             PlaylistInfo::class.java
         ).entries
             .map { it.id }
@@ -89,7 +88,7 @@ class PlaylistManager(
         val playlistId = playlist.id
         // Get video info
         var result = "Getting info for $videoId...\n"
-        val musicInfo = Gson().fromJson(youtubeController.getVideoInfo(videoId), MusicInfo::class.java)
+        val musicInfo = Gson().fromJson(youtubeManager.getVideoInfo(videoId), MusicInfo::class.java)
         // Create uploader if not exist
         var uploader = uploaderService.findById(musicInfo.channel_id)
         if (uploader == null) {
@@ -99,7 +98,7 @@ class PlaylistManager(
         // Download music
         result += "Downloading ${musicInfo.title}...\n"
         val outputFile = "./workDir/tmp.mp3"
-        val downloadResult = youtubeController.downloadMusic(musicInfo.id)
+        val downloadResult = youtubeManager.downloadMusic(musicInfo.id)
         result += "$downloadResult\n"
         // Set metadata
         result += "Setting ID3 tags...\n"

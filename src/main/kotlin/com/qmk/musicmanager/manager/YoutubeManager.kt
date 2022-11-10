@@ -1,9 +1,9 @@
-package com.qmk.musicmanager.youtube
+package com.qmk.musicmanager.manager
 
 import com.qmk.musicmanager.extension.runCommand
 import com.qmk.musicmanager.model.Playlist
 
-class YoutubeController(private val youtubeDl: String = "youtube-dl") {
+class YoutubeManager(private val youtubeDl: String = "youtube-dl") {
 
     private val videoUrl = "https://www.youtube.com/watch?v="
     val playlistUrl = "https://www.youtube.com/playlist?list="

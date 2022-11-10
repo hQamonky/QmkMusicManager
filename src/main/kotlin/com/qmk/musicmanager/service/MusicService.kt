@@ -34,6 +34,23 @@ class MusicService(val db: JdbcTemplate) {
         }
     }
 
+    fun add(music: Music) {
+        insert(
+            db,
+            music.id,
+            music.fileName,
+            music.fileExtension,
+            music.title,
+            music.artist,
+            music.uploaderId,
+            music.uploadDate,
+            music.isNew
+        )
+        music.playlistIds.forEach {
+            insertPlaylist(db, UUID.randomUUID().toString(), it, music.id)
+        }
+    }
+
     fun save(music: Music) {
         update(db, music.id, music.title, music.artist, music.isNew)
     }
@@ -104,6 +121,19 @@ class MusicService(val db: JdbcTemplate) {
         uploadDate: String
     ): Int = db.update("INSERT INTO Music VALUES (?, ?, ?, ?, ?, ?, ?, 'true')",
         identifier, fileName, fileExtension, title, artist, uploader, uploadDate)
+
+    private fun insert(
+        db: JdbcTemplate,
+        identifier: String,
+        fileName: String,
+        fileExtension: String,
+        title: String,
+        artist: String,
+        uploader: String,
+        uploadDate: String,
+        isNew: Boolean
+    ): Int = db.update("INSERT INTO Music VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        identifier, fileName, fileExtension, title, artist, uploader, uploadDate, isNew)
 
     private fun update(db: JdbcTemplate, identifier: String, title: String, artist: String, isNew: Boolean): Int =
         db.update(

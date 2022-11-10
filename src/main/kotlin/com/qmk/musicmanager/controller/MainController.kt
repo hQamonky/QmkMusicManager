@@ -1,16 +1,15 @@
 package com.qmk.musicmanager.controller
 
-import com.qmk.musicmanager.exception.NamingRuleNotFoundException
-import com.qmk.musicmanager.model.NamingRule
-import org.springframework.http.HttpStatus
+import com.qmk.musicmanager.manager.DataManager
+import com.qmk.musicmanager.service.DataService
+import com.qmk.musicmanager.service.MusicService
+import com.qmk.musicmanager.service.NamingRuleService
+import com.qmk.musicmanager.manager.YoutubeManager
 import org.springframework.web.bind.annotation.*
 
 
 /**
  * Tutorials research
- * - Create a database : https://kotlinlang.org/docs/jvm-spring-boot-restful.html#before-you-start
- * - Get and set ID3 tags : https://stackoverflow.com/questions/9707572/how-to-get-and-set-change-id3-tag-metadata-of-audio-files
- * - Run a terminal command : https://stackoverflow.com/questions/35421699/how-to-invoke-external-command-from-within-kotlin-code
  * - Run on raspberry pi : https://pete32.medium.com/kotlin-or-java-on-a-raspberry-pi-de092d318df9
  *      https://javalin.io/2020/09/05/javalin-raspberry-pi-example.html
  *
@@ -18,15 +17,24 @@ import org.springframework.web.bind.annotation.*
 
 
 @RestController
-class MainController {
+class MainController(
+    private val dataService: DataService,
+    musicService: MusicService,
+    namingRuleService: NamingRuleService
+) {
+    val dataManager = DataManager(musicService, namingRuleService)
+    private val youtubeManager = YoutubeManager()
 
     @GetMapping("/factory-reset")
-    fun factoryReset() {
-
+    fun factoryReset(): String {
+        dataService.emptyDatabase()
+        dataManager.addDefaultNamingRules()
+        dataManager.addFilesToDatabase()
+        return "Database reset."
     }
 
     @GetMapping("/youtube-dl/update")
-    fun updateYoutubeDl() {
-
+    fun updateYoutubeDl(): String {
+        return youtubeManager.update() ?: "null"
     }
 }
