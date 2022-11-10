@@ -3,6 +3,8 @@ package com.qmk.musicmanager.controller
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.qmk.musicmanager.manager.ConfigurationManager
+import com.qmk.musicmanager.manager.MopidyManager
 import com.qmk.musicmanager.model.Music
 import com.qmk.musicmanager.model.Playlist
 import com.qmk.musicmanager.model.PlaylistEntry
@@ -17,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.delete
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
+import java.io.File
 import java.lang.reflect.Type
 
 @SpringBootTest
@@ -27,7 +30,7 @@ internal class PlaylistControllerTest(
     @Autowired val objectMapper: ObjectMapper
 ) {
     @Test
-    fun crudTest() {
+    fun fullIntegrationTest() {
         val playlistEntry = PlaylistEntry(
             "MyPlaylist",
             "https://www.youtube.com/playlist?list=PLCVGGn6GhhDtYoqlNGqGFdg3ODeofpkLl"
@@ -144,6 +147,17 @@ internal class PlaylistControllerTest(
             }.andReturn().response.contentAsString
         val musicEmptyArray: Array<Music> = Gson().fromJson(jsonMusicEmpty, Array<Music>::class.java)
         assert(musicEmptyArray.isEmpty())
+        // Archive music
+        val mopidyManager = MopidyManager()
+        mopidyManager.addMusicToPlaylist(music, mopidyManager.archivePlaylistName)
+        mockMvc.get("/playlists/archive-music")
+            .andExpect {
+                status { isOk() }
+            }
+        val musicFolder = ConfigurationManager().getConfiguration().musicFolder
+        val musicFile = "${music.fileName}.${music.fileExtension}"
+        assert(!File("$musicFolder/$musicFile").exists())
+        assert(File("$musicFolder/${mopidyManager.archivePlaylistName}/$musicFile").exists())
         // Delete playlist
         mockMvc.delete("/playlists/PLCVGGn6GhhDtYoqlNGqGFdg3ODeofpkLl")
             .andExpect {

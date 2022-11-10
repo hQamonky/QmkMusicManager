@@ -37,6 +37,11 @@ class PlaylistController(
         return manager.download()
     }
 
+    @GetMapping("/archive-music")
+    fun archiveMusic(): String {
+        return manager.archiveMusic()
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun postPlaylists(@RequestBody entry: PlaylistEntry): Playlist? {

@@ -130,7 +130,20 @@ class PlaylistManager(
         return result
     }
 
-    fun archiveMusic() {
-        // TODO
+    fun archiveMusic(): String {
+        val musicFolder = configurationManager.getConfiguration().musicFolder
+        val archivePlaylist = mopidyManager.archivePlaylistName
+        val archiveFolder = File("$musicFolder/$archivePlaylist")
+        if (!archiveFolder.exists()) archiveFolder.mkdir()
+        val musicToArchive = mopidyManager.getMusicToArchive()
+        mopidyManager.mergePowerAmpPlaylist(archivePlaylist)
+        powerAmpManager.convertMopidyPlaylist(archivePlaylist)
+        mopidyManager.archiveMusic()
+        powerAmpManager.archiveMusic()
+        musicToArchive.forEach {
+            val music = File(it)
+            music.moveTo("${archiveFolder.path}/${music.name}")
+        }
+        return "Archived music."
     }
 }

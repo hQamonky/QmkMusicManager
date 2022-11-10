@@ -42,3 +42,4 @@ out/
 *.webp
 *.mp3
 *.jpg
+/data/configuration.json
