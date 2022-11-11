@@ -2,7 +2,7 @@
 Manage, through this API, a daemon that automatically downloads music from YouTube playlists.
 ## Features
 - Handle multiple playlists :
-    - Add/Remove playlists
+    - Add/Remove youtube playlists
     - Edit playlists
     - Trigger playlist download
     - Generate playlist files for Mopidy and PowerAmp
@@ -11,11 +11,10 @@ Manage, through this API, a daemon that automatically downloads music from YouTu
     - See list of downloaded music "not seen yet"
     - Rename music title and artist manually
     - Set new music to "seen"
-- Handle title and artist naming :
+- Handle title and artist auto naming :
     - Add/Edit/Delete rules
     - Strings replace (ex: replace " [Official Music Video]" by "")
     - Set title/artist format to apply depending on youtube channel 
-    - Set title/artist default format to apply for new channels
 ## List of endpoints
 - `/`
 - `/settings`
