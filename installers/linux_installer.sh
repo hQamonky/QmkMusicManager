@@ -44,7 +44,7 @@ mkdir -p "$workDir"
 
 echo "Fetching application..."
 git -C "$workDir" clone https://github.com/hQamonky/QmkMusicManager.git
-cp "$workDir"/QmkMusicManager/packages/musicmanager-1.0.0.jar "$installDir"/musicmanager-1.0.0.jar
+cp "$workDir"/QmkMusicManager/package/musicmanager-1.0.0.jar "$installDir"/musicmanager-1.0.0.jar
 rm -rf "$workDir"
 
 echo "Creating service..."
