@@ -2,7 +2,7 @@
 
 username=$USER
 installDir=/opt/qmk
-workDir=~/qmk-tmp-workdir
+workDir=/home/$username/qmk-tmp-workdir
 
 Help()
 {
@@ -23,7 +23,8 @@ do
     case "${flag}" in
         h) Help
           exit;;
-        u) username=${OPTARG};;
+        u) username=${OPTARG}
+          workDir=/home/$username/qmk-tmp-workdir;;
         d) installDir=${OPTARG};;
         w) workDir=${OPTARG};;
         *) echo "Invalid option."
@@ -43,7 +44,7 @@ mkdir -p "$workDir"
 
 echo "Fetching application..."
 git -C "$workDir" clone https://github.com/hQamonky/QmkMusicManager.git
-cp "$workDir"/musicmanager/packages/musicmanager-1.0.0.jar "$installDir"/musicmanager-1.0.0.jar
+cp "$workDir"/QmkMusicManager/packages/musicmanager-1.0.0.jar "$installDir"/musicmanager-1.0.0.jar
 rm -rf "$workDir"
 
 echo "Creating service..."
@@ -53,7 +54,7 @@ echo "Description=Download and manage music from youtube." >> $serviceFile
 echo "After=network.target" >> $serviceFile
 echo >> $serviceFile
 echo "[Service]" >> $serviceFile
-echo "User=$USER" >> $serviceFile
+echo "User=$username" >> $serviceFile
 echo "WorkingDirectory=$installDir" >> $serviceFile
 echo "ExecStart=java -jar $installDir/musicmanager-1.0.0.jar" >> $serviceFile
 echo "Restart=always" >> $serviceFile
