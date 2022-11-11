@@ -56,7 +56,7 @@ echo "WantedBy=multi-user.target" >> $serviceFile
 
 systemctl daemon-reload
 systemctl enable qmk_music_manager.service
-systemctl restart qmk_music_manager.service
+systemctl start qmk_music_manager.service
 
 echo "Installation finished."
 
