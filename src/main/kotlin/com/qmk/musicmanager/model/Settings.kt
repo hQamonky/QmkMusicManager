@@ -4,7 +4,7 @@ import com.google.gson.Gson
 
 data class Settings(
     val downloadOccurrence: Int = 1,
-    val musicFolder: String = "Music",
+    val musicFolder: String = "./Music",
     val autoDownload: Boolean = true
 ) {
     fun toJson(): String {
