@@ -33,8 +33,10 @@ done
 echo "Service will run under $username user.";
 echo "Will install package to $installDir.";
 
-echo "Creating installation directory..."
+echo "Creating necessary directories..."
 mkdir -p "$installDir"
+mkdir -p /home/"$username"/.qmkmusicmanager
+chown "$username" /home/"$username"/.qmkmusicmanager
 
 echo "Fetching application..."
 wget -P "$installDir" https://raw.githubusercontent.com/hQamonky/QmkMusicManager/master/package/musicmanager-1.0.1.jar
@@ -42,12 +44,12 @@ wget -P "$installDir" https://raw.githubusercontent.com/hQamonky/QmkMusicManager
 echo "Creating service..."
 serviceFile=/etc/systemd/system/qmk_music_manager.service
 echo "[Unit]" > $serviceFile
-echo "Description=Download and manage music from youtube." >> $serviceFile
+echo "Description=QMK Music Manager" >> $serviceFile
 echo "After=network.target" >> $serviceFile
 echo >> $serviceFile
 echo "[Service]" >> $serviceFile
 echo "User=$username" >> $serviceFile
-echo "WorkingDirectory=$installDir" >> $serviceFile
+echo "WorkingDirectory=/home/$username/.qmkmusicmanager" >> $serviceFile
 echo "ExecStart=java -jar $installDir/musicmanager-1.0.1.jar" >> $serviceFile
 echo "Restart=always" >> $serviceFile
 echo >> $serviceFile
