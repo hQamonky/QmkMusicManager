@@ -1,4 +1,5 @@
 # Version 1.1
+- Implement Swagger
 - Make UI
 - Handle errors and display error messages
 - Write more tests
