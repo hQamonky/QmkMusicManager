@@ -1,8 +1,7 @@
 # QmkMusicManager
-QMK Music Manager is a REST API to download and manage music.  
+QMK Music Manager is a REST API to download and manage music. It is a Kotlin application packaged in a jar file.  
 [Here](https://github.com/hQamonky/QmkMusicManager/blob/master/docs/Api%20User%20Guide.md)
-is the API reference and list of features.  
-It is a Kotlin application packaged in a jar file.
+is the API reference and list of features. Once the server is up and running, you can see the documentation and use the API through *serverip*:*port*/swagger-ui/index.html.
 ## Requirements
 - You need to have java 11 installed in order to run the application.  
 - You also need to have [youtube-dl](https://youtube-dl.org/) installed.  
