@@ -1,5 +1,4 @@
 # Version 1.1
-- Make a docker image
 - Handle return codes correctly and display error messages
 - Complete Swagger documentation
 - Write more tests
