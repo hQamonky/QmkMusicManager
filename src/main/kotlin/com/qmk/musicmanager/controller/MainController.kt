@@ -5,16 +5,10 @@ import com.qmk.musicmanager.manager.YoutubeManager
 import com.qmk.musicmanager.service.DataService
 import com.qmk.musicmanager.service.MusicService
 import com.qmk.musicmanager.service.NamingRuleService
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.springframework.web.bind.annotation.*
-
-
-/**
- * Tutorials research
- * - Run on raspberry pi : https://pete32.medium.com/kotlin-or-java-on-a-raspberry-pi-de092d318df9
- *      https://javalin.io/2020/09/05/javalin-raspberry-pi-example.html
- *
- */
-
 
 @RestController
 class MainController(
@@ -25,7 +19,13 @@ class MainController(
     val dataManager = DataManager(musicService, namingRuleService)
     private val youtubeManager = YoutubeManager()
 
-    @GetMapping("/factory-reset")
+    @Operation(summary = "Reset data to factory.", description = "Returns 200 if successful")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Successful Operation"),
+        ]
+    )
+    @PostMapping("/factory-reset")
     fun factoryReset(): String {
         dataService.emptyDatabase()
         dataManager.addDefaultNamingRules()
@@ -33,7 +33,13 @@ class MainController(
         return "Database reset."
     }
 
-    @GetMapping("/youtube-dl/update")
+    @Operation(summary = "Update youtube-dl on the server.", description = "Returns the logs from the command line.")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "Logs"),
+        ]
+    )
+    @PostMapping("/youtube-dl/update")
     fun updateYoutubeDl(): String {
         return youtubeManager.update() ?: "null"
     }

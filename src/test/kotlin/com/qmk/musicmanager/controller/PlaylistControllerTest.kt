@@ -86,12 +86,12 @@ internal class PlaylistControllerTest(
                 jsonPath("$.name") { value("New playlist name") }
             }
         // Download playlist
-        mockMvc.get("/playlists/PLCVGGn6GhhDtYoqlNGqGFdg3ODeofpkLl/download")
+        mockMvc.post("/playlists/PLCVGGn6GhhDtYoqlNGqGFdg3ODeofpkLl/download")
             .andExpect {
                 status { isOk() }
             }
         // Download playlists (already downloaded music should not download again)
-        mockMvc.get("/playlists/download")
+        mockMvc.post("/playlists/download")
             .andExpect {
                 status { isOk() }
             }
@@ -150,7 +150,7 @@ internal class PlaylistControllerTest(
         // Archive music
         val mopidyManager = MopidyManager()
         mopidyManager.addMusicToPlaylist(music, mopidyManager.archivePlaylistName)
-        mockMvc.get("/playlists/archive-music")
+        mockMvc.post("/playlists/archive-music")
             .andExpect {
                 status { isOk() }
             }
