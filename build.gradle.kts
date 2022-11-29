@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "com.qmk"
-version = "1.0.1"
+version = "1.0.2"
 java.sourceCompatibility = JavaVersion.VERSION_11
 
 repositories {
@@ -27,6 +27,11 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 	runtimeOnly("com.h2database:h2")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+	// Swagger
+	implementation("org.springdoc:springdoc-openapi-data-rest:1.6.13")
+	implementation("org.springdoc:springdoc-openapi-ui:1.6.13")
+	implementation("org.springdoc:springdoc-openapi-kotlin:1.6.13")
 }
 
 tasks.withType<KotlinCompile> {

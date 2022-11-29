@@ -61,7 +61,7 @@ internal class MainControllerTest(
                 status { isOk() }
             }
         // Factory reset
-        mockMvc.get("/factory-reset")
+        mockMvc.post("/factory-reset")
             .andExpect {
                 status { isOk() }
             }
