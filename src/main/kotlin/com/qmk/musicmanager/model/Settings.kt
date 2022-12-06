@@ -7,11 +7,11 @@ import io.swagger.v3.oas.annotations.media.Schema
 data class Settings(
     @field:Schema(
         description = "The interval of time (in minutes) at which playlists are automatically downloaded. Has no effect if autoDownload is set to false.",
-        example = "1",
+        example = "60",
         type = "Int",
         minimum = "1"
     )
-    val downloadOccurrence: Int = 1,
+    val downloadOccurrence: Int = 60,
     @field:Schema(
         description = "The path of the music folder on the server.",
         example = "/home/qmk/Music",
