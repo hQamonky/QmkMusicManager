@@ -1,8 +1,9 @@
 FROM ubuntu:latest
 
 RUN apt update
-RUN apt install -y openjdk-11-jdk
-RUN apt install -y youtube-dl
+RUN apt upgrade
+RUN apt install -y openjdk-11-jdk python3-pip
+RUN pip install --upgrade youtube_dl
 
 WORKDIR /usr/src/app
 
