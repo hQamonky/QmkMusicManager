@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 @Schema(description = "Model for server settings.")
 data class Settings(
     @field:Schema(
-        description = "The interval of time (in hours) at which playlists are automatically downloaded. Has no effect if autoDownload is set to false.",
+        description = "The interval of time (in minutes) at which playlists are automatically downloaded. Has no effect if autoDownload is set to false.",
         example = "1",
         type = "Int",
         minimum = "1"
