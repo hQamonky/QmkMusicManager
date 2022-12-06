@@ -4,7 +4,8 @@ QMK Music Manager is a REST API to download and manage music. It is a Kotlin app
 is the API reference and list of features. Once the server is up and running, you can see the documentation and use the API through *serverip*:*port*/swagger-ui/index.html.
 ## Requirements
 - You need to have java 11 installed in order to run the application.  
-- You also need to have [youtube-dl](https://youtube-dl.org/) installed.  
+- You also need to have [youtube-dl](https://youtube-dl.org/) installed. It is recommended to install youtube-dl via pip.  
+- youtube-dl does not work without Python, so you will need that as well.
 
 Alternatively you can create a docker image and run it in a container (the container will need java 11 and youtube-dl installed).
 You can use the Dockerfile and docker-compose.yml from this project.
