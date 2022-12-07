@@ -24,3 +24,14 @@ fun String.applyNamingRules(namingRules: List<NamingRule>): String {
     }
     return formattedText
 }
+
+fun String.toAuthorizedFileName(): String {
+    var formattedText = this
+    val forbiddenChars = listOf(
+        "/", ":" , "*", "\\", "|", "#", "<", ">", "&", "", "{", "}", "?", "$", "!", "`", "'", "=", "\"", "@"
+    )
+    forbiddenChars.forEach { char ->
+        formattedText = formattedText.replace(char, "")
+    }
+    return formattedText
+}

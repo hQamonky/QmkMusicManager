@@ -116,7 +116,6 @@ class PlaylistManager(
                 "year = ${metadata.year}\n" +
                 "comment = ${metadata.comment}")
         id3Manager.setMetadata(File(outputFile), metadata)
-        // Insert music in database
         val music = Music(
             id = musicInfo.id,
             fileName = metadata.name,
@@ -126,13 +125,15 @@ class PlaylistManager(
             uploadDate = musicInfo.upload_date,
             playlistIds = listOf(playlistId)
         )
-        musicService.new(music)
-        mopidyManager.addMusicToPlaylist(music, playlist.name)
-        powerAmpManager.addMusicToPlaylist(music, playlist.name)
-        println("Music ${music.id} was created.")
         // Move final file to music folder
         val musicFolder = configurationManager.getConfiguration().musicFolder
         File(outputFile).moveTo("${musicFolder}/${metadata.name}.${music.fileExtension}", true)
+        // Insert music in database
+        musicService.new(music)
+        // Insert music in playlist files
+        mopidyManager.addMusicToPlaylist(music, playlist.name)
+        powerAmpManager.addMusicToPlaylist(music, playlist.name)
+        println("Music ${music.id} was created.")
         return music
     }
 

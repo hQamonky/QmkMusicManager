@@ -1,6 +1,7 @@
 package com.qmk.musicmanager.manager
 
 import com.qmk.musicmanager.extension.applyNamingRules
+import com.qmk.musicmanager.extension.toAuthorizedFileName
 import com.qmk.musicmanager.model.Metadata
 import com.qmk.musicmanager.model.MusicInfo
 import com.qmk.musicmanager.model.NamingFormat
@@ -12,12 +13,12 @@ import java.io.File
 
 class Id3Manager {
     fun getMetadata(videoInfo: MusicInfo, namingFormat: NamingFormat, namingRules: List<NamingRule>): Metadata {
-        val name = videoInfo.title.applyNamingRules(namingRules)
-        val splitTitle = name.split(namingFormat.separator)
+        val formattedTitle = videoInfo.title.applyNamingRules(namingRules)
+        val splitTitle = formattedTitle.split(namingFormat.separator)
         val title = if (splitTitle.size >= 2) {
             if (namingFormat.artist_before_title) splitTitle[1] else splitTitle[0]
         } else {
-            name
+            formattedTitle
         }
         val artist = if (splitTitle.size >= 2) {
             if (namingFormat.artist_before_title) splitTitle[0] else splitTitle[1]
@@ -27,7 +28,7 @@ class Id3Manager {
         val album = videoInfo.channel
         val year = videoInfo.upload_date.take(4)
         val comment = "{\"platform\": \"youtube\", \"id\": \"${videoInfo.id}\"}"
-        return Metadata(name, title, artist, album, year, comment)
+        return Metadata(videoInfo.title.toAuthorizedFileName(), title, artist, album, year, comment)
     }
 
     fun getMetadata(file: File): Metadata {
