@@ -2,7 +2,7 @@
 
 username=$USER
 installDir=/opt/qmk
-version=1.0.3
+version=1.0.4
 
 Help()
 {
@@ -44,7 +44,7 @@ mkdir -p /home/"$username"/.qmkmusicmanager
 chown "$username" /home/"$username"/.qmkmusicmanager
 
 echo "Fetching application..."
-wget -P "$installDir" "https://raw.githubusercontent.com/hQamonky/QmkMusicManager/master/package/musicmanager-$version.jar"
+wget -P "$installDir" "https://github.com/hQamonky/QmkMusicManager/releases/download/v$version/musicmanager-$version.jar"
 
 echo "Creating service..."
 serviceFile=/etc/systemd/system/qmk_music_manager.service
