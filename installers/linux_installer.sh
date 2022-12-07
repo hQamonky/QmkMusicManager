@@ -39,7 +39,7 @@ mkdir -p /home/"$username"/.qmkmusicmanager
 chown "$username" /home/"$username"/.qmkmusicmanager
 
 echo "Fetching application..."
-wget -P "$installDir" https://raw.githubusercontent.com/hQamonky/QmkMusicManager/master/package/musicmanager-1.0.2.jar
+wget -P "$installDir" https://raw.githubusercontent.com/hQamonky/QmkMusicManager/master/package/musicmanager-1.0.3.jar
 
 echo "Creating service..."
 serviceFile=/etc/systemd/system/qmk_music_manager.service
@@ -50,7 +50,7 @@ echo >> $serviceFile
 echo "[Service]" >> $serviceFile
 echo "User=$username" >> $serviceFile
 echo "WorkingDirectory=/home/$username/.qmkmusicmanager" >> $serviceFile
-echo "ExecStart=java -jar $installDir/musicmanager-1.0.2.jar" >> $serviceFile
+echo "ExecStart=java -jar $installDir/musicmanager-1.0.3.jar" >> $serviceFile
 echo "Restart=always" >> $serviceFile
 echo >> $serviceFile
 echo "[Install]" >> $serviceFile

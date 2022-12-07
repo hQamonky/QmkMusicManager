@@ -2,7 +2,7 @@
 Manage, through this API, a daemon that automatically downloads music from YouTube playlists.
 ## Features
 - Handle multiple playlists :
-    - Add/Remove youtube playlists
+    - Add/Remove YouTube playlists
     - Edit playlists
     - Trigger playlist download
     - Generate playlist files for Mopidy and PowerAmp
@@ -14,7 +14,7 @@ Manage, through this API, a daemon that automatically downloads music from YouTu
 - Handle title and artist auto naming :
     - Add/Edit/Delete rules
     - Strings replace (ex: replace " [Official Music Video]" by "")
-    - Set title/artist format to apply depending on youtube channel 
+    - Set title/artist format to apply depending on YouTube channel 
 ## List of endpoints
 - `/`
 - `/settings`
@@ -52,7 +52,8 @@ Get the configuration file.
 ```json
 {
     "musicFolder": "~/Music",
-    "downloadOccurrence": 1
+    "downloadOccurrence": 60,
+    "autoDownload": true
 }
 ```
 ### `POST`  
@@ -61,7 +62,8 @@ Set the configuration.
 ```json
 {
     "musicFolder": "~/Music",
-    "downloadOccurrence": 1
+    "downloadOccurrence": 60,
+    "autoDownload": true
 }
 ```
 
@@ -76,11 +78,11 @@ Set the path to the music library.
 ## `/settings/download-occurrence`
 ### `POST`
 Give an interval of time for when the service will automatically download all the playlists.  
-The interval is defined in hours and the default is 12. Set it at -1 to disable it.  
-The first download will occur in an amount of time equal to the "interval" value, starting from the execution of this command.  
+The interval is defined in minutes and the default is 60.   
+The first download will occur as soon as the server is running.  
 *Body*  
 ```json
-1
+60
 ```
 
 ## `/factory-reset`

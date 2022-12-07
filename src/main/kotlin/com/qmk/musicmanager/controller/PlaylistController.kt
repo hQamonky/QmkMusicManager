@@ -42,9 +42,15 @@ class PlaylistController(
         val ses = Executors.newSingleThreadScheduledExecutor()
         val settings = ConfigurationManager().getConfiguration()
         ses.scheduleAtFixedRate({
-            if (settings.autoDownload)
-                manager.download()
-        }, 0, settings.downloadOccurrence.toLong(), TimeUnit.HOURS)
+            if (settings.autoDownload) {
+                try {
+                    println("Running auto download.")
+                    manager.download()
+                } catch (e: Exception) {
+                    println("Caught Exception : ${e.message}")
+                }
+            }
+        }, 0, settings.downloadOccurrence.toLong(), TimeUnit.MINUTES)
     }
 
     @Operation(summary = "Get all playlists.", description = "Returns 200 if successful")
