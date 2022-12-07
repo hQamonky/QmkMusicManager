@@ -35,9 +35,9 @@ class YoutubeManager(private val youtubeDl: String = "youtube-dl") {
     }
 
     fun downloadMusic(url: String): String? {
-        return if (url.contains("www.youtube.com")
+        return if (url.contains("www.youtube.com"))
             "$youtubeDl -ci -x --audio-format mp3 --embed-thumbnail -o ./workDir/tmp.'%(ext)s' $url".runCommand()
-        else 
+        else
             "$youtubeDl -ci -x --audio-format mp3 --embed-thumbnail -o ./workDir/tmp.'%(ext)s' $videoUrl$url".runCommand()
     }
 

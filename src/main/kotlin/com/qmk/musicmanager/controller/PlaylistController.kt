@@ -43,8 +43,12 @@ class PlaylistController(
         val settings = ConfigurationManager().getConfiguration()
         ses.scheduleAtFixedRate({
             if (settings.autoDownload) {
-                println("Running auto download.")
-                manager.download()
+                try {
+                    println("Running auto download.")
+                    manager.download()
+                } catch (e: Exception) {
+                    println("Caught Exception : ${e.message}")
+                }
             }
         }, 0, settings.downloadOccurrence.toLong(), TimeUnit.MINUTES)
     }
