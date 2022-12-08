@@ -39,7 +39,7 @@ echo "Will install package to $installDir.";
 
 echo "Creating necessary directories..."
 mkdir -p "$installDir"
-rm "$installDir/*"
+rm "$installDir"/musicmanager-*.*.*.jar
 mkdir -p /home/"$username"/.qmkmusicmanager
 chown "$username" /home/"$username"/.qmkmusicmanager
 
