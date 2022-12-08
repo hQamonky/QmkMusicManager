@@ -4,7 +4,7 @@ import com.qmk.musicmanager.extension.moveTo
 import com.qmk.musicmanager.model.Music
 import java.io.File
 import java.net.URI
-import java.util.UUID
+import java.util.*
 
 class MopidyManager(
     private val configurationManager: ConfigurationManager = ConfigurationManager()
@@ -38,10 +38,7 @@ class MopidyManager(
 
     fun addMusicToPlaylist(music: Music, playlistName: String) {
         updateMembers()
-        val line = File("$musicDir/${music.fileName}.${music.fileExtension}")
-            .toURI()
-            .toString()
-            .replace("file:${File(musicDir).absolutePath}/", "local:track:")
+        val line = convertFileToMopidyPath(File("$musicDir/${music.fileName}.${music.fileExtension}"))
         File("$playlistDir/$playlistName.m3u8").appendText("$line\n")
     }
 
@@ -50,10 +47,12 @@ class MopidyManager(
         val playlist = File("$playlistDir/$playlistName.m3u8")
         return if (!playlist.exists()) emptyList()
         else playlist.readLines().map {
-            File(URI(it.replace(
+            val uri = URI(it.replace(
                 "local:track:",
                 "file:${File(musicDir).absolutePath}/"
-            )).path).toString()
+            ))
+            val file = File(uri.path)
+            file.toString()
         }
     }
 
@@ -113,10 +112,7 @@ class MopidyManager(
         val tempFile = File("./workDir/mopidy-tmp-playlist-${UUID.randomUUID()}.m3u8")
         tempFile.createNewFile()
         powerAmpPlaylist.forEach {
-            val line = File(it)
-                .toURI()
-                .toString()
-                .replace("file:${File(musicDir).absolutePath}/", "local:track:")
+            val line = convertFileToMopidyPath(File(it))
             tempFile.appendText("$line\n")
         }
         tempFile.moveTo("${playlistDir}/$playlistName.m3u8", true)
@@ -132,12 +128,43 @@ class MopidyManager(
         val tempFile = File("./workDir/mopidy-tmp-playlist-${UUID.randomUUID()}.m3u8")
         tempFile.createNewFile()
         mergedPlaylist.forEach {
-            val uri = File(it)
-                .toURI()
-                .toString()
-            val line = uri.replace("file:${File(musicDir).absolutePath}/", "local:track:")
+            val line = convertFileToMopidyPath(File(it))
             tempFile.appendText("$line\n")
         }
         tempFile.moveTo("${playlistDir}/$playlistName.m3u8", true)
+    }
+
+    private fun convertFileToMopidyPath(file: File): String {
+        val initialUri = file
+            .toURI()
+            .toASCIIString()
+            .replace("file:${File(musicDir).absolutePath}/", "")
+        // Some characters are not encoded when using file.toURI(), so we have to encode them
+        var finalUri = ""
+        for (char in initialUri) {
+            val newChar = when (char) {
+                '!' -> "%21"
+                '*' -> "%2A"
+                '\'' -> "%27"
+                '(' -> "%28"
+                ')' -> "%29"
+                ';' -> "%3B"
+                ':' -> "%3A"
+                '@' -> "%40"
+                '&' -> "%26"
+                '=' -> "%3D"
+                '+' -> "%2B"
+                '$' -> "%24"
+                ',' -> "%2C"
+                '/' -> "%2F"
+                else -> char
+            }
+            finalUri += newChar
+        }
+        var subFolders = file.parentFile.absolutePath
+            .replace(File(musicDir).absolutePath, "")
+            .replace("/", ":")
+        if (subFolders != "") subFolders += ":"
+        return "local:track:$subFolders$finalUri"
     }
 }
