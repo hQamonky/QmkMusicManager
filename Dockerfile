@@ -9,4 +9,5 @@ WORKDIR /usr/src/app
 
 COPY . .
 
-CMD [ "java", "-jar", "./package/musicmanager-*.jar" ]
+CMD [ "./gradlew", "bootJar" ]
+CMD [ "java", "-jar", "./build/libs/musicmanager-*.jar" ]
