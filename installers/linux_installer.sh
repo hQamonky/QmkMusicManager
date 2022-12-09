@@ -2,7 +2,7 @@
 
 username=$USER
 installDir=/opt/qmk
-version=1.0.6
+version=1.0.7
 
 Help()
 {
