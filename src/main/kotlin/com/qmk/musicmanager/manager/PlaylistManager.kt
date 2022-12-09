@@ -80,6 +80,7 @@ class PlaylistManager(
                     if (!music.playlistIds.contains(playlistId)) {
                         println("Adding ${playlist.name} to music.")
                         musicService.newPlaylist(playlistId, musicId)
+                        insertMusicInPlaylistFiles(music, playlist.name)
                     } else {
                         println("${music.fileName} is already in ${playlist.name}.")
                     }
@@ -131,10 +132,14 @@ class PlaylistManager(
         // Insert music in database
         musicService.new(music)
         // Insert music in playlist files
-        mopidyManager.addMusicToPlaylist(music, playlist.name)
-        powerAmpManager.addMusicToPlaylist(music, playlist.name)
+        insertMusicInPlaylistFiles(music, playlist.name)
         println("Music ${music.id} was created.")
         return music
+    }
+
+    private fun insertMusicInPlaylistFiles(music: Music, playlistName: String) {
+        mopidyManager.addMusicToPlaylist(music, playlistName)
+        powerAmpManager.addMusicToPlaylist(music, playlistName)
     }
 
     fun archiveMusic(): List<String> {

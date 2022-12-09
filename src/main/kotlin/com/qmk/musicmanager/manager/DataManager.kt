@@ -42,7 +42,12 @@ class DataManager(
         namingRuleService.new(NamingRule(replace = "[Audio]", replaceBy = "", priority = 2))
         namingRuleService.new(NamingRule(replace = "【𝙻𝚈𝚁𝙸𝙲𝚂】", replaceBy = "", priority = 2))
         namingRuleService.new(NamingRule(replace = "(Official Audio)", replaceBy = "", priority = 2))
+        namingRuleService.new(NamingRule(replace = "[Official Audio]", replaceBy = "", priority = 2))
         namingRuleService.new(NamingRule(replace = "	(Lyrics)", replaceBy = "", priority = 2))
+        namingRuleService.new(NamingRule(replace = " (Lyrics)", replaceBy = "", priority = 2))
+        namingRuleService.new(NamingRule(replace = " (Letra / Lyrics)", replaceBy = "", priority = 2))
+        namingRuleService.new(NamingRule(replace = " LYRICS", replaceBy = "", priority = 2))
+        namingRuleService.new(NamingRule(replace = " (HD)", replaceBy = "", priority = 2))
         // Priority 3
         namingRuleService.new(NamingRule(replace = "♦ Hardstyle ♦", replaceBy = "(Hardstyle)", priority = 3))
     }
