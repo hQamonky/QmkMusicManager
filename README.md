@@ -24,7 +24,7 @@ The script must run as sudo because is uses systemctl commands.
 You can also download the script through a web browser by visiting [this page](https://raw.githubusercontent.com/hQamonky/QmkMusicManager/master/installers/linux_installer.sh),
 right-clicking anywhere on the page and clicking "Save Page As...".
 ### Manual installation
-Download the jar package from [here](https://github.com/hQamonky/QmkMusicManager/releases/download/v1.0.7/musicmanager-1.0.7.jar).
+Download the jar package from [here](https://github.com/hQamonky/QmkMusicManager/releases/download/v1.0.8/musicmanager-1.0.8.jar).
 Then you can run it with `java -jar path/to/musicmanager-*.jar`.  
 
 ## Service Management
