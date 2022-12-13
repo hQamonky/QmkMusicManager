@@ -169,4 +169,37 @@ internal class PlaylistControllerTest(
                 status { isNotFound() }
             }
     }
+
+    @Test
+    fun simplePlaylistDownloadTest() {
+        val playlistEntry = PlaylistEntry(
+            "testCasual",
+            "https://www.youtube.com/playlist?list=PLCVGGn6GhhDvZ0iCVONTYnzkjW3ZA6jwf"
+        )
+        // Change music folder
+        mockMvc.post("/settings") {
+            contentType = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(
+                Settings(
+                    musicFolder = "src/test/Music",
+                    downloadOccurrence = 60,
+                    autoDownload = false
+                )
+            )
+        }
+            .andExpect {
+                status { isOk() }
+            }
+        // Create playlist
+        mockMvc.post("/playlists") {
+            contentType = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(playlistEntry)
+        }
+        // Download playlists
+        mockMvc.post("/playlists/download")
+            .andExpect {
+                status { isOk() }
+            }
+        println("done")
+    }
 }

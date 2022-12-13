@@ -7,7 +7,6 @@ import com.qmk.musicmanager.service.MusicService
 import com.qmk.musicmanager.service.NamingRuleService
 import org.jaudiotagger.audio.exceptions.CannotReadException
 import java.io.File
-import java.lang.IllegalStateException
 
 class DataManager(
     private val musicService: MusicService,

@@ -13,6 +13,7 @@ import java.io.File
 
 class Id3Manager {
     fun getMetadata(videoInfo: MusicInfo, namingFormat: NamingFormat, namingRules: List<NamingRule>): Metadata {
+        val name = videoInfo.title.toAuthorizedFileName()
         val formattedTitle = videoInfo.title.applyNamingRules(namingRules)
         val splitTitle = formattedTitle.split(namingFormat.separator)
         val title = if (splitTitle.size >= 2) {
@@ -28,7 +29,7 @@ class Id3Manager {
         val album = videoInfo.channel
         val year = videoInfo.upload_date.take(4)
         val comment = "{\"platform\": \"youtube\", \"id\": \"${videoInfo.id}\"}"
-        return Metadata(videoInfo.title.toAuthorizedFileName(), title, artist, album, year, comment)
+        return Metadata(name, title, artist, album, year, comment)
     }
 
     fun getMetadata(file: File): Metadata {
