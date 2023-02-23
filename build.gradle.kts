@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "com.qmk"
-version = "1.0.9"
+version = "1.0.10"
 java.sourceCompatibility = JavaVersion.VERSION_11
 
 repositories {
