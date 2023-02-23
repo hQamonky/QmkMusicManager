@@ -5,9 +5,16 @@ is the API reference and list of features. Once the server is up and running, yo
 ## Requirements
 - You need to have java 11 installed in order to run the application.  
 - You also need to have [youtube-dl](https://youtube-dl.org/) installed. It is recommended to install youtube-dl via pip.  
-- youtube-dl does not work without Python, so you will need that as well.
+- You also need to have [youtube-dlp](https://github.com/yt-dlp/yt-dlp/) installed. It is recommended to install using the release binaries.  
+- youtube-dl and youtube-dlp do not work without Python, so you will need that as well.
 
-Alternatively you can create a docker image and run it in a container (the container will need java 11 and youtube-dl installed).
+### How to install youtube-dlp on linux
+``` shell
+sudo curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
+sudo chmod a+rx /usr/local/bin/yt-dlp
+```
+
+Alternatively you can create a docker image and run it in a container (the container will need java 11, youtube-dl and youtube-dlp installed).
 You can use the Dockerfile and docker-compose.yml from this project.
 ## Installation
 There is an installation script for linux that creates a systemd service.  

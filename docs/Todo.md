@@ -4,7 +4,7 @@
 - Write more tests
 
 # Version 2.0
-- Enhanced UI (handle loading progress, make it easier to add a naming rule from new music, add some css, etc.)
+- Handle loading progress, make it so clients can know if a request is running
 - Implement file editing (cut, fade in, fade out, rename)
 - Implement SoundCloud download
 - Enable choosing music formats (other than mp3)

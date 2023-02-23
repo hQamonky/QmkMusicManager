@@ -23,7 +23,10 @@ class PlaylistManager(
 ) {
     fun create(name: String, url: String): Playlist {
         val gson = Gson()
-        val playlistInfo = gson.fromJson(youtubeManager.getPlaylistInfo(url), PlaylistInfo::class.java)
+        val playlistInfo = gson.fromJson(
+            youtubeManager.getPlaylistInfo(url, DownloadTool.YOUTUBE_DLP),
+            PlaylistInfo::class.java
+        )
         val playlist = Playlist(
             id = playlistInfo.id,
             name = name
@@ -68,7 +71,7 @@ class PlaylistManager(
         val result = DownloadResult(playlist = playlist.name)
         val gson = Gson()
         gson.fromJson(
-            youtubeManager.getPlaylistInfo("${youtubeManager.playlistUrl}${playlist.id}"),
+            youtubeManager.getPlaylistInfo("${youtubeManager.playlistUrl}${playlist.id}", DownloadTool.YOUTUBE_DLP),
             PlaylistInfo::class.java
         ).entries
             .map { it.id }
@@ -96,7 +99,11 @@ class PlaylistManager(
         val playlistId = playlist.id
         // Get video info
         println("Getting info for $videoId...")
-        val musicInfo = Gson().fromJson(youtubeManager.getVideoInfo(videoId), MusicInfo::class.java)
+        var tmp = youtubeManager.getVideoInfo(videoId, DownloadTool.YOUTUBE_DLP)
+        if (tmp == "null\n") {
+            tmp = youtubeManager.getVideoInfo(videoId)
+        }
+        val musicInfo = Gson().fromJson(tmp, MusicInfo::class.java)
         // Create uploader if not exist
         var uploader = uploaderService.findById(musicInfo.channel_id)
         if (uploader == null) {
@@ -106,7 +113,7 @@ class PlaylistManager(
         // Download music
         println("Downloading ${musicInfo.title}...")
         val outputFile = "./workDir/tmp.mp3"
-        val downloadResult = youtubeManager.downloadMusic(musicInfo.id)
+        val downloadResult = youtubeManager.downloadMusic(musicInfo.id, DownloadTool.YOUTUBE_DLP)
         println("$downloadResult")
         // Set metadata
         println("Setting ID3 tags...")

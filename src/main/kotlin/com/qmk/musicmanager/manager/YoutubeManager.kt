@@ -3,7 +3,10 @@ package com.qmk.musicmanager.manager
 import com.qmk.musicmanager.extension.runCommand
 import com.qmk.musicmanager.model.Playlist
 
-class YoutubeManager(private val youtubeDl: String = "youtube-dl") {
+class YoutubeManager {
+
+    private val youtubeDl: String = DownloadTool.YOUTUBE_DL.value
+    private val ytDlp: String = DownloadTool.YOUTUBE_DLP.value
 
     private val videoUrl = "https://www.youtube.com/watch?v="
     val playlistUrl = "https://www.youtube.com/playlist?list="
@@ -16,7 +19,7 @@ class YoutubeManager(private val youtubeDl: String = "youtube-dl") {
         return "$youtubeDl --version".runCommand()
     }
 
-    fun update(): String? {
+    fun updateYoutubeDl(): String? {
         val result = "$youtubeDl --update".runCommand()
         return if (result == "It looks like you installed youtube-dl with a package manager, pip, setup.py or a " +
             "tarball. Please use that to update.\n")
@@ -25,23 +28,44 @@ class YoutubeManager(private val youtubeDl: String = "youtube-dl") {
             result
     }
 
-    fun getPlaylistInfo(url: String): String? {
-        return "$youtubeDl -ci --flat-playlist -J $url".runCommand()
+    fun updateYtDlp(): String? {
+        return "$ytDlp -U".runCommand()
     }
 
-    fun getVideoInfo(videoId: String, usingYoutubeDl: Boolean = true): String? {
-        return if (usingYoutubeDl) "$youtubeDl -ci -J $videoUrl$videoId".runCommand()
-        else "https://www.youtube.com/oembed?url=$videoId&format=json".runCommand()
+    fun getPlaylistInfo(url: String, tool: DownloadTool = DownloadTool.YOUTUBE_DL): String? {
+        return when(tool) {
+            DownloadTool.YOUTUBE_DL ->
+                "$youtubeDl -ci --flat-playlist -J $url".runCommand()
+            DownloadTool.YOUTUBE_DLP ->
+                "$ytDlp -ci --flat-playlist -J $url".runCommand()
+        }
     }
 
-    fun downloadMusic(url: String): String? {
-        return if (url.contains("www.youtube.com"))
-            "$youtubeDl -ci -x --audio-format mp3 --embed-thumbnail -o ./workDir/tmp.'%(ext)s' $url".runCommand()
-        else
-            "$youtubeDl -ci -x --audio-format mp3 --embed-thumbnail -o ./workDir/tmp.'%(ext)s' $videoUrl$url".runCommand()
+    fun getVideoInfo(videoId: String, tool: DownloadTool? = DownloadTool.YOUTUBE_DL): String? {
+        return when(tool) {
+            DownloadTool.YOUTUBE_DL -> "$youtubeDl -ci -J $videoUrl$videoId".runCommand()
+            DownloadTool.YOUTUBE_DLP -> "$ytDlp -ci -J $videoUrl$videoId".runCommand()
+            else -> "curl -L https://www.youtube.com/oembed?url=$videoUrl$videoId&format=json".runCommand()
+        }
+    }
+
+    fun downloadMusic(url: String, tool: DownloadTool = DownloadTool.YOUTUBE_DL): String? {
+        val fullUrl = if (url.contains("www.youtube.com")) url
+        else "$videoUrl$url"
+        return when(tool) {
+            DownloadTool.YOUTUBE_DL ->
+                "$youtubeDl -ci -x --audio-format mp3 --embed-thumbnail -o ./workDir/tmp.'%(ext)s' $fullUrl".runCommand()
+            DownloadTool.YOUTUBE_DLP ->
+                "$ytDlp -ci -x --audio-format mp3 --embed-thumbnail -o ./workDir/tmp $fullUrl".runCommand()
+        }
     }
 
     fun downloadPlaylist(playlist: Playlist): String? {
         return getPlaylistInfo(playlist.id)
     }
+}
+
+enum class DownloadTool(val value: String) {
+    YOUTUBE_DL("youtube-dl"),
+    YOUTUBE_DLP("yt-dlp")
 }

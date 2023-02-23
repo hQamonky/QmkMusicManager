@@ -41,6 +41,6 @@ class MainController(
     )
     @PostMapping("/youtube-dl/update")
     fun updateYoutubeDl(): String {
-        return youtubeManager.update() ?: "null"
+        return youtubeManager.updateYoutubeDl() ?: "null"
     }
 }
