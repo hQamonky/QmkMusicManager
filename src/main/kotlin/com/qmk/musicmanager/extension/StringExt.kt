@@ -19,7 +19,7 @@ fun String.runCommand(
 
 fun String.applyNamingRules(namingRules: List<NamingRule>): String {
     var formattedText = this
-    namingRules.forEach {rule ->
+    namingRules.forEach { rule ->
         formattedText = formattedText.replace(rule.replace, rule.replaceBy)
     }
     return formattedText

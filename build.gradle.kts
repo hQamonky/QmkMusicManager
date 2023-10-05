@@ -1,46 +1,48 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+val ktorVersion: String by project
+val kotlinVersion: String by project
+val logbackVersion: String by project
+val swaggerVersion: String by project
 
 plugins {
-	id("org.springframework.boot") version "2.7.4"
-	id("io.spring.dependency-management") version "1.0.14.RELEASE"
-	kotlin("jvm") version "1.6.21"
-	kotlin("plugin.spring") version "1.6.21"
+    kotlin("jvm") version "1.9.10"
+    id("io.ktor.plugin") version "2.3.4"
 }
 
-group = "com.qmk"
-version = "1.0.10"
-java.sourceCompatibility = JavaVersion.VERSION_11
+group = "com.music-manager.qmk"
+version = "0.0.1"
+
+application {
+    mainClass.set("com.music-manager.qmk.ApplicationKt")
+
+    val isDevelopment: Boolean = project.ext.has("development")
+    applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
+}
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-	implementation("com.google.code.gson:gson:2.10")
-	implementation("net.jthink:jaudiotagger:3.0.1")
-	implementation("org.springframework.boot:spring-boot-starter-jdbc")
-	implementation("org.springframework.boot:spring-boot-starter-web")
-	implementation("org.springframework.data:spring-data-commons")
-	implementation("org.springframework.data:spring-data-relational")
-	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-	implementation("org.jetbrains.kotlin:kotlin-reflect")
-	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-	runtimeOnly("com.h2database:h2")
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
+    implementation("io.ktor:ktor-server-content-negotiation-jvm")
+    implementation("io.ktor:ktor-server-core-jvm")
+    implementation("io.ktor:ktor-serialization-gson-jvm")
+    implementation("io.ktor:ktor-server-websockets-jvm")
+    implementation("io.ktor:ktor-server-call-logging-jvm")
+    implementation("io.ktor:ktor-server-netty-jvm")
+    implementation("ch.qos.logback:logback-classic:$logbackVersion")
+    testImplementation("io.ktor:ktor-server-tests-jvm")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
 
-	// Swagger
-	implementation("org.springdoc:springdoc-openapi-data-rest:1.6.13")
-	implementation("org.springdoc:springdoc-openapi-ui:1.6.13")
-	implementation("org.springdoc:springdoc-openapi-kotlin:1.6.13")
-}
+    // Ktor
+    implementation("io.ktor:ktor-server-sessions:$ktorVersion")
 
-tasks.withType<KotlinCompile> {
-	kotlinOptions {
-		freeCompilerArgs = listOf("-Xjsr305=strict")
-		jvmTarget = "11"
-	}
-}
+    // Swagger
+    implementation("org.springdoc:springdoc-openapi-data-rest:$swaggerVersion")
+    implementation("org.springdoc:springdoc-openapi-ui:$swaggerVersion")
+    implementation("org.springdoc:springdoc-openapi-kotlin:$swaggerVersion")
 
-tasks.withType<Test> {
-	useJUnitPlatform()
+    // Tools
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("net.jthink:jaudiotagger:3.0.1")
 }
