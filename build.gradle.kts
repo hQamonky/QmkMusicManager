@@ -3,6 +3,8 @@ val ktorVersion: String by project
 val kotlinVersion: String by project
 val logbackVersion: String by project
 val swaggerVersion: String by project
+val exposedVersion: String by project
+val h2Version: String by project
 
 plugins {
     kotlin("jvm") version "1.9.10"
@@ -36,6 +38,12 @@ dependencies {
 
     // Ktor
     implementation("io.ktor:ktor-server-sessions:$ktorVersion")
+
+    // Database
+    implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
+    implementation("com.h2database:h2:$h2Version")
 
     // Swagger
     implementation("org.springdoc:springdoc-openapi-data-rest:$swaggerVersion")
