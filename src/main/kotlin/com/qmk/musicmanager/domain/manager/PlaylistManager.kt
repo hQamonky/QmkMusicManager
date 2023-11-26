@@ -2,6 +2,8 @@ package com.qmk.musicmanager.domain.manager
 
 import com.google.gson.Gson
 import com.qmk.musicmanager.database.dao.*
+import com.qmk.musicmanager.domain.exception.NoPlaylistsFoundException
+import com.qmk.musicmanager.domain.exception.PlaylistNotFoundException
 import com.qmk.musicmanager.domain.model.*
 import com.qmk.musicmanager.domain.extension.moveTo
 import java.io.File
@@ -50,7 +52,7 @@ class PlaylistManager(
     }
 
     suspend fun edit(playlist: Playlist) : Boolean {
-        val oldPlaylist = playlistDAO.playlist(playlist.id) ?: return false
+        val oldPlaylist = playlistDAO.playlist(playlist.id) ?: throw PlaylistNotFoundException()
         if (oldPlaylist.name != playlist.name) {
             mopidyManager.renamePlaylist(oldPlaylist.name, playlist.name)
             powerAmpManager.renamePlaylist(oldPlaylist.name, playlist.name)
@@ -60,21 +62,24 @@ class PlaylistManager(
 
     suspend fun download(): List<DownloadResult> {
         val playlists = playlistDAO.allPlaylists()
-        if (playlists.isEmpty()) println("Error : no playlists found.")
+        if (playlists.isEmpty()) {
+            println("Error : no playlists found.")
+            throw NoPlaylistsFoundException()
+        }
         println("${playlists.size} found.")
         val result = mutableListOf<DownloadResult>()
         playlists.forEach { playlist ->
             println("Start process for ${playlist.name} :")
-            download(playlist.id)?.let { result.add(it) }
+            result.add(download(playlist.id))
         }
         return result
     }
 
-    suspend fun download(playlistId: String): DownloadResult? {
+    suspend fun download(playlistId: String): DownloadResult {
         val playlist = playlistDAO.playlist(playlistId)
         if (playlist == null) {
             println("Error : playlist not found.")
-            return null
+            throw PlaylistNotFoundException()
         }
         println("Downloading ${playlist.name}...")
         val result = DownloadResult(playlist = playlist.name)

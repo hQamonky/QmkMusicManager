@@ -1,7 +1,8 @@
 package com.qmk.musicmanager.api
 
-import com.qmk.musicmanager.api.model.Client
+import com.qmk.musicmanager.api.model.*
 import com.qmk.musicmanager.database.dao.*
+import com.qmk.musicmanager.domain.exception.NoPlaylistsFoundException
 import com.qmk.musicmanager.domain.manager.*
 import com.qmk.musicmanager.domain.model.*
 import java.util.concurrent.ConcurrentHashMap
@@ -37,8 +38,7 @@ class MusicManagerServer {
     private val musicManager =
         MusicManager(musicDAO = musicDAO, configurationManager = configurationManager, id3Manager = id3Manager)
 
-    var isDownloading: Boolean = false
-        private set
+    private var processingAction: ServerAction? = null
 
     fun clientConnected(client: Client) {
         clients[client.id] = client
@@ -48,21 +48,22 @@ class MusicManagerServer {
      * Removes all database entries, adds default naming rules and fills database from music file's metadata.
      * @return error message. Returns null if succeeded.
      */
-    suspend fun factoryReset(): String? {
+    suspend fun factoryReset(): ServerResponse {
         val removedAllEntries = dataManager.removeAllEntries()
-        dataManager.addDefaultNamingRules()
-        dataManager.addFilesToDatabase()
-
         if (!removedAllEntries) {
-            return "Failed to empty database."
+            return ServerError("Failed to empty database.")
         }
-        // TODO : add return to dataManager.addDefaultNamingRules() and dataManager.addFilesToDatabase() to handle
-        //  errors
-        return null
+        val addedDefaultNamingRules = dataManager.addDefaultNamingRules()
+        if (!addedDefaultNamingRules) {
+            return ServerError("Failed to add default naming rules.")
+        }
+        dataManager.addFilesToDatabase()
+        // TODO : add return to dataManager.addFilesToDatabase() to handle errors
+        return FactoryReset()
     }
 
-    suspend fun updateYoutubeDl(): String {
-        return youtubeManager.updateYoutubeDl() ?: "Unknown server error."
+    suspend fun updateYoutubeDl(): ServerResponse {
+        return youtubeManager.updateYoutubeDl()?.let { UpdateYoutubeDl(it) } ?: ServerError("Unknown server error.")
     }
 
     suspend fun getPlaylistId(playlistUrl: String): String {
@@ -77,111 +78,134 @@ class MusicManagerServer {
         return playlistManager.doesPlaylistNameExist(playlistName)
     }
 
-    suspend fun getPlaylists(): List<Playlist> {
-        return playlistManager.getPlaylists()
+    suspend fun getPlaylists(): ServerResponse {
+        return GetPlaylists(playlistManager.getPlaylists())
     }
 
-    suspend fun createPlaylist(name: String, id: String): Playlist? {
-        return playlistManager.create(name, id)
+    suspend fun createPlaylist(name: String, id: String): ServerResponse {
+        return playlistManager.create(name, id)?.let { CreatePlaylist(it) } ?: ServerError("Error creating playlist.")
     }
 
-    suspend fun editPlaylist(playlist: Playlist): Boolean {
-        return playlistManager.edit(playlist)
+    suspend fun editPlaylist(playlist: Playlist): ServerResponse {
+        return if (playlistManager.edit(playlist)) EditPlaylist() else ServerError("Error editing playlist.")
     }
 
 
-    suspend fun downLoadPlaylists(): List<DownloadResult>? {
-        // TODO : Implement return types
-        // For the moment, returns null if busy
-        if (isDownloading) return null
-        isDownloading = true
-        val downloadResult = playlistManager.download()
-        isDownloading = false
-        return downloadResult
+    suspend fun downLoadPlaylists(): ServerResponse {
+        processingAction?.let { return ServerBusy(it) }
+        processingAction = ServerAction.DOWNLOADING_PLAYLISTS
+        return try {
+            val downloadResult = playlistManager.download()
+            processingAction = null
+            DownloadPlaylists(downloadResult)
+        } catch (e: NoPlaylistsFoundException) {
+            processingAction = null
+            ServerError(e.toString())
+        }
     }
 
-    suspend fun downLoadPlaylist(playlistId: String): DownloadResult? {
-        // TODO : Implement return types
-        // For the moment, returns null if busy
-        if (isDownloading) return null
-        isDownloading = true
-        val downloadResult = playlistManager.download(playlistId)
-        isDownloading = false
-        return downloadResult
+    suspend fun downLoadPlaylist(playlistId: String): ServerResponse {
+        processingAction?.let { return ServerBusy(it) }
+        processingAction = ServerAction.DOWNLOADING_PLAYLIST
+        return try {
+            val downloadResult = playlistManager.download(playlistId)
+            processingAction = null
+            DownloadPlaylist(downloadResult)
+        } catch (e: NoPlaylistsFoundException) {
+            processingAction = null
+            ServerError(e.toString())
+        }
     }
 
-    suspend fun archiveMusic(): List<String> {
-        return playlistManager.archiveMusic()
+    suspend fun archiveMusic(): ServerResponse {
+        processingAction?.let { return ServerBusy(it) }
+        processingAction = ServerAction.ARCHIVING_MUSIC
+        return try {
+            val result = playlistManager.archiveMusic()
+            processingAction = null
+            ArchiveMusic(result)
+        } catch (e: NoPlaylistsFoundException) {
+            processingAction = null
+            ServerError(e.toString())
+        }
     }
 
-    suspend fun editMusic(music: Music) : Boolean {
-        return musicManager.editMusic(music)
+    suspend fun editMusic(music: Music): ServerResponse {
+        return if (musicManager.editMusic(music)) EditMusic() else ServerError("Error editing music.")
     }
 
-    suspend fun getNewMusic() : List<Music> {
-        return musicManager.getNewMusic()
+    suspend fun getNewMusic(): ServerResponse {
+        return GetNewMusic(musicManager.getNewMusic())
     }
 
-    suspend fun getNamingRules() : List<NamingRule>{
-        return namingRuleDAO.allNamingRules()
+    suspend fun getNamingRules(): ServerResponse {
+        return GetNamingRules(namingRuleDAO.allNamingRules())
     }
 
-    suspend fun addNamingRule(replace: String, replaceBy: String, priority: Int) : NamingRule? {
-        return namingRuleDAO.addNewNamingRule(replace, replaceBy, priority)
+    suspend fun addNamingRule(replace: String, replaceBy: String, priority: Int): ServerResponse {
+        return namingRuleDAO.addNewNamingRule(replace, replaceBy, priority)?.let { AddNamingRule(it) }
+            ?: ServerError("Error creating naming rule.")
     }
 
-    suspend fun getNamingRule(id: Int) : NamingRule? {
-        return namingRuleDAO.namingRule(id)
+    suspend fun getNamingRule(id: Int): ServerResponse {
+        return namingRuleDAO.namingRule(id)?.let { GetNamingRule(it) } ?: ServerError("Naming rule not found.")
     }
 
-    suspend fun editNamingRule(id: Int, replace: String, replaceBy: String, priority: Int) : Boolean {
-        return namingRuleDAO.editNamingRule(id, replace, replaceBy, priority)
+    suspend fun editNamingRule(id: Int, replace: String, replaceBy: String, priority: Int): ServerResponse {
+        return if (namingRuleDAO.editNamingRule(
+                id,
+                replace,
+                replaceBy,
+                priority
+            )
+        ) EditNamingRule() else ServerError("Error editing naming rule.")
     }
 
-    suspend fun deleteNamingRule(id: Int) : Boolean {
-        return namingRuleDAO.deleteNamingRule(id)
+    suspend fun deleteNamingRule(id: Int): ServerResponse {
+        return if (namingRuleDAO.deleteNamingRule(id)) DeleteNamingRule()
+        else ServerError("Error deleting naming rule.")
     }
 
-    suspend fun getSettings() : Settings {
-        return configurationManager.getConfiguration()
+    suspend fun getSettings(): ServerResponse {
+        return GetSettings(configurationManager.getConfiguration())
     }
 
-    suspend fun setSettings(settings: Settings) : Boolean {
+    suspend fun setSettings(settings: Settings): ServerResponse {
         configurationManager.setConfiguration(settings)
         // TODO : implement error handling
-        return true
+        return SetSettings()
     }
 
-    suspend fun setMusicFolder(path: String) : Boolean  {
+    suspend fun setMusicFolder(path: String): ServerResponse {
         configurationManager.setMusicFolder(path)
         // TODO : implement error handling
-        return true
+        return SetMusicFolder()
     }
 
-    suspend fun setDownloadOccurrence(occurrence: Int) : Boolean {
+    suspend fun setDownloadOccurrence(occurrence: Int): ServerResponse {
         configurationManager.setDownloadOccurrence(occurrence)
         // TODO : Restart download timer
         // TODO : implement error handling
-        return true
+        return SetDownloadOccurrence()
     }
 
-    suspend fun setAutoDownload(autoDownload: Boolean) : Boolean {
+    suspend fun setAutoDownload(autoDownload: Boolean): ServerResponse {
         configurationManager.setAutoDownload(autoDownload)
         // TODO : Stop or start auto download
         // TODO : implement error handling
-        return true
+        return SetAutoDownload()
     }
 
-    suspend fun getUploaders() : List<Uploader>{
-        return uploaderDAO.allUploaders()
+    suspend fun getUploaders(): ServerResponse {
+        return GetUploaders(uploaderDAO.allUploaders())
     }
 
-    suspend fun getUploader(id: String) : Uploader? {
-        return uploaderDAO.uploader(id)
+    suspend fun getUploader(id: String): ServerResponse {
+        return uploaderDAO.uploader(id)?.let { GetUploader(it) } ?: ServerError("Uploader not found.")
     }
 
-    suspend fun editUploaderNamingFormat(id: String, namingFormat: NamingFormat) : Boolean {
-        val uploader = uploaderDAO.uploader(id) ?: return false
-        return uploaderDAO.editUploader(id, uploader.name, namingFormat)
+    suspend fun editUploaderNamingFormat(id: String, namingFormat: NamingFormat): ServerResponse {
+        val uploader = uploaderDAO.uploader(id) ?: return ServerError("Uploader not found.")
+        return if (uploaderDAO.editUploader(id, uploader.name, namingFormat)) EditUploaderNamingFormat() else ServerError("Error editing naming format.")
     }
 }

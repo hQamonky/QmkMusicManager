@@ -1,6 +1,9 @@
 package com.qmk.musicmanager.api.route
 
 import com.qmk.musicmanager.api.model.BasicAPIResponse
+import com.qmk.musicmanager.api.model.ServerAction
+import com.qmk.musicmanager.api.model.ServerBusy
+import com.qmk.musicmanager.api.model.ServerError
 import com.qmk.musicmanager.domain.model.Playlist
 import com.qmk.musicmanager.domain.model.PlaylistEntry
 import com.qmk.musicmanager.server
@@ -14,7 +17,7 @@ fun Route.playlistsRoutes() {
     route("/api/playlists") {
         get {
             val playlists = server.getPlaylists()
-            call.respond(HttpStatusCode.OK, playlists)
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, playlists.response.toString()))
         }
         post {
             val request = call.receiveNullable<PlaylistEntry>()
@@ -38,10 +41,10 @@ fun Route.playlistsRoutes() {
                 return@post
             }
             val playlist = server.createPlaylist(request.name, playlistId)
-            if (playlist == null) {
+            if (playlist is ServerError) {
                 call.respond(
                     HttpStatusCode.OK,
-                    BasicAPIResponse(false, "Error while inserting playlist in database.")
+                    BasicAPIResponse(false, playlist.response.toString())
                 )
                 return@post
             }
@@ -50,13 +53,18 @@ fun Route.playlistsRoutes() {
     }
     route("/api/playlists/download") {
         post {
-            if (server.isDownloading) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, "Server is busy, try again later"))
+            val result = server.downLoadPlaylists()
+            if (result is ServerBusy) {
+                val message = when (result.response as ServerAction) {
+                    ServerAction.DOWNLOADING_PLAYLISTS -> "Server is busy downloading playlists, try again later"
+                    ServerAction.DOWNLOADING_PLAYLIST -> "Server is busy downloading a playlist, try again later"
+                    ServerAction.ARCHIVING_MUSIC -> "Server is busy archiving music, try again later"
+                }
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, message))
                 return@post
             }
-            val result = server.downLoadPlaylists()
-            if (result == null) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, "Server is busy, try again later"))
+            if (result is ServerError) {
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.response.toString()))
                 return@post
             }
             call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toString()))
@@ -70,8 +78,11 @@ fun Route.playlistsRoutes() {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
-            val successful = server.editPlaylist(playlist)
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(successful))
+            val result = server.editPlaylist(playlist)
+            if (result is ServerError) {
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.response.toString()))
+            }
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true))
         }
     }
     route("/api/playlists/{id}/download") {
@@ -86,23 +97,41 @@ fun Route.playlistsRoutes() {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
-            if (server.isDownloading) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, "Server is busy, try again later"))
-                return@post
-            }
             val result = server.downLoadPlaylist(playlistId)
-            if (result == null) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, "Server is busy, try again later"))
+            if (result is ServerBusy) {
+                val message = when (result.response as ServerAction) {
+                    ServerAction.DOWNLOADING_PLAYLISTS -> "Server is busy downloading playlists, try again later"
+                    ServerAction.DOWNLOADING_PLAYLIST -> "Server is busy downloading a playlist, try again later"
+                    ServerAction.ARCHIVING_MUSIC -> "Server is busy archiving music, try again later"
+                }
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, message))
                 return@post
             }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toString()))
+            if (result is ServerError) {
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.response.toString()))
+                return@post
+            }
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.response.toString()))
         }
 
     }
     route("/api/playlists/archive-music") {
         post {
             val result = server.archiveMusic()
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toString()))
+            if (result is ServerBusy) {
+                val message = when (result.response as ServerAction) {
+                    ServerAction.DOWNLOADING_PLAYLISTS -> "Server is busy downloading playlists, try again later"
+                    ServerAction.DOWNLOADING_PLAYLIST -> "Server is busy downloading a playlist, try again later"
+                    ServerAction.ARCHIVING_MUSIC -> "Server is busy archiving music, try again later"
+                }
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, message))
+                return@post
+            }
+            if (result is ServerError) {
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.response.toString()))
+                return@post
+            }
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.response.toString()))
         }
     }
 }

@@ -1,8 +1,8 @@
 package com.qmk.musicmanager.api.route
 
 import com.qmk.musicmanager.api.model.BasicAPIResponse
+import com.qmk.musicmanager.api.model.ServerError
 import com.qmk.musicmanager.domain.model.NamingFormat
-import com.qmk.musicmanager.domain.model.Uploader
 import com.qmk.musicmanager.server
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -14,7 +14,7 @@ fun Route.uploadersRoutes() {
     route("/api/uploaders") {
         get {
             val uploaders = server.getUploaders()
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, uploaders.toString()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, uploaders.response.toString()))
         }
     }
     route("/api/uploaders/{id}") {
@@ -24,11 +24,12 @@ fun Route.uploadersRoutes() {
                 call.respond(HttpStatusCode.BadRequest)
                 return@get
             }
-            val uploader = server.getUploader(id)
-            if (uploader == null) {
-                call.respond(HttpStatusCode.NotFound, BasicAPIResponse(false, "Uploader not found."))
+            val result = server.getUploader(id)
+            if (result is ServerError) {
+                call.respond(HttpStatusCode.NotFound, BasicAPIResponse(false, result.response.toString()))
+                return@get
             }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, uploader.toString()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.response.toString()))
         }
         post {
             val id = call.parameters["id"]
@@ -37,9 +38,11 @@ fun Route.uploadersRoutes() {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
-            val successful =
-                server.editUploaderNamingFormat(id, namingFormat)
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(successful))
+            val result = server.editUploaderNamingFormat(id, namingFormat)
+            if (result is ServerError) {
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.response.toString()))
+            }
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.response.toString()))
         }
     }
 }

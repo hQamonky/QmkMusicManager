@@ -1,6 +1,7 @@
 package com.qmk.musicmanager.api.route
 
 import com.qmk.musicmanager.api.model.BasicAPIResponse
+import com.qmk.musicmanager.api.model.ServerError
 import com.qmk.musicmanager.domain.model.Settings
 import com.qmk.musicmanager.server
 import io.ktor.http.*
@@ -13,7 +14,7 @@ fun Route.settingsRoutes() {
     route("/api/settings") {
         get {
             val settings = server.getSettings()
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, settings.toString()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, settings.response.toString()))
         }
         post {
             val settings = call.receiveNullable<Settings>()
@@ -21,8 +22,12 @@ fun Route.settingsRoutes() {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
-            val success = server.setSettings(settings)
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(success))
+            val result = server.setSettings(settings)
+            if (result is ServerError) {
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.response.toString()))
+                return@post
+            }
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.response.toString()))
         }
     }
     route("/api/settings/music-folder") {
@@ -32,8 +37,12 @@ fun Route.settingsRoutes() {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
-            val success = server.setMusicFolder(path)
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(success))
+            val result = server.setMusicFolder(path)
+            if (result is ServerError) {
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.response.toString()))
+                return@post
+            }
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.response.toString()))
         }
     }
     route("/api/settings/download-occurrence") {
@@ -43,8 +52,12 @@ fun Route.settingsRoutes() {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
-            val success = server.setDownloadOccurrence(occurrence)
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(success))
+            val result = server.setDownloadOccurrence(occurrence)
+            if (result is ServerError) {
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.response.toString()))
+                return@post
+            }
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.response.toString()))
         }
     }
     route("/api/settings/auto-download") {
@@ -54,8 +67,12 @@ fun Route.settingsRoutes() {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
-            val success = server.setAutoDownload(autoDownload)
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(success))
+            val result = server.setAutoDownload(autoDownload)
+            if (result is ServerError) {
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.response.toString()))
+                return@post
+            }
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.response.toString()))
         }
     }
     route("/api/settings/archive-folder") {
