@@ -5,6 +5,11 @@ import com.qmk.musicmanager.database.dao.*
 import com.qmk.musicmanager.domain.exception.NoPlaylistsFoundException
 import com.qmk.musicmanager.domain.manager.*
 import com.qmk.musicmanager.domain.model.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 class MusicManagerServer {
@@ -39,6 +44,28 @@ class MusicManagerServer {
         MusicManager(musicDAO = musicDAO, configurationManager = configurationManager, id3Manager = id3Manager)
 
     private var processingAction: ServerAction? = null
+
+    private var downloadTimer: Timer = Timer()
+    private val downloadTask: TimerTask = object : TimerTask() {
+        override fun run() {
+            CoroutineScope(Job()).launch {
+                downLoadPlaylists()
+            }
+        }
+    }
+
+    init {
+        handleDownloadTimerTask()
+    }
+
+    private fun handleDownloadTimerTask() {
+        val settings = configurationManager.getConfiguration()
+        downloadTimer.cancel()
+        if (settings.autoDownload) {
+            val occurrence = (settings.downloadOccurrence * 60 * 1000).toLong()
+            downloadTimer.schedule (downloadTask, 0L, occurrence)
+        }
+    }
 
     fun clientConnected(client: Client) {
         clients[client.id] = client
@@ -184,15 +211,15 @@ class MusicManagerServer {
 
     suspend fun setDownloadOccurrence(occurrence: Int): ServerResponse {
         configurationManager.setDownloadOccurrence(occurrence)
-        // TODO : Restart download timer
         // TODO : implement error handling
+        handleDownloadTimerTask()
         return SetDownloadOccurrence()
     }
 
     suspend fun setAutoDownload(autoDownload: Boolean): ServerResponse {
         configurationManager.setAutoDownload(autoDownload)
-        // TODO : Stop or start auto download
         // TODO : implement error handling
+        handleDownloadTimerTask()
         return SetAutoDownload()
     }
 
