@@ -14,7 +14,7 @@ fun Route.settingsRoutes() {
     route("/api/settings") {
         get {
             val settings = server.getSettings()
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, settings.response.toString()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, settings.toJson()))
         }
         post {
             val settings = call.receiveNullable<Settings>()
@@ -24,10 +24,10 @@ fun Route.settingsRoutes() {
             }
             val result = server.setSettings(settings)
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.response.toString()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
                 return@post
             }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.response.toString()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
         }
     }
     route("/api/settings/music-folder") {
@@ -39,10 +39,10 @@ fun Route.settingsRoutes() {
             }
             val result = server.setMusicFolder(path)
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.response.toString()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
                 return@post
             }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.response.toString()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
         }
     }
     route("/api/settings/download-occurrence") {
@@ -54,10 +54,10 @@ fun Route.settingsRoutes() {
             }
             val result = server.setDownloadOccurrence(occurrence)
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.response.toString()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
                 return@post
             }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.response.toString()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
         }
     }
     route("/api/settings/auto-download") {
@@ -69,10 +69,10 @@ fun Route.settingsRoutes() {
             }
             val result = server.setAutoDownload(autoDownload)
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.response.toString()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
                 return@post
             }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.response.toString()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
         }
     }
     route("/api/settings/archive-folder") {

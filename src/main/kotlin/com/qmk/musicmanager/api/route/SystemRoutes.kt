@@ -13,7 +13,7 @@ fun Route.systemRoutes() {
         post {
             val result = server.factoryReset()
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.response.toString()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
                 return@post
             }
             call.respond(HttpStatusCode.OK, BasicAPIResponse(true))
@@ -22,7 +22,7 @@ fun Route.systemRoutes() {
     route("/api/youtube-dl/update") {
         post {
             val result = server.updateYoutubeDl()
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.response.toString()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
         }
     }
 }

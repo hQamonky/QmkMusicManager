@@ -17,7 +17,7 @@ fun Route.playlistsRoutes() {
     route("/api/playlists") {
         get {
             val playlists = server.getPlaylists()
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, playlists.response.toString()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, playlists.toJson()))
         }
         post {
             val request = call.receiveNullable<PlaylistEntry>()
@@ -44,7 +44,7 @@ fun Route.playlistsRoutes() {
             if (playlist is ServerError) {
                 call.respond(
                     HttpStatusCode.OK,
-                    BasicAPIResponse(false, playlist.response.toString())
+                    BasicAPIResponse(false, playlist.toJson())
                 )
                 return@post
             }
@@ -59,12 +59,13 @@ fun Route.playlistsRoutes() {
                     ServerAction.DOWNLOADING_PLAYLISTS -> "Server is busy downloading playlists, try again later"
                     ServerAction.DOWNLOADING_PLAYLIST -> "Server is busy downloading a playlist, try again later"
                     ServerAction.ARCHIVING_MUSIC -> "Server is busy archiving music, try again later"
+                    ServerAction.NONE -> "Internal server error."
                 }
                 call.respond(HttpStatusCode.OK, BasicAPIResponse(false, message))
                 return@post
             }
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.response.toString()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
                 return@post
             }
             call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toString()))
@@ -80,7 +81,7 @@ fun Route.playlistsRoutes() {
             }
             val result = server.editPlaylist(playlist)
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.response.toString()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
             }
             call.respond(HttpStatusCode.OK, BasicAPIResponse(true))
         }
@@ -103,15 +104,16 @@ fun Route.playlistsRoutes() {
                     ServerAction.DOWNLOADING_PLAYLISTS -> "Server is busy downloading playlists, try again later"
                     ServerAction.DOWNLOADING_PLAYLIST -> "Server is busy downloading a playlist, try again later"
                     ServerAction.ARCHIVING_MUSIC -> "Server is busy archiving music, try again later"
+                    ServerAction.NONE -> "Internal server error."
                 }
                 call.respond(HttpStatusCode.OK, BasicAPIResponse(false, message))
                 return@post
             }
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.response.toString()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
                 return@post
             }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.response.toString()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
         }
 
     }
@@ -123,15 +125,16 @@ fun Route.playlistsRoutes() {
                     ServerAction.DOWNLOADING_PLAYLISTS -> "Server is busy downloading playlists, try again later"
                     ServerAction.DOWNLOADING_PLAYLIST -> "Server is busy downloading a playlist, try again later"
                     ServerAction.ARCHIVING_MUSIC -> "Server is busy archiving music, try again later"
+                    ServerAction.NONE -> "Internal server error."
                 }
                 call.respond(HttpStatusCode.OK, BasicAPIResponse(false, message))
                 return@post
             }
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.response.toString()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
                 return@post
             }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.response.toString()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
         }
     }
 }

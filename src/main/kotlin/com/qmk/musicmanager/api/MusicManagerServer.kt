@@ -5,13 +5,12 @@ import com.qmk.musicmanager.database.dao.*
 import com.qmk.musicmanager.domain.exception.NoPlaylistsFoundException
 import com.qmk.musicmanager.domain.manager.*
 import com.qmk.musicmanager.domain.model.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
+import io.ktor.websocket.*
+import kotlinx.coroutines.*
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
+@OptIn(DelicateCoroutinesApi::class)
 class MusicManagerServer {
     private val clients = ConcurrentHashMap<String, Client>()
 
@@ -43,19 +42,36 @@ class MusicManagerServer {
     private val musicManager =
         MusicManager(musicDAO = musicDAO, configurationManager = configurationManager, id3Manager = id3Manager)
 
-    private var processingAction: ServerAction? = null
+    private var processChangeListener: ((oldAction: ServerAction, newAction: ServerAction) -> Unit)? = null
+    private var processingAction: ServerAction = ServerAction.NONE
+        set(value) {
+            synchronized(field) {
+                val oldAction = field
+                field = value
+                processChangeListener?.let {
+                    it(oldAction, value)
+                }
+            }
+        }
 
     private var downloadTimer: Timer = Timer()
     private val downloadTask: TimerTask = object : TimerTask() {
         override fun run() {
-            CoroutineScope(Job()).launch {
+            GlobalScope.launch {
                 downLoadPlaylists()
             }
         }
     }
 
     init {
+        setProcessChangeListener { oldProcess, newProcess ->
+            notifyAllClients(ProcessChange(oldProcess, newProcess))
+        }
         handleDownloadTimerTask()
+    }
+
+    private fun setProcessChangeListener(listener: (oldAction: ServerAction, newAction: ServerAction) -> Unit) {
+        processChangeListener = listener
     }
 
     private fun handleDownloadTimerTask() {
@@ -67,8 +83,47 @@ class MusicManagerServer {
         }
     }
 
-    fun clientConnected(client: Client) {
+    fun notifyAllClients(message: ServerResponse) {
+        GlobalScope.launch {
+            clients.forEach {
+                val client = it.value
+                if (client.socket.isActive) {
+                    client.socket.send(Frame.Text(message.toJson()))
+                } else {
+                    disconnectClient(client.id)
+                }
+            }
+        }
+    }
+
+    fun doesClientExist(clientId: String) : Boolean {
+        return clients[clientId] != null
+    }
+
+    fun connectClient(client: Client) {
         clients[client.id] = client
+        GlobalScope.launch {
+            if (client.socket.isActive) {
+                client.socket.send(Frame.Text(CurrentProcess(processingAction).toJson()))
+            } else {
+                disconnectClient(client.id)
+            }
+        }
+    }
+
+    fun disconnectClient(clientId: String) {
+        clients.remove(clientId)
+    }
+
+    fun notifyStatusToClient(clientId: String) {
+        val client = clients[clientId] ?: return
+        GlobalScope.launch {
+            if (client.socket.isActive) {
+                client.socket.send(Frame.Text(CurrentProcess(processingAction).toJson()))
+            } else {
+                disconnectClient(client.id)
+            }
+        }
     }
 
     /**
@@ -117,44 +172,52 @@ class MusicManagerServer {
         return if (playlistManager.edit(playlist)) EditPlaylist() else ServerError("Error editing playlist.")
     }
 
-
     suspend fun downLoadPlaylists(): ServerResponse {
-        processingAction?.let { return ServerBusy(it) }
+        if (processingAction != ServerAction.NONE)  { return ServerBusy(processingAction) }
         processingAction = ServerAction.DOWNLOADING_PLAYLISTS
-        return try {
-            val downloadResult = playlistManager.download()
-            processingAction = null
-            DownloadPlaylists(downloadResult)
-        } catch (e: NoPlaylistsFoundException) {
-            processingAction = null
-            ServerError(e.toString())
+        GlobalScope.launch {
+            try {
+                val downloadResult = playlistManager.download()
+                processingAction = ServerAction.NONE
+                notifyAllClients(DownloadPlaylists(downloadResult))
+            } catch (e: NoPlaylistsFoundException) {
+                processingAction = ServerAction.NONE
+                notifyAllClients(ServerError(e.toString()))
+            }
         }
+        return DownloadPlaylistsLaunched()
     }
 
     suspend fun downLoadPlaylist(playlistId: String): ServerResponse {
-        processingAction?.let { return ServerBusy(it) }
+        if (processingAction != ServerAction.NONE)  { return ServerBusy(processingAction) }
         processingAction = ServerAction.DOWNLOADING_PLAYLIST
-        return try {
-            val downloadResult = playlistManager.download(playlistId)
-            processingAction = null
-            DownloadPlaylist(downloadResult)
-        } catch (e: NoPlaylistsFoundException) {
-            processingAction = null
-            ServerError(e.toString())
+        GlobalScope.launch {
+            try {
+                val downloadResult = playlistManager.download(playlistId)
+                processingAction = ServerAction.NONE
+                notifyAllClients(DownloadPlaylist(downloadResult))
+            } catch (e: NoPlaylistsFoundException) {
+                processingAction = ServerAction.NONE
+                notifyAllClients(ServerError(e.toString()))
+            }
         }
+        return DownloadPlaylistLaunched()
     }
 
     suspend fun archiveMusic(): ServerResponse {
-        processingAction?.let { return ServerBusy(it) }
+        if (processingAction != ServerAction.NONE)  { return ServerBusy(processingAction) }
         processingAction = ServerAction.ARCHIVING_MUSIC
-        return try {
-            val result = playlistManager.archiveMusic()
-            processingAction = null
-            ArchiveMusic(result)
-        } catch (e: NoPlaylistsFoundException) {
-            processingAction = null
-            ServerError(e.toString())
+        GlobalScope.launch {
+            try {
+                val result = playlistManager.archiveMusic()
+                processingAction = ServerAction.NONE
+                notifyAllClients(ArchiveMusic(result))
+            } catch (e: NoPlaylistsFoundException) {
+                processingAction = ServerAction.NONE
+                notifyAllClients(ServerError(e.toString()))
+            }
         }
+        return ArchiveMusicLaunched()
     }
 
     suspend fun editMusic(music: Music): ServerResponse {

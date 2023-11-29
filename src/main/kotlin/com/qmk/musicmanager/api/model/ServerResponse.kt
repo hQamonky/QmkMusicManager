@@ -11,6 +11,20 @@ abstract class ServerResponse(
     }
 }
 
+class CurrentProcess(
+    process: ServerAction,
+) : ServerResponse(process)
+
+class ProcessChange(
+    oldProcess: ServerAction,
+    newProcess: ServerAction
+) : ServerResponse(ProcessChangeResponse(oldProcess, newProcess)) {
+    data class ProcessChangeResponse(
+        val oldProcess: ServerAction,
+        val newProcess: ServerAction
+    )
+}
+
 class ServerError( // TODO : Implement error codes
     message: String
 ) : ServerResponse(ServerErrorResponse(0, message)) {
@@ -40,14 +54,17 @@ class CreatePlaylist(
 
 class EditPlaylist : ServerResponse(true)
 
+class DownloadPlaylistsLaunched : ServerResponse(true)
 class DownloadPlaylists(
     response: List<DownloadResult>
 ) : ServerResponse(response)
 
+class DownloadPlaylistLaunched : ServerResponse(true)
 class DownloadPlaylist(
     response: DownloadResult
 ) : ServerResponse(response)
 
+class ArchiveMusicLaunched : ServerResponse(true)
 class ArchiveMusic(
     response: List<String>
 ) : ServerResponse(response)

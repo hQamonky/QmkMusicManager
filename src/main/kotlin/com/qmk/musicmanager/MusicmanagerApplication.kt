@@ -1,5 +1,6 @@
 package com.qmk.musicmanager
 
+import com.google.gson.Gson
 import com.qmk.musicmanager.api.MusicManagerServer
 import com.qmk.musicmanager.api.route.*
 import com.qmk.musicmanager.plugins.configureMonitoring
@@ -21,6 +22,7 @@ fun main() {
 }
 
 val server = MusicManagerServer()
+val gson = Gson()
 
 fun Application.module() {
 

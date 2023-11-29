@@ -14,7 +14,7 @@ fun Route.uploadersRoutes() {
     route("/api/uploaders") {
         get {
             val uploaders = server.getUploaders()
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, uploaders.response.toString()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, uploaders.toJson()))
         }
     }
     route("/api/uploaders/{id}") {
@@ -26,10 +26,10 @@ fun Route.uploadersRoutes() {
             }
             val result = server.getUploader(id)
             if (result is ServerError) {
-                call.respond(HttpStatusCode.NotFound, BasicAPIResponse(false, result.response.toString()))
+                call.respond(HttpStatusCode.NotFound, BasicAPIResponse(false, result.toJson()))
                 return@get
             }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.response.toString()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
         }
         post {
             val id = call.parameters["id"]
@@ -40,9 +40,9 @@ fun Route.uploadersRoutes() {
             }
             val result = server.editUploaderNamingFormat(id, namingFormat)
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.response.toString()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
             }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.response.toString()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
         }
     }
 }
