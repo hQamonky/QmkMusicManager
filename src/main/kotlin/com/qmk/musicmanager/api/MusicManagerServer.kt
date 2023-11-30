@@ -148,6 +148,10 @@ class MusicManagerServer {
         return youtubeManager.updateYoutubeDl()?.let { UpdateYoutubeDl(it) } ?: ServerError("Unknown server error.")
     }
 
+    suspend fun updateYtDlp(): ServerResponse {
+        return youtubeManager.updateYtDlp()?.let { UpdateYtDl(it) } ?: ServerError("Unknown server error.")
+    }
+
     suspend fun getPlaylistId(playlistUrl: String): String {
         return playlistManager.getPlaylistId(playlistUrl)
     }

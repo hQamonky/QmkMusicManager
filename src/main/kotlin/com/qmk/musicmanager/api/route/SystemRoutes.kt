@@ -19,9 +19,9 @@ fun Route.systemRoutes() {
             call.respond(HttpStatusCode.OK, BasicAPIResponse(true))
         }
     }
-    route("/api/youtube-dl/update") {
+    route("/api/yt-dlp/update") {
         post {
-            val result = server.updateYoutubeDl()
+            val result = server.updateYtDlp()
             call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
         }
     }

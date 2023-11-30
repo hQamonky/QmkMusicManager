@@ -33,7 +33,7 @@ class YoutubeManager {
         return "$ytDlp -U".runCommand()
     }
 
-    fun getPlaylistInfo(url: String, tool: DownloadTool = DownloadTool.YOUTUBE_DL): String? {
+    fun getPlaylistInfo(url: String, tool: DownloadTool = DownloadTool.YT_DLP): String? {
         return when (tool) {
             DownloadTool.YOUTUBE_DL ->
                 "$youtubeDl -ci --flat-playlist -J $url".runCommand()
@@ -43,7 +43,7 @@ class YoutubeManager {
         }
     }
 
-    fun getVideoInfo(videoId: String, tool: DownloadTool? = DownloadTool.YOUTUBE_DL): String? {
+    fun getVideoInfo(videoId: String, tool: DownloadTool? = DownloadTool.YT_DLP): String? {
         return when (tool) {
             DownloadTool.YOUTUBE_DL -> "$youtubeDl -ci -J $videoUrl$videoId".runCommand()
             DownloadTool.YT_DLP -> "$ytDlp -ci -J $videoUrl$videoId".runCommand()

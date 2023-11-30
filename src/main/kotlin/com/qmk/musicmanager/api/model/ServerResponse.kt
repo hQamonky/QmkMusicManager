@@ -44,6 +44,10 @@ class UpdateYoutubeDl(
     response: String
 ) : ServerResponse(response)
 
+class UpdateYtDl(
+    response: String
+) : ServerResponse(response)
+
 class GetPlaylists(
     response: List<Playlist>
 ) : ServerResponse(response)
