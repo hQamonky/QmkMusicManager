@@ -81,6 +81,8 @@ class PlaylistManager(
             println("Error : playlist not found.")
             throw PlaylistNotFoundException()
         }
+        println("Making sure yt-dlp is up to date...")
+        println(youtubeManager.updateYtDlp())
         println("Downloading ${playlist.name}...")
         val result = DownloadResult(playlist = playlist.name)
         val gson = Gson()
