@@ -20,14 +20,14 @@ class PlaylistManager(
     private val mopidyManager: MopidyManager = MopidyManager(),
     private val powerAmpManager: PowerAmpManager = PowerAmpManager()
 ) {
-    suspend fun getPlaylists() : List<Playlist> {
+    suspend fun getPlaylists(): List<Playlist> {
         return playlistDAO.allPlaylists()
     }
 
     suspend fun getPlaylistId(playlistUrl: String): String {
         val gson = Gson()
         val playlistInfo = gson.fromJson(
-            youtubeManager.getPlaylistInfo(playlistUrl, DownloadTool.YOUTUBE_DLP),
+            youtubeManager.getPlaylistInfo(playlistUrl, DownloadTool.YT_DLP),
             PlaylistInfo::class.java
         )
         return playlistInfo.id
@@ -51,7 +51,7 @@ class PlaylistManager(
         return playlist
     }
 
-    suspend fun edit(playlist: Playlist) : Boolean {
+    suspend fun edit(playlist: Playlist): Boolean {
         val oldPlaylist = playlistDAO.playlist(playlist.id) ?: throw PlaylistNotFoundException()
         if (oldPlaylist.name != playlist.name) {
             mopidyManager.renamePlaylist(oldPlaylist.name, playlist.name)
@@ -85,7 +85,7 @@ class PlaylistManager(
         val result = DownloadResult(playlist = playlist.name)
         val gson = Gson()
         gson.fromJson(
-            youtubeManager.getPlaylistInfo("${youtubeManager.playlistUrl}${playlist.id}", DownloadTool.YOUTUBE_DLP),
+            youtubeManager.getPlaylistInfo("${youtubeManager.playlistUrl}${playlist.id}", DownloadTool.YT_DLP),
             PlaylistInfo::class.java
         ).entries
             .map { it.id }
@@ -113,7 +113,7 @@ class PlaylistManager(
         val playlistId = playlist.id
         // Get video info
         println("Getting info for $videoId...")
-        var tmp = youtubeManager.getVideoInfo(videoId, DownloadTool.YOUTUBE_DLP)
+        var tmp = youtubeManager.getVideoInfo(videoId, DownloadTool.YT_DLP)
         if (tmp == "null\n") {
             tmp = youtubeManager.getVideoInfo(videoId)
         }
@@ -126,8 +126,11 @@ class PlaylistManager(
         }
         // Download music
         println("Downloading ${musicInfo.title}...")
-        val outputFile = "./workDir/tmp.mp3"
-        val downloadResult = youtubeManager.downloadMusic(musicInfo.id, DownloadTool.YOUTUBE_DLP)
+        val audioFormat = configurationManager.getConfiguration().audioFormat
+        val outputFileName = "./workDir/tmp"
+        val outputFile = "$outputFileName.$audioFormat"
+        val downloadResult =
+            youtubeManager.downloadMusic(musicInfo.id, outputFileName, audioFormat, 0, DownloadTool.YT_DLP)
         println("$downloadResult")
         // Set metadata
         println("Setting ID3 tags...")

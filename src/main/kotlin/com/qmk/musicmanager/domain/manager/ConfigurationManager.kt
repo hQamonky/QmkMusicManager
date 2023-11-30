@@ -27,6 +27,10 @@ class ConfigurationManager(
         setConfiguration(getConfiguration().copy(musicFolder = path))
     }
 
+    fun setAudioFormat(format: String) {
+        setConfiguration(getConfiguration().copy(audioFormat = format))
+    }
+
     fun setDownloadOccurrence(occurrence: Int) {
         setConfiguration(getConfiguration().copy(downloadOccurrence = occurrence))
     }

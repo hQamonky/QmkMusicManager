@@ -272,6 +272,12 @@ class MusicManagerServer {
         return SetMusicFolder()
     }
 
+    suspend fun setAudioFormat(format: String): ServerResponse {
+        configurationManager.setAudioFormat(format)
+        // TODO : implement error handling
+        return SetAudioFormat()
+    }
+
     suspend fun setDownloadOccurrence(occurrence: Int): ServerResponse {
         configurationManager.setDownloadOccurrence(occurrence)
         // TODO : implement error handling

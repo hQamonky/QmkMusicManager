@@ -45,6 +45,21 @@ fun Route.settingsRoutes() {
             call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
         }
     }
+    route("/api/settings/audio-format") {
+        post {
+            val format = call.receiveNullable<String>()
+            if (format == null) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@post
+            }
+            val result = server.setAudioFormat(format)
+            if (result is ServerError) {
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                return@post
+            }
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
+        }
+    }
     route("/api/settings/download-occurrence") {
         post {
             val occurrence = call.receiveNullable<Int>()

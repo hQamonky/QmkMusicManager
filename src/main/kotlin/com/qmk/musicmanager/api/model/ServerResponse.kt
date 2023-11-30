@@ -99,6 +99,8 @@ class SetSettings : ServerResponse(true)
 
 class SetMusicFolder : ServerResponse(true)
 
+class SetAudioFormat : ServerResponse(true)
+
 class SetDownloadOccurrence : ServerResponse(true)
 
 class SetAutoDownload : ServerResponse(true)
