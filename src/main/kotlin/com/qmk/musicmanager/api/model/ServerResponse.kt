@@ -118,3 +118,7 @@ class GetUploader(
 ) : ServerResponse(response)
 
 class EditUploaderNamingFormat : ServerResponse(true)
+
+class MopidyLocalScan(
+    response: String
+) : ServerResponse(response)

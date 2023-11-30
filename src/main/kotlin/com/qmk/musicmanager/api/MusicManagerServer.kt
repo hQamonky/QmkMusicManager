@@ -188,6 +188,8 @@ class MusicManagerServer {
                 processingAction = ServerAction.NONE
                 notifyAllClients(ServerError(e.toString()))
             }
+            val mopidyLocalScanResult = mopidyManager.mopidyLocalScan()
+            notifyAllClients(MopidyLocalScan(mopidyLocalScanResult))
         }
         return DownloadPlaylistsLaunched()
     }
@@ -204,6 +206,8 @@ class MusicManagerServer {
                 processingAction = ServerAction.NONE
                 notifyAllClients(ServerError(e.toString()))
             }
+            val mopidyLocalScanResult = mopidyManager.mopidyLocalScan()
+            notifyAllClients(MopidyLocalScan(mopidyLocalScanResult))
         }
         return DownloadPlaylistLaunched()
     }
@@ -220,12 +224,19 @@ class MusicManagerServer {
                 processingAction = ServerAction.NONE
                 notifyAllClients(ServerError(e.toString()))
             }
+            val mopidyLocalScanResult = mopidyManager.mopidyLocalScan()
+            notifyAllClients(MopidyLocalScan(mopidyLocalScanResult))
         }
         return ArchiveMusicLaunched()
     }
 
     suspend fun editMusic(music: Music): ServerResponse {
-        return if (musicManager.editMusic(music)) EditMusic() else ServerError("Error editing music.")
+        return if (musicManager.editMusic(music)) {
+            GlobalScope.launch {
+                notifyAllClients(MopidyLocalScan(mopidyManager.mopidyLocalScan()))
+            }
+            EditMusic()
+        } else ServerError("Error editing music.")
     }
 
     suspend fun getNewMusic(): ServerResponse {

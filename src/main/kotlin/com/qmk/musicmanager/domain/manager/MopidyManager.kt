@@ -1,6 +1,7 @@
 package com.qmk.musicmanager.domain.manager
 
 import com.qmk.musicmanager.domain.extension.moveTo
+import com.qmk.musicmanager.domain.extension.runCommand
 import com.qmk.musicmanager.domain.model.Music
 import java.io.File
 import java.net.URI
@@ -166,5 +167,13 @@ class MopidyManager(
             .replace("/", ":")
         if (subFolders != "") subFolders += ":"
         return "local:track:$subFolders$finalUri"
+    }
+
+    fun mopidyLocalScan(): String {
+        return try {
+            "mopidy local scan".runCommand() ?: "Unknown success."
+        } catch(e: Exception) {
+            e.message ?: "Unknown exception."
+        }
     }
 }
