@@ -90,6 +90,21 @@ fun Route.settingsRoutes() {
             call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
         }
     }
+    route("/api/settings/rapidapi-key") {
+        post {
+            val rapidapiKey = call.receiveNullable<String>()
+            if (rapidapiKey == null) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@post
+            }
+            val result = server.setRapidapiKey(rapidapiKey)
+            if (result is ServerError) {
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                return@post
+            }
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
+        }
+    }
     route("/api/settings/archive-folder") {
         post {
             // TODO : Implement feature

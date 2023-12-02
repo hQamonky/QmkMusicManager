@@ -115,11 +115,7 @@ class PlaylistManager(
         val playlistId = playlist.id
         // Get video info
         println("Getting info for $videoId...")
-        var tmp = youtubeManager.getVideoInfo(videoId, DownloadTool.YT_DLP)
-        if (tmp == "null\n") {
-            tmp = youtubeManager.getVideoInfo(videoId)
-        }
-        val musicInfo = Gson().fromJson(tmp, MusicInfo::class.java)
+        val musicInfo = Gson().fromJson(youtubeManager.getVideoInfo(videoId, DownloadTool.YT_DLP), MusicInfo::class.java)
         // Create uploader if not exist
         var uploader = uploaderDAO.uploader(musicInfo.channel_id)
         if (uploader == null) {
@@ -142,7 +138,10 @@ class PlaylistManager(
                     "artist = ${metadata.artist}\n" +
                     "album = ${metadata.album}\n" +
                     "year = ${metadata.year}\n" +
-                    "comment = ${metadata.comment}"
+                    "downloadDate = ${metadata.comments?.downloadDate}\n" +
+                    "id = ${metadata.comments?.source?.id}\n" +
+                    "uploaderId = ${metadata.comments?.source?.uploaderId}\n" +
+                    "uploadDate = ${metadata.comments?.source?.uploadDate}\n"
         )
         id3Manager.setMetadata(File(outputFile), metadata)
         val music = Music(

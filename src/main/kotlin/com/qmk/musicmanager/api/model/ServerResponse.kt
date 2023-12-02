@@ -109,6 +109,8 @@ class SetDownloadOccurrence : ServerResponse(true)
 
 class SetAutoDownload : ServerResponse(true)
 
+class SetRapidapiKey : ServerResponse(true)
+
 class GetUploaders(
     response: List<Uploader>
 ) : ServerResponse(response)

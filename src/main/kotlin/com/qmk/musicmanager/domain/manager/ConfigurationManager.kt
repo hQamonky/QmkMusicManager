@@ -38,4 +38,8 @@ class ConfigurationManager(
     fun setAutoDownload(autoDownload: Boolean) {
         setConfiguration(getConfiguration().copy(autoDownload = autoDownload))
     }
+
+    fun setRapidapiKey(key: String) {
+        setConfiguration(getConfiguration().copy(rapidapiKey = key))
+    }
 }

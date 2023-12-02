@@ -307,6 +307,12 @@ class MusicManagerServer {
         return SetAutoDownload()
     }
 
+    suspend fun setRapidapiKey(key: String): ServerResponse {
+        configurationManager.setRapidapiKey(key)
+        // TODO : implement error handling
+        return SetRapidapiKey()
+    }
+
     suspend fun getUploaders(): ServerResponse {
         return GetUploaders(uploaderDAO.allUploaders())
     }

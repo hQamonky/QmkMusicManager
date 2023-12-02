@@ -50,6 +50,13 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-ui:$swaggerVersion")
     implementation("org.springdoc:springdoc-openapi-kotlin:$swaggerVersion")
 
+    // OkHttp
+    // define a BOM and its version
+    implementation(platform("com.squareup.okhttp3:okhttp-bom:4.11.0"))
+    // define any required OkHttp artifacts without version
+    implementation("com.squareup.okhttp3:okhttp")
+    implementation("com.squareup.okhttp3:logging-interceptor")
+
     // Tools
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("net.jthink:jaudiotagger:3.0.1")

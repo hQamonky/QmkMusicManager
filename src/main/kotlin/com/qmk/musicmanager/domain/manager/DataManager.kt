@@ -1,6 +1,5 @@
 package com.qmk.musicmanager.domain.manager
 
-import com.google.gson.Gson
 import com.qmk.musicmanager.database.dao.MusicDAOImpl
 import com.qmk.musicmanager.database.dao.NamingRuleDAOImpl
 import com.qmk.musicmanager.database.dao.PlaylistDAOImpl
@@ -88,27 +87,16 @@ class DataManager(
             if (it.isDirectory || it.extension == "m3u8") return@lit
             try {
                 val metadata = id3Manager.getMetadata(it)
-                var id: String? = null
-                try {
-                    val comment = Gson().fromJson(metadata.comment, Comment::class.java)
-                    id = comment.id
-                } catch (e: Exception) {
-                    println("Error parsing comment to json.")
-                    if (metadata.comment.isNotEmpty())
-                        id = metadata.comment
-                } catch (e: NullPointerException) {
-                    println("Comment is null.")
-                    return@lit
-                }
-                if (id != null && musicDAO.music(id) == null) {
+                // TODO : Adapt for new tag format
+                if (metadata.comments?.source?.id != null && musicDAO.music(metadata.comments.source.id) == null) {
                     musicDAO.addNewMusic(
-                        id = id,
+                        id = metadata.comments.source.id,
                         fileName = it.name,
                         fileExtension = it.extension,
                         title = metadata.title,
                         artist = metadata.artist,
-                        uploaderId = metadata.album,
-                        uploadDate = metadata.year,
+                        uploaderId = metadata.comments.source.uploaderId,
+                        uploadDate = metadata.comments.source.uploadDate,
                         isNew = false
                     )
                 }
@@ -119,8 +107,3 @@ class DataManager(
         }
     }
 }
-
-data class Comment(
-    val platform: String,
-    val id: String
-)

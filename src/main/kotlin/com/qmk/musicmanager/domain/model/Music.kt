@@ -93,15 +93,6 @@ data class MusicInfo(
     val channel_id: String
 )
 
-data class Metadata(
-    val name: String,
-    val title: String,
-    val artist: String,
-    val album: String,
-    val year: String,
-    val comment: String
-)
-
 @Schema(description = "Returned object when downloading a music.")
 data class MusicResult(
     @field:Schema(

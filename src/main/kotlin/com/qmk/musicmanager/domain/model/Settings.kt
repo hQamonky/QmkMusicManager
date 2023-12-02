@@ -30,6 +30,12 @@ data class Settings(
         type = "String"
     )
     val audioFormat: String = "mp3",
+    @field:Schema(
+        description = "API key for the rapidapi API. You can get a key by signing up at https://rapidapi.com.",
+        example = "84353a50186bb56afd86ap1bdd9ejsna03bd6a6f69msh1bbb8",
+        type = "String"
+    )
+    val rapidapiKey: String = "",
 ) {
     fun toJson(): String {
         return Gson().toJson(this)
