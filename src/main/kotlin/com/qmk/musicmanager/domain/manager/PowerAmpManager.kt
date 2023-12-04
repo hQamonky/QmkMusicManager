@@ -61,6 +61,21 @@ class PowerAmpManager(
         return result
     }
 
+    fun isMusicInPlaylist(music: Music, playlistName: String): Boolean {
+        updateMembers()
+        val musicFile = File("$musicDir/${music.fileName}.${music.fileExtension}")
+        val playlist = File("$playlistDir/$playlistName.m3u8")
+        if (!playlist.exists()) return false
+        playlist.readLines().forEach {
+            val uri = URI(it.replace(
+                "local:track:",
+                "file:${File(musicDir).absolutePath}/"
+            ))
+            if (File(uri.path) == musicFile) return true
+        }
+        return false
+    }
+
     fun archiveMusic() {
         updateMembers()
         val archivePlaylist = File("${playlistDir}/$archivePlaylistName.m3u8")

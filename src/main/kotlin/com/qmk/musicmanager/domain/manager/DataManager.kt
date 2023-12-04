@@ -102,10 +102,14 @@ class DataManager(
                     isNew = false
                 ) ?: return@lit
                 metadata.comments?.playlists?.forEach { playlistName ->
-                    mopidyManager.createPlaylist(playlistName)
-                    powerAmpManager.createPlaylist(playlistName)
-                    mopidyManager.addMusicToPlaylist(music, playlistName)
-                    powerAmpManager.addMusicToPlaylist(music, playlistName)
+                    if (!mopidyManager.isMusicInPlaylist(music, playlistName)) {
+                        mopidyManager.createPlaylist(playlistName)
+                        mopidyManager.addMusicToPlaylist(music, playlistName)
+                    }
+                    if (!powerAmpManager.isMusicInPlaylist(music, playlistName)) {
+                        powerAmpManager.createPlaylist(playlistName)
+                        powerAmpManager.addMusicToPlaylist(music, playlistName)
+                    }
                 }
             } catch (e: CannotReadException) {
                 println("Error getting metadata : file is most likely not a music file.")
