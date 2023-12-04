@@ -4,6 +4,7 @@ import com.qmk.musicmanager.database.dao.MusicDAOImpl
 import com.qmk.musicmanager.database.dao.NamingRuleDAOImpl
 import com.qmk.musicmanager.database.dao.PlaylistDAOImpl
 import com.qmk.musicmanager.database.dao.UploaderDAOImpl
+import io.ktor.util.*
 import org.jaudiotagger.audio.exceptions.CannotReadException
 import java.io.File
 
@@ -12,6 +13,8 @@ class DataManager(
     private val musicDAO: MusicDAOImpl,
     private val namingRuleDAO: NamingRuleDAOImpl,
     private val uploaderDAO: UploaderDAOImpl,
+    private val mopidyManager: MopidyManager,
+    private val powerAmpManager: PowerAmpManager
 ) {
     suspend fun removeAllEntries(): Boolean {
         val playlistDeleted = playlistDAO.deleteAllPlaylists()
@@ -87,18 +90,22 @@ class DataManager(
             if (it.isDirectory || it.extension == "m3u8") return@lit
             try {
                 val metadata = id3Manager.getMetadata(it)
-                // TODO : Adapt for new tag format
-                if (metadata.comments?.source?.id != null && musicDAO.music(metadata.comments.source.id) == null) {
-                    musicDAO.addNewMusic(
-                        id = metadata.comments.source.id,
-                        fileName = it.name,
-                        fileExtension = it.extension,
-                        title = metadata.title,
-                        artist = metadata.artist,
-                        uploaderId = metadata.comments.source.uploaderId,
-                        uploadDate = metadata.comments.source.uploadDate,
-                        isNew = false
-                    )
+                val id = metadata.comments?.source?.id ?: "qmk${generateNonce()}"
+                val music = musicDAO.music(id) ?: musicDAO.addNewMusic(
+                    id = id,
+                    fileName = it.name,
+                    fileExtension = it.extension,
+                    title = metadata.title,
+                    artist = metadata.artist,
+                    uploaderId = metadata.comments?.source?.uploaderId ?: "",
+                    uploadDate = metadata.comments?.source?.uploadDate ?: "",
+                    isNew = false
+                ) ?: return@lit
+                metadata.comments?.playlists?.forEach { playlistName ->
+                    mopidyManager.createPlaylist(playlistName)
+                    powerAmpManager.createPlaylist(playlistName)
+                    mopidyManager.addMusicToPlaylist(music, playlistName)
+                    powerAmpManager.addMusicToPlaylist(music, playlistName)
                 }
             } catch (e: CannotReadException) {
                 println("Error getting metadata : file is most likely not a music file.")
