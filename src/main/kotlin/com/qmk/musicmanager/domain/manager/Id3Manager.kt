@@ -114,10 +114,10 @@ class Id3Manager {
         if (playlists != null || customTags != null) {
             var comments = currentMetadata.comments
             if (playlists != null) {
-                comments = comments?.copy(playlists = playlists)
+                comments = comments?.copy(playlists = playlists) ?: CommentsTag(playlists = playlists)
             }
             if (customTags != null) {
-                comments = comments?.copy(customTags = customTags)
+                comments = comments?.copy(customTags = customTags) ?: CommentsTag(customTags = customTags)
             }
             tag.setField(FieldKey.COMMENT, comments?.toJson(gson))
         }
@@ -133,6 +133,32 @@ class Id3Manager {
         } catch (e: NullPointerException) {
             println("Comment is null.")
             null
+        }
+    }
+
+    fun addMusicToPlaylist(music: File, playlistName: String): Boolean {
+        try {
+            val playlists = getMetadata(file = music).comments?.playlists?.toMutableList() ?: mutableListOf()
+            if (playlists.contains(playlistName)) return true
+            playlists.add(playlistName)
+            updateMetadata(file = music, playlists = playlists)
+            return true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        }
+    }
+
+    fun removeMusicFromPlaylist(music: File, playlistName: String): Boolean {
+        try {
+            val playlists = getMetadata(file = music).comments?.playlists?.toMutableList() ?: mutableListOf()
+            if (!playlists.contains(playlistName)) return true
+            playlists.remove(playlistName)
+            updateMetadata(file = music, playlists = playlists)
+            return true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
         }
     }
 }

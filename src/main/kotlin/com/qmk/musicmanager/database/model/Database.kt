@@ -12,10 +12,15 @@ object DatabaseFactory {
         val database = Database.connect(jdbcURL, driverClassName)
         transaction(database) {
             SchemaUtils.create(Playlists)
+            SchemaUtils.create(Platforms)
+            SchemaUtils.create(Tags)
+            SchemaUtils.create(NamingRules)
+            SchemaUtils.create(Uploaders)
+            SchemaUtils.create(PlatformPlaylists)
+            SchemaUtils.create(PlaylistPlatformPlaylist)
             SchemaUtils.create(Music)
             SchemaUtils.create(PlaylistMusic)
-            SchemaUtils.create(Uploaders)
-            SchemaUtils.create(NamingRules)
+            SchemaUtils.create(MusicTag)
         }
     }
 
@@ -24,29 +29,28 @@ object DatabaseFactory {
 }
 
 object Playlists : Table() {
-    val id = varchar("id", 128)
     val name = varchar("name", 128)
 
-    override val primaryKey = PrimaryKey(id)
+    override val primaryKey = PrimaryKey(name)
 }
 
-object Music : Table() {
-    val id = varchar("id", 128)
-    val fileName = varchar("file_name", 1024)
-    val fileExtension = varchar("file_extension", 128)
-    val title = varchar("title", 128)
-    val artist = varchar("artist", 128)
-    val uploader = varchar("uploader", 128)
-    val uploadDate = varchar("upload_date", 128)
-    val isNew = bool("is_new")
+object Platforms : Table() {
+    val name = varchar("name", 128)
 
-    override val primaryKey = PrimaryKey(id)
+    override val primaryKey = PrimaryKey(name)
 }
 
-object PlaylistMusic : Table() {
+object Tags : Table() {
+    val value = varchar("value", 128)
+
+    override val primaryKey = PrimaryKey(value)
+}
+
+object NamingRules : Table() {
     val id = integer("id").autoIncrement()
-    val playlistId = varchar("playlist_id", 128)
-    val musicId = varchar("music_id", 128)
+    val replace = varchar("replace", 128)
+    val replaceBy = varchar("replaceBy", 128)
+    val priority = integer("priority")
 
     override val primaryKey = PrimaryKey(id)
 }
@@ -56,15 +60,52 @@ object Uploaders : Table() {
     val name = varchar("name", 128)
     val separator = varchar("separator", 128)
     val isArtistBeforeTitle = bool("artist_before_title")
+    val platform = varchar("platform", 128)
 
     override val primaryKey = PrimaryKey(id)
 }
 
-object NamingRules : Table() {
+object PlatformPlaylists : Table() {
+    val id = varchar("id", 128)
+    val name = varchar("name", 128)
+    val platform = varchar("platform", 128)
+
+    override val primaryKey = PrimaryKey(id)
+}
+
+object PlaylistPlatformPlaylist : Table() {
     val id = integer("id").autoIncrement()
-    val replace = varchar("replace", 128)
-    val replaceBy = varchar("replaceBy", 128)
-    val priority = integer("priority")
+    val playlistPlatformId = varchar("playlist_platform_id", 128)
+    val playlist = varchar("playlist", 128)
+
+    override val primaryKey = PrimaryKey(id)
+}
+
+object Music : Table() {
+    val fileName = varchar("file_name", 1024)
+    val fileExtension = varchar("file_extension", 128)
+    val title = varchar("title", 128)
+    val artist = varchar("artist", 128)
+    val id = varchar("id", 128)
+    val uploader = varchar("uploader", 128)
+    val uploadDate = varchar("upload_date", 128)
+    val isNew = bool("is_new")
+
+    override val primaryKey = PrimaryKey(fileName)
+}
+
+object PlaylistMusic : Table() {
+    val id = integer("id").autoIncrement()
+    val playlist = varchar("playlist", 128)
+    val music = varchar("music", 128)
+
+    override val primaryKey = PrimaryKey(id)
+}
+
+object MusicTag : Table() {
+    val id = integer("id").autoIncrement()
+    val tag = varchar("tag", 128)
+    val music = varchar("music", 128)
 
     override val primaryKey = PrimaryKey(id)
 }

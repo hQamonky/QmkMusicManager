@@ -96,9 +96,10 @@ class PlaylistManager(
                 if (music != null) {
                     println("Not downloading ${music.fileName} because is has already been done.")
                     result.skipped.add(music.fileName)
-                    if (!music.playlistIds.contains(playlistId)) {
+                    if (!music.playlists.contains(playlistId)) {
                         println("Adding ${playlist.name} to music.")
                         playlistDAO.addMusicToPlaylist(musicId, playlistId)
+                        id3Manager.addMusicToPlaylist(File("${music.fileName}.${music.fileExtension}"), )
                         insertMusicInPlaylistFiles(music, playlist.name)
                     } else {
                         println("${music.fileName} is already in ${playlist.name}.")
@@ -151,7 +152,7 @@ class PlaylistManager(
             artist = metadata.artist,
             uploaderId = uploader.id,
             uploadDate = musicInfo.upload_date,
-            playlistIds = listOf(playlistId)
+            playlists = listOf(playlistId)
         )
         // Move final file to music folder
         val musicFolder = configurationManager.getConfiguration().musicFolder

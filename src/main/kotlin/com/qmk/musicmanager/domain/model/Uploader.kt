@@ -20,5 +20,11 @@ data class Uploader(
         description = "The naming format to use renaming a music downloaded from this channel.",
         type = "NamingFormat"
     )
-    val namingFormat: NamingFormat = NamingFormat()
+    val namingFormat: NamingFormat = NamingFormat(),
+    @field:Schema(
+        description = "The platform where the uploader is from.",
+        example = "youtube",
+        type = "String"
+    )
+    val platform: String
 )

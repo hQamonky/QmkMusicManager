@@ -5,12 +5,6 @@ import io.swagger.v3.oas.annotations.media.Schema
 @Schema(description = "Model for a music file.")
 data class Music(
     @field:Schema(
-        description = "The id of the music. Using the youtube id for this.",
-        example = "ftshNCG_RPk",
-        type = "String"
-    )
-    val id: String,
-    @field:Schema(
         description = "Name of the file on the disk.",
         example = "Bad Computer - Riddle [Monstercat Release]",
         type = "String"
@@ -35,6 +29,12 @@ data class Music(
     )
     val artist: String,
     @field:Schema(
+        description = "The id of the music from the platform it came from. For example, this is the youtube video id if it came from youtube.",
+        example = "ftshNCG_RPk",
+        type = "String"
+    )
+    val id: String,
+    @field:Schema(
         description = "The id of the channel that uploaded the video.",
         example = "UCT8Y-bugDyR4ADHoQ-FOluw",
         type = "String"
@@ -56,7 +56,12 @@ data class Music(
         description = "List of playlist ids from playlists that contain this music.",
         type = "List<String>"
     )
-    val playlistIds: List<String> = emptyList()
+    val playlists: List<String> = emptyList(),
+    @field:Schema(
+        description = "List of tags from the music file. This could be any word added by the user",
+        type = "List<String>"
+    )
+    val tags: List<String> = emptyList()
 )
 
 @Schema(description = "Model for adding a new music.")

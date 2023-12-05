@@ -13,10 +13,10 @@ data class Metadata(
 )
 
 data class CommentsTag(
-    val source: SourceTag?,
-    val playlists: List<String>,
-    val customTags: List<String>,
-    val downloadDate: String
+    val source: SourceTag? = null,
+    val playlists: List<String> = listOf(),
+    val customTags: List<String> = listOf(),
+    val downloadDate: String = ""
 ) {
     fun toJson(gson: Gson = Gson()): String {
         return gson.toJson(this)
