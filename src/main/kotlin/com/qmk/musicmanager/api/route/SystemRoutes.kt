@@ -1,6 +1,7 @@
 package com.qmk.musicmanager.api.route
 
 import com.qmk.musicmanager.api.model.BasicAPIResponse
+import com.qmk.musicmanager.api.model.MigrateMetadata
 import com.qmk.musicmanager.api.model.ServerError
 import com.qmk.musicmanager.server
 import io.ktor.http.*
@@ -23,6 +24,20 @@ fun Route.systemRoutes() {
         post {
             val result = server.updateYtDlp()
             call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
+        }
+    }
+    route("/api/migrate-metadata") {
+        post {
+            val result = server.migrateMetadata()
+            call.respond(
+                HttpStatusCode.OK, BasicAPIResponse(
+                    when (result) {
+                        is MigrateMetadata -> true
+                        is ServerError -> false
+                        else -> false
+                    }, result.toJson()
+                )
+            )
         }
     }
 }

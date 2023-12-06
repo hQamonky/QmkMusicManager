@@ -14,6 +14,18 @@ import java.time.format.DateTimeFormatter
 class Id3Manager {
     val gson = Gson()
 
+    private fun getCommentsTag(comment: String?): CommentsTag? {
+        return try {
+            gson.fromJson(comment, CommentsTag::class.java)
+        } catch (e: Exception) {
+            println("Error parsing comment to json.")
+            null
+        } catch (e: NullPointerException) {
+            println("Comment is null.")
+            null
+        }
+    }
+
     fun getMetadata(videoInfo: MusicInfo, namingFormat: NamingFormat, namingRules: List<NamingRule>): Metadata {
         val name = videoInfo.title.toAuthorizedFileName()
         val formattedTitle = videoInfo.title.applyNamingRules(namingRules)
@@ -124,18 +136,6 @@ class Id3Manager {
         f.commit()
     }
 
-    fun getCommentsTag(comment: String?): CommentsTag? {
-        return try {
-            gson.fromJson(comment, CommentsTag::class.java)
-        } catch (e: Exception) {
-            println("Error parsing comment to json.")
-            null
-        } catch (e: NullPointerException) {
-            println("Comment is null.")
-            null
-        }
-    }
-
     fun addMusicToPlaylist(music: File, playlistName: String): Boolean {
         try {
             val playlists = getMetadata(file = music).comments?.playlists?.toMutableList() ?: mutableListOf()
@@ -155,6 +155,32 @@ class Id3Manager {
             if (!playlists.contains(playlistName)) return true
             playlists.remove(playlistName)
             updateMetadata(file = music, playlists = playlists)
+            return true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        }
+    }
+
+    fun addCustomTagToMusic(tag: String, music: File): Boolean {
+        try {
+            val customTags = getMetadata(file = music).comments?.customTags?.toMutableList() ?: mutableListOf()
+            if (customTags.contains(tag)) return true
+            customTags.add(tag)
+            updateMetadata(file = music, customTags = customTags)
+            return true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        }
+    }
+
+    fun removeCustomTagFromMusic(tag: String, music: File): Boolean {
+        try {
+            val customTags = getMetadata(file = music).comments?.customTags?.toMutableList() ?: mutableListOf()
+            if (!customTags.contains(tag)) return true
+            customTags.remove(tag)
+            updateMetadata(file = music, customTags = customTags)
             return true
         } catch (e: Exception) {
             e.printStackTrace()

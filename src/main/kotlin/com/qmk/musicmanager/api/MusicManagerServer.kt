@@ -79,7 +79,7 @@ class MusicManagerServer {
         downloadTimer.cancel()
         if (settings.autoDownload) {
             val occurrence = (settings.downloadOccurrence * 60 * 1000).toLong()
-            downloadTimer.schedule (downloadTask, 0L, occurrence)
+            downloadTimer.schedule(downloadTask, 0L, occurrence)
         }
     }
 
@@ -96,7 +96,7 @@ class MusicManagerServer {
         }
     }
 
-    fun doesClientExist(clientId: String) : Boolean {
+    fun doesClientExist(clientId: String): Boolean {
         return clients[clientId] != null
     }
 
@@ -177,7 +177,9 @@ class MusicManagerServer {
     }
 
     suspend fun downLoadPlaylists(): ServerResponse {
-        if (processingAction != ServerAction.NONE)  { return ServerBusy(processingAction) }
+        if (processingAction != ServerAction.NONE) {
+            return ServerBusy(processingAction)
+        }
         processingAction = ServerAction.DOWNLOADING_PLAYLISTS
         GlobalScope.launch {
             try {
@@ -195,7 +197,9 @@ class MusicManagerServer {
     }
 
     suspend fun downLoadPlaylist(playlistId: String): ServerResponse {
-        if (processingAction != ServerAction.NONE)  { return ServerBusy(processingAction) }
+        if (processingAction != ServerAction.NONE) {
+            return ServerBusy(processingAction)
+        }
         processingAction = ServerAction.DOWNLOADING_PLAYLIST
         GlobalScope.launch {
             try {
@@ -213,7 +217,9 @@ class MusicManagerServer {
     }
 
     suspend fun archiveMusic(): ServerResponse {
-        if (processingAction != ServerAction.NONE)  { return ServerBusy(processingAction) }
+        if (processingAction != ServerAction.NONE) {
+            return ServerBusy(processingAction)
+        }
         processingAction = ServerAction.ARCHIVING_MUSIC
         GlobalScope.launch {
             try {
@@ -323,6 +329,20 @@ class MusicManagerServer {
 
     suspend fun editUploaderNamingFormat(id: String, namingFormat: NamingFormat): ServerResponse {
         val uploader = uploaderDAO.uploader(id) ?: return ServerError("Uploader not found.")
-        return if (uploaderDAO.editUploader(id, uploader.name, namingFormat)) EditUploaderNamingFormat() else ServerError("Error editing naming format.")
+        return if (uploaderDAO.editUploader(
+                id,
+                uploader.name,
+                namingFormat
+            )
+        ) EditUploaderNamingFormat() else ServerError("Error editing naming format.")
+    }
+
+    suspend fun migrateMetadata(): ServerResponse {
+        val result = TagsMigrationManager().convertAllFilesMetadata()
+        return if (result == null) {
+            MigrateMetadata("Success !")
+        } else {
+            ServerError(result)
+        }
     }
 }

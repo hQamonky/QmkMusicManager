@@ -2,13 +2,16 @@ package com.qmk.musicmanager.domain.manager
 
 import com.google.gson.Gson
 import com.qmk.musicmanager.domain.model.CommentsTag
+import com.qmk.musicmanager.domain.model.Music
 import com.qmk.musicmanager.domain.model.SourceTag
 import org.jaudiotagger.audio.AudioFileIO
 import org.jaudiotagger.tag.FieldKey
 import org.jaudiotagger.tag.Tag
 import java.io.File
+import javax.activation.MimeType
+import javax.activation.MimetypesFileTypeMap
 
-class MigrateTags {
+class TagsMigrationManager(val configurationManager: ConfigurationManager = ConfigurationManager()) {
     data class OldMetadata(
         val name: String,
         val title: String,
@@ -40,7 +43,7 @@ class MigrateTags {
             Gson().fromJson(tag.getFirst(FieldKey.COMMENT), OldCommentTag::class.java)
         } catch (e: Exception) {
             println("Error parsing comment to json.")
-                null
+            null
         } catch (e: NullPointerException) {
             println("Comment is null.")
             null
@@ -52,10 +55,10 @@ class MigrateTags {
             Gson().fromJson(tag.getFirst(FieldKey.COMMENT), CommentsTag::class.java)
             false
         } catch (e: Exception) {
-            println("Error parsing comments to json.")
+            println("Error parsing comments to json. Metadata is old format.")
             true
         } catch (e: NullPointerException) {
-            println("Comments is null.")
+            println("Comments tag is null. Metadata is missing.")
             true
         }
     }
@@ -82,16 +85,45 @@ class MigrateTags {
         }
     }
 
-    private fun getPlaylistsOfMusic(file: File) : List<String> {
-        return listOf() // TODO
+    private fun getPlaylistsOfMusic(file: File): List<String> {
+        val music = Music(
+            fileName = file.nameWithoutExtension,
+            fileExtension = file.extension,
+            title = "", artist = "", id = "", uploaderId = "", uploadDate = "", isNew = false
+        )
+        val mopidyManager = MopidyManager(configurationManager)
+        val playlistDir = "${configurationManager.getConfiguration().musicFolder}/Playlists/Mopidy"
+
+        val list = mutableListOf<String>()
+
+        File(playlistDir).walk().forEach lit1@{ playlist ->
+            if (playlist.isDirectory || playlist.extension != "m3u8") return@lit1
+            val playlistName = playlist.nameWithoutExtension
+            if (mopidyManager.isMusicInPlaylist(music, playlistName)) {
+                list.add(playlistName)
+            }
+        }
+
+        return list
     }
 
-    fun convertFileMetadata(file: File) {
+    private fun convertFileMetadata(file: File) {
         val f = AudioFileIO.read(file)
         val tag: Tag = f.tag
         if (!isMetadataIsOld(tag)) return
         val comments = getNewCommentTagFromOldFile(file)
         tag.setField(FieldKey.COMMENT, comments.toJson())
         f.commit()
+    }
+
+    fun convertAllFilesMetadata(): String? {
+        val musicFolder = File(configurationManager.getConfiguration().musicFolder)
+        if (!musicFolder.isDirectory) return "Failed to get music folder."
+        musicFolder.walk().forEach lit1@{ musicFile ->
+            val fileType = MimetypesFileTypeMap().getContentType(musicFile)
+            if (!fileType.contains("audio")) return@lit1
+            convertFileMetadata(musicFile)
+        }
+        return null
     }
 }

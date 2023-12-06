@@ -124,3 +124,5 @@ class EditUploaderNamingFormat : ServerResponse(true)
 class MopidyLocalScan(
     response: String
 ) : ServerResponse(response)
+
+class MigrateMetadata(result: String) : ServerResponse(result)

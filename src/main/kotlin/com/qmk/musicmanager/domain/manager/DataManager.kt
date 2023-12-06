@@ -99,6 +99,7 @@ class DataManager(
                     artist = metadata.artist,
                     uploaderId = metadata.comments?.source?.uploaderId ?: "",
                     uploadDate = metadata.comments?.source?.uploadDate ?: "",
+                    tags = metadata.comments?.customTags ?: listOf(),
                     isNew = false
                 ) ?: return@lit
                 metadata.comments?.playlists?.forEach { playlistName ->

@@ -47,12 +47,6 @@ data class Music(
     )
     val uploadDate: String,
     @field:Schema(
-        description = "Defines if the music is new or not.",
-        example = "true",
-        type = "Boolean"
-    )
-    val isNew: Boolean = true,
-    @field:Schema(
         description = "List of playlist ids from playlists that contain this music.",
         type = "List<String>"
     )
@@ -61,7 +55,13 @@ data class Music(
         description = "List of tags from the music file. This could be any word added by the user",
         type = "List<String>"
     )
-    val tags: List<String> = emptyList()
+    val tags: List<String> = emptyList(),
+    @field:Schema(
+        description = "Defines if the music is new or not.",
+        example = "true",
+        type = "Boolean"
+    )
+    val isNew: Boolean = true
 )
 
 @Schema(description = "Model for adding a new music.")
