@@ -12,6 +12,7 @@ class UploaderDAOImpl : UploaderDAO {
         id = row[Uploaders.id],
         name = row[Uploaders.name],
         namingFormat = resultToNamingFormat(row),
+        platform = row[Uploaders.platform]
     )
 
     private fun resultToNamingFormat(row: ResultRow) = NamingFormat(
@@ -30,19 +31,19 @@ class UploaderDAOImpl : UploaderDAO {
             .singleOrNull()
     }
 
-    override suspend fun addNewUploader(id: String, name: String, namingFormat: NamingFormat): Uploader? = dbQuery {
+    override suspend fun addNewUploader(id: String, name: String, namingFormat: NamingFormat, platform: String): Uploader? = dbQuery {
         val insertStatement = Uploaders.insert {
             it[Uploaders.id] = id
             it[Uploaders.name] = name
             it[Uploaders.separator] = namingFormat.separator
             it[Uploaders.isArtistBeforeTitle] = namingFormat.artistBeforeTitle
+            it[Uploaders.platform] = platform
         }
         insertStatement.resultedValues?.singleOrNull()?.let(::resultRowToUploader)
     }
 
-    override suspend fun editUploader(id: String, name: String, namingFormat: NamingFormat): Boolean = dbQuery {
+    override suspend fun editUploader(id: String, namingFormat: NamingFormat): Boolean = dbQuery {
         Uploaders.update({ Uploaders.id eq id }) {
-            it[Uploaders.name] = name
             it[Uploaders.separator] = namingFormat.separator
             it[Uploaders.isArtistBeforeTitle] = namingFormat.artistBeforeTitle
         } > 0
