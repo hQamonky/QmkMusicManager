@@ -1,28 +1,29 @@
 package com.qmk.musicmanager.domain.manager
 
-import com.qmk.musicmanager.database.dao.MusicDAOImpl
-import com.qmk.musicmanager.database.dao.NamingRuleDAOImpl
-import com.qmk.musicmanager.database.dao.PlaylistDAOImpl
-import com.qmk.musicmanager.database.dao.UploaderDAOImpl
+import com.qmk.musicmanager.database.dao.*
 import io.ktor.util.*
 import org.jaudiotagger.audio.exceptions.CannotReadException
 import java.io.File
 
 class DataManager(
-    private val playlistDAO: PlaylistDAOImpl,
-    private val musicDAO: MusicDAOImpl,
-    private val namingRuleDAO: NamingRuleDAOImpl,
-    private val uploaderDAO: UploaderDAOImpl,
+    private val playlistDAO: PlaylistDAO,
+    private val platformPlaylistDAO: PlatformPlaylistDAO,
+    private val musicDAO: MusicDAO,
+    private val namingRuleDAO: NamingRuleDAO,
+    private val uploaderDAO: UploaderDAO,
+    private val tagDAO: TagDAO,
     private val mopidyManager: MopidyManager,
     private val powerAmpManager: PowerAmpManager
 ) {
     suspend fun removeAllEntries(): Boolean {
         val playlistDeleted = playlistDAO.deleteAllPlaylists()
+        val platformPlaylistDeleted = platformPlaylistDAO.deleteAllPlaylists()
         val musicDeleted = musicDAO.deleteAllMusic()
         val namingRulesDeleted = namingRuleDAO.deleteAllNamingRules()
         val uploaderDeleted = uploaderDAO.deleteAllUploaders()
+        val tagDeleted = tagDAO.deleteAllTags()
 
-        return playlistDeleted == musicDeleted == namingRulesDeleted == uploaderDeleted
+        return playlistDeleted == platformPlaylistDeleted == musicDeleted == namingRulesDeleted == uploaderDeleted == tagDeleted
     }
 
     suspend fun addDefaultNamingRules(): Boolean {

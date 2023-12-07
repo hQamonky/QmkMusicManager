@@ -14,9 +14,11 @@ class MusicManager(
         val musicFolder = configurationManager.getConfiguration().musicFolder
         val file = File("${musicFolder}/${music.fileName}.${music.fileExtension}")
         id3Manager.updateMetadata(
-            file,
-            music.title,
-            music.artist
+            file = file,
+            title = music.title,
+            artist = music.artist,
+            playlists = music.playlists,
+            customTags = music.tags
         )
         return musicDAO.editMusic(
             music.id,

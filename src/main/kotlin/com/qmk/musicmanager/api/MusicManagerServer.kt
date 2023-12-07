@@ -153,7 +153,7 @@ class MusicManagerServer {
     }
 
     suspend fun getPlaylistId(playlistUrl: String): String {
-        return playlistManager.getPlaylistId(playlistUrl)
+        return playlistManager.getYoutubePlaylistId(playlistUrl)
     }
 
     suspend fun doesPlaylistIdExist(id: String): Boolean {

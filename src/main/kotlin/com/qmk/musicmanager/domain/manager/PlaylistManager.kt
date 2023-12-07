@@ -24,7 +24,7 @@ class PlaylistManager(
         return playlistDAO.allPlaylists()
     }
 
-    suspend fun getPlaylistId(playlistUrl: String): String {
+    suspend fun getYoutubePlaylistId(playlistUrl: String): String {
         val gson = Gson()
         val playlistInfo = gson.fromJson(
             youtubeManager.getPlaylistInfo(playlistUrl, DownloadTool.YT_DLP),
@@ -33,17 +33,13 @@ class PlaylistManager(
         return playlistInfo.id
     }
 
-    suspend fun doesPlaylistIdExist(id: String): Boolean {
-        val playlist = playlistDAO.playlist(id)
+    suspend fun doesPlaylistIdExist(name: String): Boolean {
+        val playlist = playlistDAO.playlist(name)
         return playlist != null
     }
 
-    suspend fun doesPlaylistNameExist(name: String): Boolean {
-        return playlistDAO.doesPlaylistNameExist(name)
-    }
-
-    suspend fun create(name: String, id: String): Playlist? {
-        val playlist = playlistDAO.addNewPlaylist(id, name)
+    suspend fun create(name: String): Playlist? {
+        val playlist = playlistDAO.addNewPlaylist(name)
         if (playlist != null) {
             mopidyManager.createPlaylist(playlist.name)
             powerAmpManager.createPlaylist(playlist.name)
@@ -51,13 +47,13 @@ class PlaylistManager(
         return playlist
     }
 
-    suspend fun edit(playlist: Playlist): Boolean {
-        val oldPlaylist = playlistDAO.playlist(playlist.id) ?: throw PlaylistNotFoundException()
-        if (oldPlaylist.name != playlist.name) {
-            mopidyManager.renamePlaylist(oldPlaylist.name, playlist.name)
-            powerAmpManager.renamePlaylist(oldPlaylist.name, playlist.name)
+    suspend fun renamePlaylist(oldName: String, newName: String): Boolean {
+        val oldPlaylist = playlistDAO.playlist(oldName) ?: throw PlaylistNotFoundException()
+        if (oldPlaylist.name != newName) {
+            mopidyManager.renamePlaylist(oldPlaylist.name, newName)
+            powerAmpManager.renamePlaylist(oldPlaylist.name, newName)
         }
-        return playlistDAO.editPlaylist(playlist.id, playlist.name)
+        return playlistDAO.renamePlaylist(oldPlaylist.name, newName)
     }
 
     suspend fun download(): List<DownloadResult> {
@@ -70,13 +66,13 @@ class PlaylistManager(
         val result = mutableListOf<DownloadResult>()
         playlists.forEach { playlist ->
             println("Start process for ${playlist.name} :")
-            result.add(download(playlist.id))
+            result.add(download(playlist.name))
         }
         return result
     }
 
-    suspend fun download(playlistId: String): DownloadResult {
-        val playlist = playlistDAO.playlist(playlistId)
+    suspend fun download(playlistName: String): DownloadResult {
+        val playlist = playlistDAO.playlist(playlistName)
         if (playlist == null) {
             println("Error : playlist not found.")
             throw PlaylistNotFoundException()
@@ -133,7 +129,7 @@ class PlaylistManager(
         println("$downloadResult")
         // Set metadata
         println("Setting ID3 tags...")
-        val metadata = id3Manager.getMetadata(musicInfo, uploader.namingFormat, namingRuleDAO.allNamingRules())
+        val metadata = id3Manager.getMetadataFromYoutube(musicInfo, uploader.namingFormat, namingRuleDAO.allNamingRules())
         println(
             "title = ${metadata.title}\n" +
                     "artist = ${metadata.artist}\n" +

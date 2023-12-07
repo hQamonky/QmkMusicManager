@@ -26,7 +26,7 @@ class Id3Manager {
         }
     }
 
-    fun getMetadata(videoInfo: MusicInfo, namingFormat: NamingFormat, namingRules: List<NamingRule>): Metadata {
+    fun getMetadataFromYoutube(videoInfo: MusicInfo, namingFormat: NamingFormat, namingRules: List<NamingRule>): Metadata {
         val name = videoInfo.title.toAuthorizedFileName()
         val formattedTitle = videoInfo.title.applyNamingRules(namingRules)
         val splitTitle = formattedTitle.split(namingFormat.separator)

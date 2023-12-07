@@ -8,10 +8,9 @@ import org.jaudiotagger.audio.AudioFileIO
 import org.jaudiotagger.tag.FieldKey
 import org.jaudiotagger.tag.Tag
 import java.io.File
-import javax.activation.MimeType
 import javax.activation.MimetypesFileTypeMap
 
-class TagsMigrationManager(val configurationManager: ConfigurationManager = ConfigurationManager()) {
+class TagsMigrationManager(private val configurationManager: ConfigurationManager = ConfigurationManager()) {
     data class OldMetadata(
         val name: String,
         val title: String,
