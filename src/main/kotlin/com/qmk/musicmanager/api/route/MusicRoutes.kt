@@ -15,7 +15,7 @@ fun Route.musicRoutes() {
         post {
             val musicId = call.parameters["id"]
             val music = call.receiveNullable<Music>()
-            if (musicId == null || music == null || musicId != music.id) {
+            if (musicId == null || music == null || musicId != music.platformId) {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }

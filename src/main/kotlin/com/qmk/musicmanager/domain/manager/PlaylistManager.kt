@@ -11,6 +11,7 @@ import java.io.File
 
 class PlaylistManager(
     private val playlistDAO: PlaylistDAO,
+    private val platformPlaylistDAO: PlatformPlaylistDAO,
     private val musicDAO: MusicDAO,
     private val uploaderDAO: UploaderDAO,
     private val namingRuleDAO: NamingRuleDAO,
@@ -57,7 +58,7 @@ class PlaylistManager(
     }
 
     suspend fun download(): List<DownloadResult> {
-        val playlists = playlistDAO.allPlaylists()
+        val playlists = platformPlaylistDAO.allPlaylists()
         if (playlists.isEmpty()) {
             println("Error : no playlists found.")
             throw NoPlaylistsFoundException()
@@ -66,58 +67,66 @@ class PlaylistManager(
         val result = mutableListOf<DownloadResult>()
         playlists.forEach { playlist ->
             println("Start process for ${playlist.name} :")
-            result.add(download(playlist.name))
+            result.add(download(playlist.id))
         }
         return result
     }
 
-    suspend fun download(playlistName: String): DownloadResult {
-        val playlist = playlistDAO.playlist(playlistName)
-        if (playlist == null) {
+    suspend fun download(plPlaylistId: String): DownloadResult {
+        val plPlaylist = platformPlaylistDAO.playlist(plPlaylistId)
+        if (plPlaylist == null) {
             println("Error : playlist not found.")
             throw PlaylistNotFoundException()
         }
         println("Making sure yt-dlp is up to date...")
         println(youtubeManager.updateYtDlp())
-        println("Downloading ${playlist.name}...")
-        val result = DownloadResult(playlist = playlist.name)
+        println("Downloading ${plPlaylist.name}...")
+        val result = DownloadResult(playlist = plPlaylist.name)
+        val playlists = platformPlaylistDAO.playlistsFromPlPlaylist(plPlaylistId)
         val gson = Gson()
         gson.fromJson(
-            youtubeManager.getPlaylistInfo("${youtubeManager.playlistUrl}${playlist.id}", DownloadTool.YT_DLP),
+            youtubeManager.getPlaylistInfo("${youtubeManager.playlistUrl}${plPlaylist.id}", DownloadTool.YT_DLP),
             PlaylistInfo::class.java
         ).entries
             .map { it.id }
-            .forEach { musicId ->
-                var music = musicDAO.music(musicId)
+            .forEach { plMusicId ->
+                val music = musicDAO.getMusicFromPlatformId(plMusicId)
                 if (music != null) {
                     println("Not downloading ${music.fileName} because is has already been done.")
                     result.skipped.add(music.fileName)
-                    if (!music.playlists.contains(playlistId)) {
-                        println("Adding ${playlist.name} to music.")
-                        playlistDAO.addMusicToPlaylist(musicId, playlistId)
-                        id3Manager.addMusicToPlaylist(File("${music.fileName}.${music.fileExtension}"), )
-                        insertMusicInPlaylistFiles(music, playlist.name)
-                    } else {
-                        println("${music.fileName} is already in ${playlist.name}.")
+                    playlists.forEach { playlist ->
+                        if (!music.playlists.contains(playlist)) {
+                            println("Adding music to $playlist.")
+                            playlistDAO.addMusicToPlaylist(music.fileName, playlist)
+                            id3Manager.addMusicToPlaylist(File("${music.fileName}.${music.fileExtension}"), playlist)
+                            insertMusicInPlaylistFiles(music, plPlaylist.name)
+                        } else {
+                            println("${music.fileName} is already in $playlist.")
+                        }
                     }
                 } else {
-                    music = downloadAndProcessMusic(musicId, playlist)
-                    result.downloaded.add(music.fileName)
+                    val downloadedMusic = downloadAndProcessMusic(plMusicId, plPlaylist)
+                    if (downloadedMusic != null) result.downloaded.add(downloadedMusic.fileName)
                 }
             }
         return result
     }
 
-    private suspend fun downloadAndProcessMusic(videoId: String, playlist: Playlist): Music {
-        val playlistId = playlist.id
+    private suspend fun downloadAndProcessMusic(
+        videoId: String,
+        plPlaylist: PlatformPlaylist,
+        platform: String = "youtube"
+    ): Music? {
+        val plPlaylistId = plPlaylist.id
         // Get video info
         println("Getting info for $videoId...")
-        val musicInfo = Gson().fromJson(youtubeManager.getVideoInfo(videoId, DownloadTool.YT_DLP), MusicInfo::class.java)
+        val musicInfo =
+            Gson().fromJson(youtubeManager.getVideoInfo(videoId, DownloadTool.YT_DLP), MusicInfo::class.java)
         // Create uploader if not exist
         var uploader = uploaderDAO.uploader(musicInfo.channel_id)
         if (uploader == null) {
-            uploader = Uploader(id = musicInfo.channel_id, name = musicInfo.channel)
-            uploaderDAO.addNewUploader(uploader.id, uploader.name, uploader.namingFormat)
+            uploader = Uploader(id = musicInfo.channel_id, name = musicInfo.channel, platform = platform)
+            uploaderDAO.addNewUploader(uploader.id, uploader.name, uploader.namingFormat, platform)
         }
         // Download music
         println("Downloading ${musicInfo.title}...")
@@ -129,50 +138,76 @@ class PlaylistManager(
         println("$downloadResult")
         // Set metadata
         println("Setting ID3 tags...")
-        val metadata = id3Manager.getMetadataFromYoutube(musicInfo, uploader.namingFormat, namingRuleDAO.allNamingRules())
+        val metadata = when (platform) {
+            "youtube" -> {
+                val metadataWithoutPlaylists = id3Manager.getMetadataFromYoutube(
+                    musicInfo,
+                    uploader.namingFormat,
+                    namingRuleDAO.allNamingRules()
+                )
+                metadataWithoutPlaylists.copy(
+                    comments = metadataWithoutPlaylists.comments?.copy(
+                        playlists = platformPlaylistDAO.playlistsFromPlPlaylist(
+                            plPlaylistId
+                        )
+                    )
+                )
+            }
+
+            else -> null
+        }
         println(
-            "title = ${metadata.title}\n" +
-                    "artist = ${metadata.artist}\n" +
-                    "album = ${metadata.album}\n" +
-                    "year = ${metadata.year}\n" +
-                    "downloadDate = ${metadata.comments?.downloadDate}\n" +
-                    "id = ${metadata.comments?.source?.id}\n" +
-                    "uploaderId = ${metadata.comments?.source?.uploaderId}\n" +
-                    "uploadDate = ${metadata.comments?.source?.uploadDate}\n"
+            "title = ${metadata?.title}\n" +
+                    "artist = ${metadata?.artist}\n" +
+                    "album = ${metadata?.album}\n" +
+                    "year = ${metadata?.year}\n" +
+                    "downloadDate = ${metadata?.comments?.downloadDate}\n" +
+                    "id = ${metadata?.comments?.source?.id}\n" +
+                    "uploaderId = ${metadata?.comments?.source?.uploaderId}\n" +
+                    "uploadDate = ${metadata?.comments?.source?.uploadDate}\n"
         )
+        if (metadata == null) {
+            println("Error getting metadata. ")
+            return null
+        }
         id3Manager.setMetadata(File(outputFile), metadata)
         val music = Music(
-            id = musicInfo.id,
+            platformId = musicInfo.id,
             fileName = metadata.name,
             title = metadata.title,
             artist = metadata.artist,
             uploaderId = uploader.id,
             uploadDate = musicInfo.upload_date,
-            playlists = listOf(playlistId)
+            playlists = metadata.comments?.playlists ?: listOf()
         )
         // Move final file to music folder
         val musicFolder = configurationManager.getConfiguration().musicFolder
         File(outputFile).moveTo("${musicFolder}/${metadata.name}.${music.fileExtension}", true)
         // Insert music in database
         musicDAO.addNewMusic(
-            music.id,
-            music.fileName,
-            music.fileExtension,
-            music.title,
-            music.artist,
-            music.uploaderId,
-            music.uploadDate,
+            fileName = music.fileName,
+            fileExtension = music.fileExtension,
+            title = music.title,
+            artist = music.artist,
+            platformId = music.platformId,
+            uploaderId = music.uploaderId,
+            uploadDate = music.uploadDate,
+            tags = listOf(),
             isNew = true
         )
         // Insert music in playlist files
-        insertMusicInPlaylistFiles(music, playlist.name)
-        println("Music ${music.id} was created.")
+        music.playlists.forEach {
+            insertMusicInPlaylistFiles(music, it)
+        }
+        println("Music ${music.platformId} was created.")
         return music
     }
 
     private fun insertMusicInPlaylistFiles(music: Music, playlistName: String) {
-        mopidyManager.addMusicToPlaylist(music, playlistName)
-        powerAmpManager.addMusicToPlaylist(music, playlistName)
+        if (!mopidyManager.isMusicInPlaylist(music, playlistName))
+            mopidyManager.addMusicToPlaylist(music, playlistName)
+        if (!powerAmpManager.isMusicInPlaylist(music, playlistName))
+            powerAmpManager.addMusicToPlaylist(music, playlistName)
     }
 
     suspend fun archiveMusic(): List<String> {

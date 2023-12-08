@@ -67,7 +67,7 @@ class PlatformPlaylistDAOImpl : PlatformPlaylistDAO {
         PlatformPlaylists.deleteAll() > 0
     }
 
-    override suspend fun playlistsFromPlaylist(id: String): List<String> = dbQuery {
+    override suspend fun playlistsFromPlPlaylist(id: String): List<String> = dbQuery {
         PlaylistPlatformPlaylist.select { PlaylistPlatformPlaylist.playlistPlatformId eq id }
             .map { it[PlaylistPlatformPlaylist.playlist] }
     }

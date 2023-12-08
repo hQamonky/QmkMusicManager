@@ -33,7 +33,7 @@ data class Music(
         example = "ftshNCG_RPk",
         type = "String"
     )
-    val id: String,
+    val platformId: String,
     @field:Schema(
         description = "The id of the channel that uploaded the video.",
         example = "UCT8Y-bugDyR4ADHoQ-FOluw",

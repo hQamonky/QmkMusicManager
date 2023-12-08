@@ -86,8 +86,8 @@ object Music : Table() {
     val fileExtension = varchar("file_extension", 128)
     val title = varchar("title", 128)
     val artist = varchar("artist", 128)
-    val id = varchar("id", 128)
-    val uploader = varchar("uploader", 128)
+    val platformId = varchar("platform_id", 128)
+    val uploaderId = varchar("uploader_id", 128)
     val uploadDate = varchar("upload_date", 128)
     val isNew = bool("is_new")
 

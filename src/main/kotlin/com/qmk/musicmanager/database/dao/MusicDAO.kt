@@ -5,13 +5,14 @@ import com.qmk.musicmanager.domain.model.Music
 interface MusicDAO {
     suspend fun allMusic(): List<Music>
     suspend fun music(fileName: String): Music?
+    suspend fun getMusicFromPlatformId(id: String): Music?
     suspend fun newMusic(): List<Music>
     suspend fun addNewMusic(
         fileName: String,
         fileExtension: String,
         title: String,
         artist: String,
-        id: String,
+        platformId: String,
         uploaderId: String,
         uploadDate: String,
         tags: List<String>,
@@ -23,7 +24,7 @@ interface MusicDAO {
         fileExtension: String,
         title: String,
         artist: String,
-        id: String,
+        platformId: String,
         uploaderId: String,
         uploadDate: String,
         isNew: Boolean
@@ -35,7 +36,7 @@ interface MusicDAO {
 
     suspend fun removeMusicFromAllPlaylists(fileName: String): Boolean
 
-    suspend fun tagsFromMusic(music: String): List<String>
+    suspend fun tagsFromMusic(fileName: String): List<String>
 
     suspend fun addTagToMusic(tag: String, fileName: String): Boolean
 

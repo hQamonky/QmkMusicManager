@@ -16,8 +16,8 @@ class MusicDAOImpl : MusicDAO {
         fileExtension = row[MusicTable.fileExtension],
         title = row[MusicTable.title],
         artist = row[MusicTable.artist],
-        id = row[MusicTable.id],
-        uploaderId = row[MusicTable.uploader],
+        platformId = row[MusicTable.platformId],
+        uploaderId = row[MusicTable.uploaderId],
         uploadDate = row[MusicTable.uploadDate],
         playlists = playlistsOfMusic(row[MusicTable.fileName]),
         tags = tagsOfMusic(row[MusicTable.fileName]),
@@ -48,6 +48,10 @@ class MusicDAOImpl : MusicDAO {
         MusicTable.select { MusicTable.fileName eq fileName }.map { resultRowToMusic(it) }.singleOrNull()
     }
 
+    override suspend fun getMusicFromPlatformId(id: String): Music? = dbQuery {
+        MusicTable.select { MusicTable.platformId eq id }.map { resultRowToMusic(it) }.singleOrNull()
+    }
+
     override suspend fun newMusic(): List<Music> = dbQuery {
         MusicTable.select { MusicTable.isNew eq true }.map { resultRowToMusic(it) }
     }
@@ -57,7 +61,7 @@ class MusicDAOImpl : MusicDAO {
         fileExtension: String,
         title: String,
         artist: String,
-        id: String,
+        platformId: String,
         uploaderId: String,
         uploadDate: String,
         tags: List<String>,
@@ -68,8 +72,8 @@ class MusicDAOImpl : MusicDAO {
             it[MusicTable.fileExtension] = fileExtension
             it[MusicTable.title] = title
             it[MusicTable.artist] = artist
-            it[MusicTable.id] = id
-            it[MusicTable.uploader] = uploaderId
+            it[MusicTable.platformId] = platformId
+            it[MusicTable.uploaderId] = uploaderId
             it[MusicTable.uploadDate] = uploadDate
             it[MusicTable.isNew] = true
         }
@@ -84,17 +88,17 @@ class MusicDAOImpl : MusicDAO {
         fileExtension: String,
         title: String,
         artist: String,
-        id: String,
+        platformId: String,
         uploaderId: String,
         uploadDate: String,
         isNew: Boolean
     ): Boolean = dbQuery {
-        MusicTable.update({ MusicTable.id eq id }) {
+        MusicTable.update({ MusicTable.platformId eq platformId }) {
             it[MusicTable.fileName] = fileName
             it[MusicTable.fileExtension] = fileExtension
             it[MusicTable.title] = title
             it[MusicTable.artist] = artist
-            it[MusicTable.uploader] = uploaderId
+            it[MusicTable.uploaderId] = uploaderId
             it[MusicTable.uploadDate] = uploadDate
             it[MusicTable.isNew] = isNew
         } > 0
@@ -114,8 +118,8 @@ class MusicDAOImpl : MusicDAO {
         PlaylistMusic.deleteWhere { music eq fileName } > 0
     }
 
-    override suspend fun tagsFromMusic(music: String): List<String> = dbQuery {
-        MusicTag.select { MusicTag.music eq music }.map { it[MusicTag.tag] }
+    override suspend fun tagsFromMusic(fileName: String): List<String> = dbQuery {
+        MusicTag.select { MusicTag.music eq fileName }.map { it[MusicTag.tag] }
     }
 
     override suspend fun addTagToMusic(tag: String, fileName: String): Boolean = dbQuery {

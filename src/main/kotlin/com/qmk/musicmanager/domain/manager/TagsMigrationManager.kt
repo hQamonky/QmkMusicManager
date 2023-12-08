@@ -88,7 +88,7 @@ class TagsMigrationManager(private val configurationManager: ConfigurationManage
         val music = Music(
             fileName = file.nameWithoutExtension,
             fileExtension = file.extension,
-            title = "", artist = "", id = "", uploaderId = "", uploadDate = "", isNew = false
+            title = "", artist = "", platformId = "", uploaderId = "", uploadDate = "", isNew = false
         )
         val mopidyManager = MopidyManager(configurationManager)
         val playlistDir = "${configurationManager.getConfiguration().musicFolder}/Playlists/Mopidy"

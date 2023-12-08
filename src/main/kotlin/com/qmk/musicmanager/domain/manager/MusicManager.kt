@@ -21,7 +21,7 @@ class MusicManager(
             customTags = music.tags
         )
         return musicDAO.editMusic(
-            music.id,
+            music.platformId,
             music.fileName,
             music.fileExtension,
             music.title,
