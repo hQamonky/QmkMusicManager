@@ -19,11 +19,23 @@ data class Settings(
     )
     val downloadOccurrence: Int = 60,
     @field:Schema(
-        description = "The path of the music folder on the server.",
-        example = "/home/qmk/Music",
+        description = "The path of the folder on the server which contains the actual audio files.",
+        example = "/home/qmk/Music/Audio",
         type = "String"
     )
-    val musicFolder: String = "./Music",
+    val audioFolder: String = "./Music/Audio",
+    @field:Schema(
+        description = "The path of the folder on the server which contains the playlists files for various music player. These files are generated automatically if they do not exist.",
+        example = "/home/qmk/Music/Playlists",
+        type = "String"
+    )
+    val playlistsFolder: String = "./Music/Playlists",
+    @field:Schema(
+        description = "The path of the folder on the server where to move the archived audio files.",
+        example = "/home/qmk/Music/Archive",
+        type = "String"
+    )
+    val archiveFolder: String = "./Music/Archive",
     @field:Schema(
         description = "The audio format in which the music are to be downloaded. Currently supported: best (default), aac, alac, flac, m4a, mp3, opus, vorbis, wav",
         example = "mp3",

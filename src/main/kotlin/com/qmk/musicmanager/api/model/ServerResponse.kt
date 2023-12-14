@@ -101,7 +101,11 @@ class GetSettings(
 
 class SetSettings : ServerResponse(true)
 
-class SetMusicFolder : ServerResponse(true)
+class SetAudioFolder : ServerResponse(true)
+
+class SetPlaylistsFolder : ServerResponse(true)
+
+class SetArchiveFolder : ServerResponse(true)
 
 class SetAudioFormat : ServerResponse(true)
 

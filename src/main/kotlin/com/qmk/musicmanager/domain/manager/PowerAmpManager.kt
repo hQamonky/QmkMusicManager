@@ -9,7 +9,7 @@ import java.util.*
 class PowerAmpManager(
     private val configurationManager: ConfigurationManager = ConfigurationManager()
 ) {
-    private lateinit var musicDir: String
+    private lateinit var audioDir: String
     private lateinit var playlistDir: String
     private val archivePlaylistName = "Archives"
 
@@ -18,8 +18,8 @@ class PowerAmpManager(
     }
 
     private fun updateMembers() {
-        musicDir = configurationManager.getConfiguration().musicFolder
-        playlistDir = "$musicDir/Playlists/PowerAmp"
+        audioDir = configurationManager.getConfiguration().audioFolder
+        playlistDir = "${configurationManager.getConfiguration().playlistsFolder}/Playlists/PowerAmp"
         val playlists = File(playlistDir)
         if (!playlists.exists()) playlists.mkdirs()
     }
@@ -42,7 +42,7 @@ class PowerAmpManager(
 
     fun addMusicToPlaylist(music: Music, playlistName: String) {
         updateMembers()
-        val line = "primary/${File(musicDir).name}/${music.fileName}.${music.fileExtension}"
+        val line = "primary/${File(audioDir).name}/${music.fileName}.${music.fileExtension}"
         val playlist = File("$playlistDir/$playlistName.m3u8")
         if (!playlist.exists()) playlist.writeText("#EXTM3U\n")
         playlist.appendText("#EXT-X-RATING:0\n$line\n")
@@ -66,26 +66,26 @@ class PowerAmpManager(
 
     fun getFilesFromPlaylist(playlistName: String): List<String> {
         updateMembers()
-        val prefix = "primary/${File(musicDir).name}"
+        val prefix = "primary/${File(audioDir).name}"
         val result = mutableListOf<String>()
         val playlist = File("$playlistDir/$playlistName.m3u8")
         if (!playlist.exists()) return emptyList()
         playlist.readLines().forEach {
             if (it.startsWith(prefix))
-                result.add("${File(musicDir).absolutePath}${it.replace(prefix, "")}")
+                result.add("${File(audioDir).absolutePath}${it.replace(prefix, "")}")
         }
         return result
     }
 
     fun isMusicInPlaylist(music: Music, playlistName: String): Boolean {
         updateMembers()
-        val musicFile = File("$musicDir/${music.fileName}.${music.fileExtension}")
+        val musicFile = File("$audioDir/${music.fileName}.${music.fileExtension}")
         val playlist = File("$playlistDir/$playlistName.m3u8")
         if (!playlist.exists()) return false
         playlist.readLines().forEach {
             val uri = URI(it.replace(
                 "local:track:",
-                "file:${File(musicDir).absolutePath}/"
+                "file:${File(audioDir).absolutePath}/"
             ))
             if (File(uri.path) == musicFile) return true
         }
@@ -118,7 +118,7 @@ class PowerAmpManager(
         val newArchivesFile = File("./workDir/power-amp-tmp-playlist-${UUID.randomUUID()}.m3u8")
         newArchivesFile.writeText("#EXTM3U\n")
         archivePlaylist.readLines().forEach { archive ->
-            val prefix = "primary/${File(musicDir).name}"
+            val prefix = "primary/${File(audioDir).name}"
             if (archive.startsWith("$prefix/$archivePlaylistName/")) {
                 newArchivesFile.appendText("#EXT-X-RATING:0\n$archive\n")
             } else if (archive.startsWith(prefix)) {
@@ -136,7 +136,7 @@ class PowerAmpManager(
             .readLines()
             .forEach {
                 if (
-                    !it.contains("primary/${File(musicDir).name}/$archivePlaylistName/") &&
+                    !it.contains("primary/${File(audioDir).name}/$archivePlaylistName/") &&
                             it.startsWith("primary/")
                 )
                     result.add(File(URI(it.replace("local:track:", "file:/")).path).toString())
@@ -150,7 +150,7 @@ class PowerAmpManager(
         val tempFile = File("./workDir/power-amp-tmp-playlist-${UUID.randomUUID()}.m3u8")
         tempFile.writeText("#EXTM3U\n")
         mopidyPlaylist.forEach {
-            val line = "primary/${File(musicDir).name}/${File(it).name}"
+            val line = "primary/${File(audioDir).name}/${File(it).name}"
             tempFile.appendText("#EXT-X-RATING:0\n$line\n")
         }
         tempFile.moveTo("${playlistDir}/$playlistName.m3u8", true)
@@ -166,7 +166,7 @@ class PowerAmpManager(
         val tempFile = File("./workDir/power-amp-tmp-playlist-${UUID.randomUUID()}.m3u8")
         tempFile.writeText("#EXTM3U\n")
         mergedPlaylist.forEach {
-            val line = "primary/${File(musicDir).name}/${File("$musicDir/$it").name}"
+            val line = "primary/${File(audioDir).name}/${File("$audioDir/$it").name}"
             tempFile.appendText("#EXT-X-RATING:0\n$line\n")
         }
         tempFile.moveTo("${playlistDir}/$playlistName.m3u8", true)

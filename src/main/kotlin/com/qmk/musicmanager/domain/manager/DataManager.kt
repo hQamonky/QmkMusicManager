@@ -85,9 +85,9 @@ class DataManager(
 
     suspend fun addFilesToDatabase() {
         val id3Manager = Id3Manager()
-        val musicDir = File(ConfigurationManager().getConfiguration().musicFolder)
+        val audioDir = File(ConfigurationManager().getConfiguration().audioFolder)
 
-        musicDir.walk().forEach lit@{
+        audioDir.walk().forEach lit@{
             if (it.isDirectory || it.extension == "m3u8") return@lit
             try {
                 val metadata = id3Manager.getMetadata(it)

@@ -302,10 +302,22 @@ class MusicManagerServer {
         return SetSettings()
     }
 
-    suspend fun setMusicFolder(path: String): ServerResponse {
-        configurationManager.setMusicFolder(path)
+    suspend fun setAudioFolder(path: String): ServerResponse {
+        configurationManager.setAudioFolder(path)
         // TODO : implement error handling
-        return SetMusicFolder()
+        return SetAudioFolder()
+    }
+
+    suspend fun setPlaylistsFolder(path: String): ServerResponse {
+        configurationManager.setPlaylistsFolder(path)
+        // TODO : implement error handling
+        return SetPlaylistsFolder()
+    }
+
+    suspend fun setArchiveFolder(path: String): ServerResponse {
+        configurationManager.setArchiveFolder(path)
+        // TODO : implement error handling
+        return SetArchiveFolder()
     }
 
     suspend fun setAudioFormat(format: String): ServerResponse {

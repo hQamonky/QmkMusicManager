@@ -10,7 +10,7 @@ import java.util.*
 class MopidyManager(
     private val configurationManager: ConfigurationManager = ConfigurationManager()
 ) {
-    private lateinit var musicDir: String
+    private lateinit var audioDir: String
     private lateinit var playlistDir: String
     val archivePlaylistName = "Archives"
 
@@ -19,8 +19,8 @@ class MopidyManager(
     }
 
     private fun updateMembers() {
-        musicDir = configurationManager.getConfiguration().musicFolder
-        playlistDir = "$musicDir/Playlists/Mopidy"
+        audioDir = configurationManager.getConfiguration().audioFolder
+        playlistDir = "${configurationManager.getConfiguration().playlistsFolder}/Playlists/Mopidy"
         val playlists = File(playlistDir)
         if (!playlists.exists()) playlists.mkdirs()
     }
@@ -39,7 +39,7 @@ class MopidyManager(
 
     fun addMusicToPlaylist(music: Music, playlistName: String) {
         updateMembers()
-        val line = convertFileToMopidyPath(File("$musicDir/${music.fileName}.${music.fileExtension}"))
+        val line = convertFileToMopidyPath(File("$audioDir/${music.fileName}.${music.fileExtension}"))
         File("$playlistDir/$playlistName.m3u8").appendText("$line\n")
     }
 
@@ -65,7 +65,7 @@ class MopidyManager(
         else playlist.readLines().map {
             val uri = URI(it.replace(
                 "local:track:",
-                "file:${File(musicDir).absolutePath}/"
+                "file:${File(audioDir).absolutePath}/"
             ))
             val file = File(uri.path)
             file.toString()
@@ -74,13 +74,13 @@ class MopidyManager(
 
     fun isMusicInPlaylist(music: Music, playlistName: String): Boolean {
         updateMembers()
-        val musicFile = File("$musicDir/${music.fileName}.${music.fileExtension}")
+        val musicFile = File("$audioDir/${music.fileName}.${music.fileExtension}")
         val playlist = File("$playlistDir/$playlistName.m3u8")
         if (!playlist.exists()) return false
         playlist.readLines().forEach {
             val uri = URI(it.replace(
                 "local:track:",
-                "file:${File(musicDir).absolutePath}/"
+                "file:${File(audioDir).absolutePath}/"
             ))
             if (File(uri.path) == musicFile) return true
         }
@@ -131,7 +131,7 @@ class MopidyManager(
                 if (!it.contains("local:track:$archivePlaylistName:"))
                     result.add(File(URI(it.replace(
                         "local:track:",
-                        "file:${File(musicDir).absolutePath}/"
+                        "file:${File(audioDir).absolutePath}/"
                     )).path).toString())
             }
         return result
@@ -169,7 +169,7 @@ class MopidyManager(
         val initialUri = file
             .toURI()
             .toASCIIString()
-            .replace("file:${File(musicDir).absolutePath}/", "")
+            .replace("file:${File(audioDir).absolutePath}/", "")
         // Some characters are not encoded when using file.toURI(), so we have to encode them
         var finalUri = ""
         for (char in initialUri) {
@@ -193,7 +193,7 @@ class MopidyManager(
             finalUri += newChar
         }
         var subFolders = file.parentFile.absolutePath
-            .replace(File(musicDir).absolutePath, "")
+            .replace(File(audioDir).absolutePath, "")
             .replace("/", ":")
         if (subFolders != "") subFolders += ":"
         return "local:track:$subFolders$finalUri"

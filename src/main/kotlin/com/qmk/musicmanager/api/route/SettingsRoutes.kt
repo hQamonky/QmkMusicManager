@@ -30,14 +30,44 @@ fun Route.settingsRoutes() {
             call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
         }
     }
-    route("/api/settings/music-folder") {
+    route("/api/settings/audio-folder") {
         post {
             val path = call.receiveNullable<String>()
             if (path == null) {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
-            val result = server.setMusicFolder(path)
+            val result = server.setAudioFolder(path)
+            if (result is ServerError) {
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                return@post
+            }
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
+        }
+    }
+    route("/api/settings/playlists-folder") {
+        post {
+            val path = call.receiveNullable<String>()
+            if (path == null) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@post
+            }
+            val result = server.setPlaylistsFolder(path)
+            if (result is ServerError) {
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                return@post
+            }
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
+        }
+    }
+    route("/api/settings/archive-folder") {
+        post {
+            val path = call.receiveNullable<String>()
+            if (path == null) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@post
+            }
+            val result = server.setArchiveFolder(path)
             if (result is ServerError) {
                 call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
                 return@post
@@ -103,11 +133,6 @@ fun Route.settingsRoutes() {
                 return@post
             }
             call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
-        }
-    }
-    route("/api/settings/archive-folder") {
-        post {
-            // TODO : Implement feature
         }
     }
 }

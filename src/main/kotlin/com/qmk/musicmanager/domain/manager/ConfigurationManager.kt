@@ -23,8 +23,16 @@ class ConfigurationManager(
         configurationFile.writeText(settings.toJson())
     }
 
-    fun setMusicFolder(path: String) {
-        setConfiguration(getConfiguration().copy(musicFolder = path))
+    fun setAudioFolder(path: String) {
+        setConfiguration(getConfiguration().copy(audioFolder = path))
+    }
+
+    fun setPlaylistsFolder(path: String) {
+        setConfiguration(getConfiguration().copy(playlistsFolder = path))
+    }
+
+    fun setArchiveFolder(path: String) {
+        setConfiguration(getConfiguration().copy(archiveFolder = path))
     }
 
     fun setAudioFormat(format: String) {
