@@ -57,6 +57,20 @@ class PlaylistManager(
         return playlistDAO.renamePlaylist(oldPlaylist.name, newName)
     }
 
+    suspend fun addMusicToPlaylist(music: Music, playListName: String): Boolean {
+        val playlist = playlistDAO.playlist(playListName) ?: return false
+        if (!playlistDAO.addMusicToPlaylist(music.fileName, playlist.name)) return false
+        insertMusicInPlaylistFiles(music, playlist.name)
+        return true
+    }
+
+    suspend fun removeMusicFromPlaylist(music: Music, playListName: String): Boolean {
+        val playlist = playlistDAO.playlist(playListName) ?: return false
+        if (!playlistDAO.removeMusicFromPlaylist(music.fileName, playlist.name)) return false
+        removeMusicFromPlaylistFiles(music, playlist.name)
+        return true
+    }
+
     suspend fun download(): List<DownloadResult> {
         val playlists = platformPlaylistDAO.allPlaylists()
         if (playlists.isEmpty()) {
@@ -208,6 +222,13 @@ class PlaylistManager(
             mopidyManager.addMusicToPlaylist(music, playlistName)
         if (!powerAmpManager.isMusicInPlaylist(music, playlistName))
             powerAmpManager.addMusicToPlaylist(music, playlistName)
+    }
+
+    private fun removeMusicFromPlaylistFiles(music: Music, playlistName: String) {
+        if (!mopidyManager.isMusicInPlaylist(music, playlistName))
+            mopidyManager.removeMusicFromPlaylist(music, playlistName)
+        if (!powerAmpManager.isMusicInPlaylist(music, playlistName))
+            powerAmpManager.removeMusicFromPlaylist(music, playlistName)
     }
 
     suspend fun archiveMusic(): List<String> {

@@ -48,6 +48,22 @@ class PowerAmpManager(
         playlist.appendText("#EXT-X-RATING:0\n$line\n")
     }
 
+    fun removeMusicFromPlaylist(music: Music, playlistName: String) {
+        updateMembers()
+        val playlist = File("$playlistDir/$playlistName.m3u8")
+        if (!playlist.exists()) return
+
+        val list = getFilesFromPlaylist(playlistName).toMutableList()
+        list.remove("${music.fileName}.${music.fileExtension}")
+
+        val tempFile = File("./workDir/power-amp-tmp-playlist-${UUID.randomUUID()}.m3u8")
+        tempFile.writeText("#EXTM3U\n")
+        list.forEach { line ->
+            tempFile.appendText("#EXT-X-RATING:0\n$line\n")
+        }
+        tempFile.moveTo("${playlistDir}/${playlist.name}", true)
+    }
+
     fun getFilesFromPlaylist(playlistName: String): List<String> {
         updateMembers()
         val prefix = "primary/${File(musicDir).name}"

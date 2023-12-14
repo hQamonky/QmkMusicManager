@@ -15,9 +15,11 @@ class MusicManagerServer {
     private val clients = ConcurrentHashMap<String, Client>()
 
     private val playlistDAO = PlaylistDAOImpl()
+    private val platformPlaylistDAO = PlatformPlaylistDAOImpl()
     private val musicDAO = MusicDAOImpl()
     private val uploaderDAO = UploaderDAOImpl()
     private val namingRuleDAO = NamingRuleDAOImpl()
+    private val tagDAO = TagDAOImpl()
 
     private val configurationManager = ConfigurationManager()
     private val id3Manager = Id3Manager()
@@ -26,10 +28,18 @@ class MusicManagerServer {
     private val youtubeManager = YoutubeManager()
 
     private val dataManager = DataManager(
-        playlistDAO = playlistDAO, musicDAO = musicDAO, uploaderDAO = uploaderDAO, namingRuleDAO = namingRuleDAO
+        playlistDAO = playlistDAO,
+        musicDAO = musicDAO,
+        uploaderDAO = uploaderDAO,
+        namingRuleDAO = namingRuleDAO,
+        platformPlaylistDAO = platformPlaylistDAO,
+        tagDAO = tagDAO,
+        mopidyManager = mopidyManager,
+        powerAmpManager = powerAmpManager
     )
     private val playlistManager = PlaylistManager(
         playlistDAO = playlistDAO,
+        platformPlaylistDAO = platformPlaylistDAO,
         musicDAO = musicDAO,
         uploaderDAO = uploaderDAO,
         namingRuleDAO = namingRuleDAO,
@@ -40,7 +50,12 @@ class MusicManagerServer {
         powerAmpManager = powerAmpManager
     )
     private val musicManager =
-        MusicManager(musicDAO = musicDAO, configurationManager = configurationManager, id3Manager = id3Manager)
+        MusicManager(
+            musicDAO = musicDAO,
+            configurationManager = configurationManager,
+            id3Manager = id3Manager,
+            playlistManager = playlistManager
+        )
 
     private var processChangeListener: ((oldAction: ServerAction, newAction: ServerAction) -> Unit)? = null
     private var processingAction: ServerAction = ServerAction.NONE
@@ -328,10 +343,9 @@ class MusicManagerServer {
     }
 
     suspend fun editUploaderNamingFormat(id: String, namingFormat: NamingFormat): ServerResponse {
-        val uploader = uploaderDAO.uploader(id) ?: return ServerError("Uploader not found.")
+        if (uploaderDAO.uploader(id) == null) return ServerError("Uploader not found.")
         return if (uploaderDAO.editUploader(
                 id,
-                uploader.name,
                 namingFormat
             )
         ) EditUploaderNamingFormat() else ServerError("Error editing naming format.")

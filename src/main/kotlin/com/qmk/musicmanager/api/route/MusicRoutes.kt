@@ -11,11 +11,11 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Route.musicRoutes() {
-    route("/api/music/{id}") {
+    route("/api/music/{fileName}") {
         post {
-            val musicId = call.parameters["id"]
+            val fileName = call.parameters["fileName"]
             val music = call.receiveNullable<Music>()
-            if (musicId == null || music == null || musicId != music.platformId) {
+            if (fileName == null || music == null || fileName != music.fileName) {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
