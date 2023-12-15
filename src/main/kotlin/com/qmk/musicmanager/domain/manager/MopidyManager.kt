@@ -20,7 +20,7 @@ class MopidyManager(
 
     private fun updateMembers() {
         audioDir = configurationManager.getConfiguration().audioFolder
-        playlistDir = "${configurationManager.getConfiguration().playlistsFolder}/Playlists/Mopidy"
+        playlistDir = "${configurationManager.getConfiguration().playlistsFolder}/Mopidy"
         val playlists = File(playlistDir)
         if (!playlists.exists()) playlists.mkdirs()
     }

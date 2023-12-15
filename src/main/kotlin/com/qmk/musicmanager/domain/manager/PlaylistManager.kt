@@ -195,8 +195,8 @@ class PlaylistManager(
             playlists = metadata.comments?.playlists ?: listOf()
         )
         // Move final file to music folder
-        val musicFolder = configurationManager.getConfiguration().musicFolder
-        File(outputFile).moveTo("${musicFolder}/${metadata.name}.${music.fileExtension}", true)
+        val audioFolder = configurationManager.getConfiguration().audioFolder
+        File(outputFile).moveTo("${audioFolder}/${metadata.name}.${music.fileExtension}", true)
         // Insert music in database
         musicDAO.addNewMusic(
             fileName = music.fileName,
@@ -232,9 +232,8 @@ class PlaylistManager(
     }
 
     suspend fun archiveMusic(): List<String> {
-        val musicFolder = configurationManager.getConfiguration().musicFolder
         val archivePlaylist = mopidyManager.archivePlaylistName
-        val archiveFolder = File("$musicFolder/$archivePlaylist")
+        val archiveFolder = File(configurationManager.getConfiguration().audioFolder)
         if (!archiveFolder.exists()) archiveFolder.mkdir()
         val musicToArchive = mopidyManager.getMusicToArchive()
         mopidyManager.mergePowerAmpPlaylist(archivePlaylist)

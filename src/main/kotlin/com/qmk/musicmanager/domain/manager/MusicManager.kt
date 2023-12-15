@@ -12,7 +12,7 @@ class MusicManager(
     private val playlistManager: PlaylistManager
 ) {
     suspend fun editMusic(music: Music) : Boolean {
-        val musicFolder = configurationManager.getConfiguration().musicFolder
+        val audioFolder = configurationManager.getConfiguration().audioFolder
         val oldMusic = musicDAO.music(music.fileName) ?: return false
         // Handle playlists
         val oldPlaylists = oldMusic.playlists
@@ -42,7 +42,7 @@ class MusicManager(
         }
         // Apply metadata in file
         id3Manager.updateMetadata(
-            file = File("${musicFolder}/${music.fileName}.${music.fileExtension}"),
+            file = File("${audioFolder}/${music.fileName}.${music.fileExtension}"),
             title = music.title,
             artist = music.artist,
             playlists = music.playlists,

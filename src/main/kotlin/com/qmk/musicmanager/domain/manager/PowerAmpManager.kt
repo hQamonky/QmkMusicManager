@@ -19,7 +19,7 @@ class PowerAmpManager(
 
     private fun updateMembers() {
         audioDir = configurationManager.getConfiguration().audioFolder
-        playlistDir = "${configurationManager.getConfiguration().playlistsFolder}/Playlists/PowerAmp"
+        playlistDir = "${configurationManager.getConfiguration().playlistsFolder}/PowerAmp"
         val playlists = File(playlistDir)
         if (!playlists.exists()) playlists.mkdirs()
     }

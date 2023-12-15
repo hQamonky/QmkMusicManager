@@ -91,7 +91,7 @@ class TagsMigrationManager(private val configurationManager: ConfigurationManage
             title = "", artist = "", platformId = "", uploaderId = "", uploadDate = "", isNew = false
         )
         val mopidyManager = MopidyManager(configurationManager)
-        val playlistDir = "${configurationManager.getConfiguration().musicFolder}/Playlists/Mopidy"
+        val playlistDir = "${configurationManager.getConfiguration().playlistsFolder}/Mopidy"
 
         val list = mutableListOf<String>()
 
@@ -116,9 +116,9 @@ class TagsMigrationManager(private val configurationManager: ConfigurationManage
     }
 
     fun convertAllFilesMetadata(): String? {
-        val musicFolder = File(configurationManager.getConfiguration().musicFolder)
-        if (!musicFolder.isDirectory) return "Failed to get music folder."
-        musicFolder.walk().forEach lit1@{ musicFile ->
+        val audioFolder = File(configurationManager.getConfiguration().audioFolder)
+        if (!audioFolder.isDirectory) return "Failed to get music folder."
+        audioFolder.walk().forEach lit1@{ musicFile ->
             val fileType = MimetypesFileTypeMap().getContentType(musicFile)
             if (!fileType.contains("audio")) return@lit1
             convertFileMetadata(musicFile)
