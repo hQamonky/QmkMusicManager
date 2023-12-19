@@ -25,6 +25,14 @@ class PlaylistManager(
         return playlistDAO.allPlaylists()
     }
 
+    suspend fun getPlaylist(name: String): Playlist? {
+        return playlistDAO.playlist(name)
+    }
+
+    suspend fun doesPlaylistExist(name: String): Boolean {
+        return playlistDAO.playlist(name) != null
+    }
+
     suspend fun getYoutubePlaylistId(playlistUrl: String): String {
         val gson = Gson()
         val playlistInfo = gson.fromJson(
@@ -34,13 +42,13 @@ class PlaylistManager(
         return playlistInfo.id
     }
 
-    suspend fun doesPlaylistIdExist(name: String): Boolean {
-        val playlist = playlistDAO.playlist(name)
+    suspend fun doesPlaylistIdExist(id: String): Boolean {
+        val playlist = platformPlaylistDAO.playlist(id)
         return playlist != null
     }
 
     suspend fun create(name: String): Playlist? {
-        val playlist = playlistDAO.addNewPlaylist(name)
+        val playlist = playlistDAO.playlist(name)?.let { return it } ?: playlistDAO.addNewPlaylist(name)
         if (playlist != null) {
             mopidyManager.createPlaylist(playlist.name)
             powerAmpManager.createPlaylist(playlist.name)
@@ -49,12 +57,53 @@ class PlaylistManager(
     }
 
     suspend fun renamePlaylist(oldName: String, newName: String): Boolean {
-        val oldPlaylist = playlistDAO.playlist(oldName) ?: throw PlaylistNotFoundException()
-        if (oldPlaylist.name != newName) {
-            mopidyManager.renamePlaylist(oldPlaylist.name, newName)
-            powerAmpManager.renamePlaylist(oldPlaylist.name, newName)
+        val playlist = playlistDAO.playlist(oldName) ?: throw PlaylistNotFoundException()
+        if (playlist.name != newName) {
+            mopidyManager.renamePlaylist(oldName, newName)
+            powerAmpManager.renamePlaylist(oldName, newName)
         }
-        return playlistDAO.renamePlaylist(oldPlaylist.name, newName)
+        val audioDir = configurationManager.getConfiguration().audioFolder
+        playlist.music.forEach { musicFileName ->
+            val music = musicDAO.music(musicFileName) // TODO : Check and throw "MusicNotFoundException
+            music?.let { id3Manager.renamePlaylistForMusic(oldName, newName, it.toFile(audioDir)) }
+        }
+        return playlistDAO.renamePlaylist(playlist.name, newName)
+    }
+
+    suspend fun deletePlaylist(name: String): Boolean {
+        val playlist = playlistDAO.playlist(name) ?: return false
+        playlist.music.forEach {
+            val music = musicDAO.music(it) ?: return false
+            removeMusicFromPlaylistFiles(music, playlist.name)
+            id3Manager.removeMusicFromPlaylist(music.toFile(configurationManager.getConfiguration().audioFolder), name)
+        }
+        return playlistDAO.deletePlaylist(name)
+    }
+
+    suspend fun getYoutubePlaylist(id: String): PlatformPlaylist? {
+        return platformPlaylistDAO.playlist(id)
+    }
+
+    suspend fun createYoutubePlaylist(url: String, playlists: List<String>): PlatformPlaylist? {
+        val playlistInfo = Gson().fromJson(
+            youtubeManager.getPlaylistInfo(url, DownloadTool.YT_DLP),
+            PlaylistInfo::class.java
+        )
+        return platformPlaylistDAO.addNewPlaylist(
+            playlistInfo.id,
+            playlistInfo.title,
+            "youtube",
+            playlists.mapNotNull { playlist ->
+                create(playlist)?.name
+            })
+    }
+
+    suspend fun editYoutubePlaylist(id: String, playlists: List<String>): Boolean {
+        return platformPlaylistDAO.editPlaylist(id, playlists)
+    }
+
+    suspend fun deletePlatformPlaylist(id: String): Boolean {
+        return platformPlaylistDAO.deletePlaylist(id)
     }
 
     suspend fun addMusicToPlaylist(music: Music, playListName: String): Boolean {
@@ -81,12 +130,21 @@ class PlaylistManager(
         val result = mutableListOf<DownloadResult>()
         playlists.forEach { playlist ->
             println("Start process for ${playlist.name} :")
-            result.add(download(playlist.id))
+            result.add(downloadYoutubePlaylist(playlist.id))
         }
         return result
     }
 
-    suspend fun download(plPlaylistId: String): DownloadResult {
+    suspend fun download(name: String): List<DownloadResult> {
+        val youtubePlaylists = platformPlaylistDAO.plPlaylistsFromPlaylist(name)
+        val result: MutableList<DownloadResult> = mutableListOf()
+        youtubePlaylists.forEach { id ->
+            result.add(downloadYoutubePlaylist(id))
+        }
+        return result
+    }
+
+    suspend fun downloadYoutubePlaylist(plPlaylistId: String): DownloadResult {
         val plPlaylist = platformPlaylistDAO.playlist(plPlaylistId)
         if (plPlaylist == null) {
             println("Error : playlist not found.")
@@ -112,7 +170,10 @@ class PlaylistManager(
                         if (!music.playlists.contains(playlist)) {
                             println("Adding music to $playlist.")
                             playlistDAO.addMusicToPlaylist(music.fileName, playlist)
-                            id3Manager.addMusicToPlaylist(File("${music.fileName}.${music.fileExtension}"), playlist)
+                            id3Manager.addMusicToPlaylist(
+                                music.toFile(configurationManager.getConfiguration().audioFolder),
+                                playlist
+                            )
                             insertMusicInPlaylistFiles(music, plPlaylist.name)
                         } else {
                             println("${music.fileName} is already in $playlist.")

@@ -1,6 +1,7 @@
 package com.qmk.musicmanager.domain.manager
 
 import com.qmk.musicmanager.domain.extension.runCommand
+import com.qmk.musicmanager.domain.model.PlatformPlaylist
 import com.qmk.musicmanager.domain.model.Playlist
 
 class YoutubeManager {
@@ -67,10 +68,6 @@ class YoutubeManager {
             DownloadTool.YT_DLP ->
                 "$ytDlp -ci -x --audio-format $audioFormat --audio-quality $audioQuality --embed-thumbnail -o $outputFile $fullUrl".runCommand()
         }
-    }
-
-    fun downloadPlaylist(playlist: Playlist): String? {
-        return getPlaylistInfo(playlist.id)
     }
 }
 

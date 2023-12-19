@@ -46,6 +46,7 @@ fun Application.module() {
     install(Routing) {
         systemRoutes()
         playlistsRoutes()
+        youtubePlaylistsRoutes()
         musicRoutes()
         namingRulesRoutes()
         settingsRoutes()

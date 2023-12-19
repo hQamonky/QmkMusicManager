@@ -10,6 +10,7 @@ interface PlatformPlaylistDAO {
     suspend fun deletePlaylist(id: String): Boolean
     suspend fun deleteAllPlaylists(): Boolean
     suspend fun playlistsFromPlPlaylist(id: String): List<String>
+    suspend fun plPlaylistsFromPlaylist(name: String): List<String>
     suspend fun addPlaylistToPlaylist(playlist: String, id: String): Boolean
     suspend fun removePlaylistFromPlaylist(playlist: String, id: String): Boolean
 }

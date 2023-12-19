@@ -52,11 +52,27 @@ class GetPlaylists(
     response: List<Playlist>
 ) : ServerResponse(response)
 
-class CreatePlaylist(
+class GetPlaylist(
     response: Playlist
 ) : ServerResponse(response)
 
-class EditPlaylist : ServerResponse(true)
+class GetYoutubePlaylists(
+    response: List<PlatformPlaylist>
+) : ServerResponse(response)
+
+class GetYoutubePlaylist(
+    response: PlatformPlaylist
+) : ServerResponse(response)
+
+class AddPlatformPlaylist(
+    response: PlatformPlaylist
+) : ServerResponse(response)
+
+class RenamePlaylist : ServerResponse(true)
+
+class EditYoutubePlaylist : ServerResponse(true)
+
+class DeletePlaylist : ServerResponse(true)
 
 class DownloadPlaylistsLaunched : ServerResponse(true)
 class DownloadPlaylists(

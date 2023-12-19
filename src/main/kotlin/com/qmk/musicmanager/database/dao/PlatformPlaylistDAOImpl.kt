@@ -72,6 +72,11 @@ class PlatformPlaylistDAOImpl : PlatformPlaylistDAO {
             .map { it[PlaylistPlatformPlaylist.playlist] }
     }
 
+    override suspend fun plPlaylistsFromPlaylist(name: String): List<String> = dbQuery {
+        PlaylistPlatformPlaylist.select { PlaylistPlatformPlaylist.playlist eq name }
+            .map { it[PlaylistPlatformPlaylist.playlist] }
+    }
+
     override suspend fun addPlaylistToPlaylist(playlist: String, id: String): Boolean = dbQuery {
         val insertStatement = PlaylistPlatformPlaylist.insert {
             it[PlaylistPlatformPlaylist.playlistPlatformId] = id

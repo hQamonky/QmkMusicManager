@@ -1,6 +1,7 @@
 package com.qmk.musicmanager.domain.model
 
 import io.swagger.v3.oas.annotations.media.Schema
+import java.io.File
 
 @Schema(description = "Model for a music file.")
 data class Music(
@@ -62,7 +63,11 @@ data class Music(
         type = "Boolean"
     )
     val isNew: Boolean = true
-)
+) {
+    fun toFile(audioDir: String): File {
+        return File("$audioDir/${fileName}.${fileExtension}")
+    }
+}
 
 @Schema(description = "Model for adding a new music.")
 data class MusicInfo(

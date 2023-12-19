@@ -162,6 +162,20 @@ class Id3Manager {
         }
     }
 
+    fun renamePlaylistForMusic(oldName: String, newName: String, music: File): Boolean {
+        try {
+            val playlists = getMetadata(file = music).comments?.playlists?.toMutableList() ?: mutableListOf()
+            if (!playlists.contains(oldName)) return false
+            playlists.remove(oldName)
+            playlists.add(newName)
+            updateMetadata(file = music, playlists = playlists)
+            return true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        }
+    }
+
     fun addCustomTagToMusic(tag: String, music: File): Boolean {
         try {
             val customTags = getMetadata(file = music).comments?.customTags?.toMutableList() ?: mutableListOf()

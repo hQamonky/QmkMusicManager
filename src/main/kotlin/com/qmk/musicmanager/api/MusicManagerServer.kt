@@ -175,20 +175,59 @@ class MusicManagerServer {
         return playlistManager.doesPlaylistIdExist(id)
     }
 
-    suspend fun doesPlaylistNameExist(playlistName: String): Boolean {
-        return playlistManager.doesPlaylistNameExist(playlistName)
+    suspend fun doesPlaylistExist(name: String): Boolean {
+        return playlistManager.doesPlaylistExist(name)
     }
 
     suspend fun getPlaylists(): ServerResponse {
         return GetPlaylists(playlistManager.getPlaylists())
     }
 
-    suspend fun createPlaylist(name: String, id: String): ServerResponse {
-        return playlistManager.create(name, id)?.let { CreatePlaylist(it) } ?: ServerError("Error creating playlist.")
+    suspend fun getPlaylist(name: String): ServerResponse {
+        return playlistManager.getPlaylist(name)?.let { GetPlaylist(it) } ?: ServerError("Playlist not found.")
     }
 
-    suspend fun editPlaylist(playlist: Playlist): ServerResponse {
-        return if (playlistManager.edit(playlist)) EditPlaylist() else ServerError("Error editing playlist.")
+    suspend fun addPlatformPlaylist(url: String, playlists: List<String>): ServerResponse {
+        return playlistManager.createYoutubePlaylist(url, playlists)?.let { AddPlatformPlaylist(it) }
+            ?: ServerError("Error creating playlist.")
+    }
+
+    suspend fun getPlatformPlaylist(id: String, platform: String): ServerResponse {
+        return when (platform) {
+            "youtube" -> playlistManager.getYoutubePlaylist(id)?.let { GetYoutubePlaylist(it) }
+                ?: ServerError("Playlist not found.")
+
+            else -> ServerError("Specified platform not found.")
+        }
+    }
+
+    suspend fun renamePlaylist(oldName: String, newName: String): ServerResponse {
+        return if (playlistManager.renamePlaylist(
+                oldName,
+                newName
+            )
+        ) RenamePlaylist() else ServerError("Error renaming playlist.")
+    }
+
+    suspend fun deletePlaylist(name: String): ServerResponse {
+        return if (playlistManager.deletePlaylist(name)) DeletePlaylist() else ServerError("Error deleting playlist.")
+    }
+
+    suspend fun getYoutubePlaylists(): ServerResponse {
+        val ytPlaylists = platformPlaylistDAO.allPlaylists().filter { it.platform == "youtube" }
+        return GetYoutubePlaylists(ytPlaylists)
+    }
+
+    suspend fun editPlaylist(playlist: PlatformPlaylist): ServerResponse {
+        return if (playlistManager.editYoutubePlaylist(
+                playlist.id,
+                playlist.playlists
+            )
+        ) EditYoutubePlaylist() else ServerError("Error editing playlist.")
+    }
+
+    suspend fun deletePlatformPlaylist(id: String): ServerResponse {
+        return if (playlistManager.deletePlatformPlaylist(id)) DeletePlaylist() else ServerError("Error deleting playlist.")
     }
 
     suspend fun downLoadPlaylists(): ServerResponse {
@@ -211,14 +250,34 @@ class MusicManagerServer {
         return DownloadPlaylistsLaunched()
     }
 
-    suspend fun downLoadPlaylist(playlistId: String): ServerResponse {
+    suspend fun downLoadPlaylist(playlistName: String): ServerResponse {
         if (processingAction != ServerAction.NONE) {
             return ServerBusy(processingAction)
         }
         processingAction = ServerAction.DOWNLOADING_PLAYLIST
         GlobalScope.launch {
             try {
-                val downloadResult = playlistManager.download(playlistId)
+                val downloadResult = playlistManager.download(playlistName)
+                processingAction = ServerAction.NONE
+                notifyAllClients(DownloadPlaylists(downloadResult))
+            } catch (e: NoPlaylistsFoundException) {
+                processingAction = ServerAction.NONE
+                notifyAllClients(ServerError(e.toString()))
+            }
+            val mopidyLocalScanResult = mopidyManager.mopidyLocalScan()
+            notifyAllClients(MopidyLocalScan(mopidyLocalScanResult))
+        }
+        return DownloadPlaylistLaunched()
+    }
+
+    suspend fun downLoadYoutubePlaylist(playlistId: String): ServerResponse {
+        if (processingAction != ServerAction.NONE) {
+            return ServerBusy(processingAction)
+        }
+        processingAction = ServerAction.DOWNLOADING_PLAYLIST
+        GlobalScope.launch {
+            try {
+                val downloadResult = playlistManager.downloadYoutubePlaylist(playlistId)
                 processingAction = ServerAction.NONE
                 notifyAllClients(DownloadPlaylist(downloadResult))
             } catch (e: NoPlaylistsFoundException) {
