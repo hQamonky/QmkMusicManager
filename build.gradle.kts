@@ -46,9 +46,7 @@ dependencies {
     implementation("com.h2database:h2:$h2Version")
 
     // Swagger
-    implementation("org.springdoc:springdoc-openapi-data-rest:$swaggerVersion")
-    implementation("org.springdoc:springdoc-openapi-ui:$swaggerVersion")
-    implementation("org.springdoc:springdoc-openapi-kotlin:$swaggerVersion")
+    implementation("io.ktor:ktor-server-swagger:$ktorVersion")
 
     // OkHttp
     // define a BOM and its version
