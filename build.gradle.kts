@@ -47,6 +47,11 @@ dependencies {
 
     // Swagger
     implementation("io.ktor:ktor-server-swagger:$ktorVersion")
+    implementation("io.ktor:ktor-server-openapi:$ktorVersion")
+    // Old spring swagger dependencies, remove when implemented for Ktor
+    implementation("org.springdoc:springdoc-openapi-data-rest:$swaggerVersion")
+    implementation("org.springdoc:springdoc-openapi-ui:$swaggerVersion")
+    implementation("org.springdoc:springdoc-openapi-kotlin:$swaggerVersion")
 
     // OkHttp
     // define a BOM and its version
