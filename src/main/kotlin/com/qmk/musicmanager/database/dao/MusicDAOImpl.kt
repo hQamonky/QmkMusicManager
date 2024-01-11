@@ -75,7 +75,7 @@ class MusicDAOImpl : MusicDAO {
             it[MusicTable.platformId] = platformId
             it[MusicTable.uploaderId] = uploaderId
             it[MusicTable.uploadDate] = uploadDate
-            it[MusicTable.isNew] = true
+            it[MusicTable.isNew] = isNew
         }
         tags.forEach { tag ->
             addTagToMusic(tag, fileName)
@@ -93,11 +93,11 @@ class MusicDAOImpl : MusicDAO {
         uploadDate: String,
         isNew: Boolean
     ): Boolean = dbQuery {
-        MusicTable.update({ MusicTable.platformId eq platformId }) {
-            it[MusicTable.fileName] = fileName
+        MusicTable.update({ MusicTable.fileName eq fileName }) {
             it[MusicTable.fileExtension] = fileExtension
             it[MusicTable.title] = title
             it[MusicTable.artist] = artist
+            it[MusicTable.platformId] = platformId
             it[MusicTable.uploaderId] = uploaderId
             it[MusicTable.uploadDate] = uploadDate
             it[MusicTable.isNew] = isNew
@@ -109,9 +109,10 @@ class MusicDAOImpl : MusicDAO {
         MusicTable.deleteWhere { MusicTable.fileName eq fileName } > 0
     }
 
-    override suspend fun deleteAllMusic(): Boolean {
+    override suspend fun deleteAllMusic(): Boolean = dbQuery {
         PlaylistMusic.deleteAll()
-        return MusicTable.deleteAll() > 0
+        MusicTag.deleteAll()
+        MusicTable.deleteAll() > 0
     }
 
     override suspend fun removeMusicFromAllPlaylists(fileName: String): Boolean = dbQuery {
@@ -128,13 +129,13 @@ class MusicDAOImpl : MusicDAO {
         }
         val insertStatement = MusicTag.insert {
             it[MusicTag.tag] = tag
-            it[MusicTag.music] = music
+            it[music] = fileName
         }
         insertStatement.resultedValues?.singleOrNull() != null
     }
 
     override suspend fun removeTagFromMusic(tag: String, fileName: String): Boolean = dbQuery {
-        val result = MusicTag.deleteWhere { (MusicTag.music eq music) and (MusicTag.tag eq tag) } > 0
+        val result = MusicTag.deleteWhere { (music eq music) and (MusicTag.tag eq tag) } > 0
         if (result) {
             val isTagUnused = MusicTag.select { MusicTag.tag eq tag }.map { it[MusicTag.tag] }.isEmpty()
             if (isTagUnused) {
@@ -143,6 +144,4 @@ class MusicDAOImpl : MusicDAO {
         }
         result
     }
-
-    val musicDao: MusicDAOImpl = MusicDAOImpl()
 }

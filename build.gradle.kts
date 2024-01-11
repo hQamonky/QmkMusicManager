@@ -1,6 +1,7 @@
 
 val ktorVersion: String by project
 val kotlinVersion: String by project
+val coroutinesVersion: String by project
 val logbackVersion: String by project
 val swaggerVersion: String by project
 val exposedVersion: String by project
@@ -59,6 +60,9 @@ dependencies {
     // define any required OkHttp artifacts without version
     implementation("com.squareup.okhttp3:okhttp")
     implementation("com.squareup.okhttp3:logging-interceptor")
+
+    // Tests
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
 
     // Tools
     implementation("com.google.code.gson:gson:2.10.1")
