@@ -35,8 +35,8 @@ class UploaderDAOImpl : UploaderDAO {
         val insertStatement = Uploaders.insert {
             it[Uploaders.id] = id
             it[Uploaders.name] = name
-            it[Uploaders.separator] = namingFormat.separator
-            it[Uploaders.isArtistBeforeTitle] = namingFormat.artistBeforeTitle
+            it[separator] = namingFormat.separator
+            it[isArtistBeforeTitle] = namingFormat.artistBeforeTitle
             it[Uploaders.platform] = platform
         }
         insertStatement.resultedValues?.singleOrNull()?.let(::resultRowToUploader)
@@ -44,8 +44,8 @@ class UploaderDAOImpl : UploaderDAO {
 
     override suspend fun editUploader(id: String, namingFormat: NamingFormat): Boolean = dbQuery {
         Uploaders.update({ Uploaders.id eq id }) {
-            it[Uploaders.separator] = namingFormat.separator
-            it[Uploaders.isArtistBeforeTitle] = namingFormat.artistBeforeTitle
+            it[separator] = namingFormat.separator
+            it[isArtistBeforeTitle] = namingFormat.artistBeforeTitle
         } > 0
     }
 
@@ -56,6 +56,4 @@ class UploaderDAOImpl : UploaderDAO {
     override suspend fun deleteAllUploaders(): Boolean = dbQuery {
         Uploaders.deleteAll() > 0
     }
-
-    val uploaderDao: UploaderDAOImpl = UploaderDAOImpl()
 }
