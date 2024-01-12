@@ -53,8 +53,8 @@ class UploaderDAOImpl : UploaderDAO {
         Uploaders.deleteWhere { Uploaders.id eq id } > 0
     }
 
-    override suspend fun deleteAllUploaders(): Boolean {
-        return Uploaders.deleteAll() > 0
+    override suspend fun deleteAllUploaders(): Boolean = dbQuery {
+        Uploaders.deleteAll() > 0
     }
 
     val uploaderDao: UploaderDAOImpl = UploaderDAOImpl()

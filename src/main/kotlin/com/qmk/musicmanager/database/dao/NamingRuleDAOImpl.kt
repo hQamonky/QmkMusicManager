@@ -3,7 +3,6 @@ package com.qmk.musicmanager.database.dao
 import com.qmk.musicmanager.database.model.DatabaseFactory.dbQuery
 import com.qmk.musicmanager.database.model.NamingRules
 import com.qmk.musicmanager.domain.model.NamingRule
-import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
@@ -48,16 +47,7 @@ class NamingRuleDAOImpl : NamingRuleDAO {
         NamingRules.deleteWhere { NamingRules.id eq id } > 0
     }
 
-    override suspend fun deleteAllNamingRules(): Boolean {
-        return NamingRules.deleteAll() > 0
-    }
-
-    val namingRuleDao: NamingRuleDAO = NamingRuleDAOImpl().apply {
-        runBlocking {
-            // TODO : Add default naming rules to database
-//            if(allNamingRules().isEmpty()) {
-//                addNewNamingRule("The drive to develop!", "...it's what keeps me going.")
-//            }
-        }
+    override suspend fun deleteAllNamingRules(): Boolean = dbQuery {
+        NamingRules.deleteAll() > 0
     }
 }

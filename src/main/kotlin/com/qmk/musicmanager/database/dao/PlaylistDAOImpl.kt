@@ -47,11 +47,11 @@ class PlaylistDAOImpl: PlaylistDAO {
         Playlists.deleteWhere { Playlists.name eq name } > 0
     }
 
-    override suspend fun deleteAllPlaylists(): Boolean {
+    override suspend fun deleteAllPlaylists(): Boolean = dbQuery {
         PlaylistMusic.deleteAll()
         PlatformPlaylists.deleteAll()
         PlaylistPlatformPlaylist.deleteAll()
-        return Playlists.deleteAll() > 0
+        Playlists.deleteAll() > 0
     }
 
     override suspend fun musicFromPlaylist(playlist: String): List<String> = dbQuery {

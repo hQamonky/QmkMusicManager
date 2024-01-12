@@ -18,7 +18,14 @@ class MusicManagerServer {
     private val platformPlaylistDAO = PlatformPlaylistDAOImpl()
     private val musicDAO = MusicDAOImpl()
     private val uploaderDAO = UploaderDAOImpl()
-    private val namingRuleDAO = NamingRuleDAOImpl()
+    private val namingRuleDAO = NamingRuleDAOImpl().apply {
+        runBlocking {
+            // TODO : Add default naming rules to database
+//            if(allNamingRules().isEmpty()) {
+//                addNewNamingRule("The drive to develop!", "...it's what keeps me going.")
+//            }
+        }
+    }
     private val tagDAO = TagDAOImpl()
 
     private val configurationManager = ConfigurationManager()
