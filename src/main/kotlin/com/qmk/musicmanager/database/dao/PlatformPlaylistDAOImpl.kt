@@ -38,7 +38,7 @@ class PlatformPlaylistDAOImpl : PlatformPlaylistDAO {
         }
         playlists.forEach { playlist ->
             PlaylistPlatformPlaylist.insert {
-                it[PlaylistPlatformPlaylist.playlistPlatformId] = id
+                it[playlistPlatformId] = id
                 it[PlaylistPlatformPlaylist.playlist] = playlist
             }
         }
@@ -46,10 +46,10 @@ class PlatformPlaylistDAOImpl : PlatformPlaylistDAO {
     }
 
     override suspend fun editPlaylist(id: String, playlists: List<String>): Boolean = dbQuery {
-        var result = PlaylistPlatformPlaylist.deleteWhere { PlaylistPlatformPlaylist.playlistPlatformId eq id } > 0
+        var result = PlaylistPlatformPlaylist.deleteWhere { playlistPlatformId eq id } > 0
         playlists.forEach { playlist ->
             val insertStatement = PlaylistPlatformPlaylist.insert {
-                it[PlaylistPlatformPlaylist.playlistPlatformId] = id
+                it[playlistPlatformId] = id
                 it[PlaylistPlatformPlaylist.playlist] = playlist
             }
             if (result) result = insertStatement.resultedValues?.singleOrNull() != null
@@ -58,7 +58,7 @@ class PlatformPlaylistDAOImpl : PlatformPlaylistDAO {
     }
 
     override suspend fun deletePlaylist(id: String): Boolean = dbQuery {
-        PlaylistPlatformPlaylist.deleteWhere { PlaylistPlatformPlaylist.playlistPlatformId eq id }
+        PlaylistPlatformPlaylist.deleteWhere { playlistPlatformId eq id }
         PlatformPlaylists.deleteWhere { PlatformPlaylists.id eq id } > 0
     }
 
@@ -74,12 +74,12 @@ class PlatformPlaylistDAOImpl : PlatformPlaylistDAO {
 
     override suspend fun plPlaylistsFromPlaylist(name: String): List<String> = dbQuery {
         PlaylistPlatformPlaylist.select { PlaylistPlatformPlaylist.playlist eq name }
-            .map { it[PlaylistPlatformPlaylist.playlist] }
+            .map { it[PlaylistPlatformPlaylist.playlistPlatformId] }
     }
 
     override suspend fun addPlaylistToPlaylist(playlist: String, id: String): Boolean = dbQuery {
         val insertStatement = PlaylistPlatformPlaylist.insert {
-            it[PlaylistPlatformPlaylist.playlistPlatformId] = id
+            it[playlistPlatformId] = id
             it[PlaylistPlatformPlaylist.playlist] = playlist
         }
         insertStatement.resultedValues?.singleOrNull() != null
@@ -87,7 +87,7 @@ class PlatformPlaylistDAOImpl : PlatformPlaylistDAO {
 
     override suspend fun removePlaylistFromPlaylist(playlist: String, id: String): Boolean = dbQuery {
         PlaylistPlatformPlaylist.deleteWhere {
-            (PlaylistPlatformPlaylist.playlist eq id) and (PlaylistPlatformPlaylist.playlist eq playlist)
+            (playlistPlatformId eq id) and (PlaylistPlatformPlaylist.playlist eq playlist)
         } > 0
     }
 
@@ -97,7 +97,7 @@ class PlatformPlaylistDAOImpl : PlatformPlaylistDAO {
             val isUnused = PlaylistPlatformPlaylist.select { PlaylistPlatformPlaylist.playlistPlatformId eq playlist.id }
                 .map { it[PlaylistPlatformPlaylist.playlistPlatformId] }.isEmpty()
             if (isUnused) {
-                val result = PlatformPlaylists.deleteWhere { PlatformPlaylists.id eq playlist.id } > 0
+                val result = PlatformPlaylists.deleteWhere { id eq playlist.id } > 0
                 if (finalResult) finalResult = result
             }
         }
