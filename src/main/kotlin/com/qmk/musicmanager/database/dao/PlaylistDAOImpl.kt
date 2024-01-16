@@ -37,13 +37,13 @@ class PlaylistDAOImpl: PlaylistDAO {
 
     override suspend fun renamePlaylist(oldName: String, newName: String): Boolean = dbQuery {
         Playlists.update({ Playlists.name eq oldName }) {
-            it[Playlists.name] = newName
+            it[name] = newName
         } > 0
     }
 
     override suspend fun deletePlaylist(name: String): Boolean = dbQuery {
-        PlaylistMusic.deleteWhere { PlaylistMusic.playlist eq name }
-        val result = PlaylistPlatformPlaylist.deleteWhere { PlaylistPlatformPlaylist.playlist eq name } > 0
+        PlaylistMusic.deleteWhere { playlist eq name }
+        PlaylistPlatformPlaylist.deleteWhere { playlist eq name } > 0
         Playlists.deleteWhere { Playlists.name eq name } > 0
     }
 
@@ -69,6 +69,6 @@ class PlaylistDAOImpl: PlaylistDAO {
     }
 
     override suspend fun removeMusicFromPlaylist(music: String, playlist: String): Boolean = dbQuery {
-        Playlists.deleteWhere { (PlaylistMusic.music eq music) and (PlaylistMusic.playlist eq playlist) } > 0
+        PlaylistMusic.deleteWhere { (PlaylistMusic.music eq music) and (PlaylistMusic.playlist eq playlist) } > 0
     }
 }
