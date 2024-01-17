@@ -5,6 +5,8 @@ import com.qmk.musicmanager.domain.extension.runCommand
 import com.qmk.musicmanager.domain.model.Music
 import java.io.File
 import java.net.URI
+import java.nio.file.Files
+import java.nio.file.Paths
 import java.util.*
 
 class MopidyManager(
@@ -12,9 +14,11 @@ class MopidyManager(
 ) {
     private lateinit var audioDir: String
     private lateinit var playlistDir: String
+    private val workDir = "./workDir"
     val archivePlaylistName = "Archives"
 
     init {
+        Files.createDirectories(Paths.get(workDir))
         updateMembers()
     }
 
@@ -51,7 +55,7 @@ class MopidyManager(
         val list = getFilesFromPlaylist(playlistName).toMutableList()
         list.remove("${music.fileName}.${music.fileExtension}")
 
-        val tempFile = File("./workDir/power-amp-tmp-playlist-${UUID.randomUUID()}.m3u8")
+        val tempFile = File("$workDir/power-amp-tmp-playlist-${UUID.randomUUID()}.m3u8")
         list.forEach { line ->
             tempFile.appendText("$line\n")
         }
@@ -92,7 +96,7 @@ class MopidyManager(
         val archivePlaylist = File("${playlistDir}/$archivePlaylistName.m3u8")
         if (!archivePlaylist.exists()) archivePlaylist.createNewFile()
 
-        val tempFile = File("./workDir/mopidy-tmp-playlist-${UUID.randomUUID()}.m3u8")
+        val tempFile = File("$workDir/mopidy-tmp-playlist-${UUID.randomUUID()}.m3u8")
         File(playlistDir).walk().forEach lit1@ { playlist ->
             if (playlist == archivePlaylist || playlist.isDirectory) return@lit1
             tempFile.createNewFile()
@@ -108,7 +112,7 @@ class MopidyManager(
             tempFile.moveTo("${playlistDir}/${playlist.name}", true)
         }
 
-        val newArchivesFile = File("./workDir/mopidy-tmp-playlist-${UUID.randomUUID()}.m3u8")
+        val newArchivesFile = File("$workDir/mopidy-tmp-playlist-${UUID.randomUUID()}.m3u8")
         newArchivesFile.createNewFile()
         archivePlaylist.readLines().forEach { archive ->
             val prefix = "local:track:"
@@ -140,7 +144,7 @@ class MopidyManager(
     fun convertPowerAmpPlaylist(playlistName: String) {
         updateMembers()
         val powerAmpPlaylist = PowerAmpManager().getFilesFromPlaylist(playlistName)
-        val tempFile = File("./workDir/mopidy-tmp-playlist-${UUID.randomUUID()}.m3u8")
+        val tempFile = File("$workDir/mopidy-tmp-playlist-${UUID.randomUUID()}.m3u8")
         tempFile.createNewFile()
         powerAmpPlaylist.forEach {
             val line = convertFileToMopidyPath(File(it))
@@ -156,7 +160,7 @@ class MopidyManager(
         powerAmpPlaylist.forEach {
             if (!mergedPlaylist.contains(it)) mergedPlaylist.add(it)
         }
-        val tempFile = File("./workDir/mopidy-tmp-playlist-${UUID.randomUUID()}.m3u8")
+        val tempFile = File("$workDir/mopidy-tmp-playlist-${UUID.randomUUID()}.m3u8")
         tempFile.createNewFile()
         mergedPlaylist.forEach {
             val line = convertFileToMopidyPath(File(it))
