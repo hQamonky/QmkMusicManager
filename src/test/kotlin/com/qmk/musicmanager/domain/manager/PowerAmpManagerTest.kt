@@ -30,7 +30,7 @@ internal class PowerAmpManagerTest {
     }
 
     @Test
-    fun createPlaylistTest() {
+    fun createPlaylist() {
         assert(manager.createPlaylist("MyPlaylist") == "Playlist MyPlaylist created.")
         assert(manager.createPlaylist("MyPlaylist") == "MyPlaylist already exists.")
         val playlistFile = File("src/test/MusicTestDir/Playlists/PowerAmp/MyPlaylist.m3u8")
@@ -41,7 +41,7 @@ internal class PowerAmpManagerTest {
     }
 
     @Test
-    fun renamePlaylistTest() {
+    fun renamePlaylist() {
         manager.createPlaylist("MyPlaylist")
         val oldPlaylist = File("src/test/MusicTestDir/Playlists/PowerAmp/MyPlaylist.m3u8")
         assert(oldPlaylist.exists())
@@ -54,7 +54,7 @@ internal class PowerAmpManagerTest {
     }
 
     @Test
-    fun addMusicToPlaylistTest() {
+    fun addMusicToPlaylist() {
         manager.createPlaylist("MyPlaylist")
         manager.addMusicToPlaylist(
             Music(
@@ -95,7 +95,7 @@ internal class PowerAmpManagerTest {
     }
 
     @Test
-    fun getFilesFromPlaylistTest() {
+    fun getFilesFromPlaylist() {
         manager.createPlaylist("MyPlaylist")
         manager.addMusicToPlaylist(
             Music(
@@ -132,7 +132,7 @@ internal class PowerAmpManagerTest {
     }
 
     @Test
-    fun archiveMusicTest() {
+    fun archiveMusic() {
         val playlist1 = "playlist1"
         val playlist2 = "playlist2"
         val archives = "Archives"
@@ -200,7 +200,7 @@ internal class PowerAmpManagerTest {
     }
 
     @Test
-    fun getMusicToArchiveTest() {
+    fun getMusicToArchive() {
         val archives = "Archives"
         val music1 =
             Music(fileName = "music1", title = "", artist = "", platformId = "", uploaderId = "", uploadDate = "")
@@ -217,7 +217,7 @@ internal class PowerAmpManagerTest {
     }
 
     @Test
-    fun convertMopidyPlaylistTest() {
+    fun convertMopidyPlaylist() {
         val mopidyManager = MopidyManager()
         val playlist = "playlist1"
         val music1 =
@@ -240,7 +240,7 @@ internal class PowerAmpManagerTest {
     }
 
     @Test
-    fun mergeMopidyPlaylistTest() {
+    fun mergeMopidyPlaylist() {
         val mopidyManager = MopidyManager()
         val playlist = "playlist1"
         val music1 =
@@ -260,5 +260,78 @@ internal class PowerAmpManagerTest {
         assert(updatedPlaylistFile[2] == "primary/Audio/music 1.mp3")
         assert(updatedPlaylistFile[3] == "#EXT-X-RATING:0")
         assert(updatedPlaylistFile[4] == "primary/Audio/music 2.mp3")
+    }
+
+    @Test
+    fun removeMusicFromPlaylist() {
+        manager.createPlaylist("My Playlist")
+        val music1 = Music(
+            fileName = "music - file",
+            title = "",
+            artist = "",
+            platformId = "",
+            uploaderId = "",
+            uploadDate = ""
+        )
+        val music2 = Music(
+            fileName = "other - music",
+            title = "",
+            artist = "",
+            platformId = "",
+            uploaderId = "",
+            uploadDate = ""
+        )
+        manager.addMusicToPlaylist(music1, "My Playlist")
+        manager.addMusicToPlaylist(music2, "My Playlist")
+        var playlistFileLines = File("src/test/MusicTestDir/Playlists/PowerAmp/My Playlist.m3u8").readLines().map { it }
+        assert(playlistFileLines.size == 5)
+        assert(playlistFileLines[0] == "#EXTM3U")
+        assert(playlistFileLines[1] == "#EXT-X-RATING:0")
+        assert(playlistFileLines[2] == "primary/Audio/music - file.mp3")
+        assert(playlistFileLines[3] == "#EXT-X-RATING:0")
+        assert(playlistFileLines[4] == "primary/Audio/other - music.mp3")
+
+        manager.removeMusicFromPlaylist(music1, "My Playlist")
+        playlistFileLines = File("src/test/MusicTestDir/Playlists/PowerAmp/My Playlist.m3u8").readLines().map { it }
+        assert(playlistFileLines.size == 3)
+        assert(playlistFileLines[0] == "#EXTM3U")
+        assert(playlistFileLines[1] == "#EXT-X-RATING:0")
+        assert(playlistFileLines[2] == "primary/Audio/other - music.mp3")
+
+        manager.removeMusicFromPlaylist(music2, "My Playlist")
+        playlistFileLines = File("src/test/MusicTestDir/Playlists/PowerAmp/My Playlist.m3u8").readLines().map { it }
+        assert(playlistFileLines.size == 1)
+        assert(playlistFileLines[0] == "#EXTM3U")
+    }
+
+    @Test
+    fun isMusicInPlaylist() {
+        val playlist = "MyPlaylist"
+        manager.createPlaylist(playlist)
+        val music1 = Music(
+            fileName = "music - file",
+            title = "",
+            artist = "",
+            platformId = "",
+            uploaderId = "",
+            uploadDate = ""
+        )
+        val music2 = Music(
+            fileName = "other - music",
+            title = "",
+            artist = "",
+            platformId = "",
+            uploaderId = "",
+            uploadDate = ""
+        )
+        manager.addMusicToPlaylist(music1, playlist)
+        val playlistFileLines = File("src/test/MusicTestDir/Playlists/PowerAmp/$playlist.m3u8").readLines().map { it }
+        assert(playlistFileLines.size == 3)
+        assert(playlistFileLines[0] == "#EXTM3U")
+        assert(playlistFileLines[1] == "#EXT-X-RATING:0")
+        assert(playlistFileLines[2] == "primary/Audio/music - file.mp3")
+
+        assert(manager.isMusicInPlaylist(music1, playlist))
+        assert(!manager.isMusicInPlaylist(music2, playlist))
     }
 }
