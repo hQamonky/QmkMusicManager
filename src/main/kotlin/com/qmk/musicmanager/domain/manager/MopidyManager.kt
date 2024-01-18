@@ -52,11 +52,13 @@ class MopidyManager(
         val playlist = File("$playlistDir/$playlistName.m3u8")
         if (!playlist.exists()) return
 
-        val list = getFilesFromPlaylist(playlistName).toMutableList()
+        val list = getFilesFromPlaylist(playlistName).map { File(it).name }.toMutableList()
         list.remove("${music.fileName}.${music.fileExtension}")
 
-        val tempFile = File("$workDir/power-amp-tmp-playlist-${UUID.randomUUID()}.m3u8")
-        list.forEach { line ->
+        val tempFile = File("$workDir/mopidy-tmp-playlist-${UUID.randomUUID()}.m3u8")
+        tempFile.createNewFile()
+        list.forEach { file ->
+            val line = convertFileToMopidyPath(File("$audioDir/$file"))
             tempFile.appendText("$line\n")
         }
         tempFile.moveTo("${playlistDir}/${playlist.name}", true)
@@ -81,14 +83,9 @@ class MopidyManager(
         val musicFile = File("$audioDir/${music.fileName}.${music.fileExtension}")
         val playlist = File("$playlistDir/$playlistName.m3u8")
         if (!playlist.exists()) return false
-        playlist.readLines().forEach {
-            val uri = URI(it.replace(
-                "local:track:",
-                "file:${File(audioDir).absolutePath}/"
-            ))
-            if (File(uri.path) == musicFile) return true
-        }
-        return false
+
+        val files = getFilesFromPlaylist(playlistName).map { File(it).name }
+        return files.contains(musicFile.name)
     }
 
     fun archiveMusic() {
