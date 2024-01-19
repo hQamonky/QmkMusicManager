@@ -84,8 +84,8 @@ object PlaylistPlatformPlaylist : Table() {
 object Music : Table() {
     val fileName = varchar("file_name", 1024)
     val fileExtension = varchar("file_extension", 128)
-    val title = varchar("title", 128)
-    val artist = varchar("artist", 128)
+    val title = varchar("title", 512)
+    val artist = varchar("artist", 512)
     val platformId = varchar("platform_id", 128)
     val uploaderId = varchar("uploader_id", 128)
     val uploadDate = varchar("upload_date", 128)

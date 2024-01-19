@@ -41,6 +41,22 @@ class NamingRuleDAOImplTest {
     }
 
     @Test
+    fun `allNamingRules() when table is empty`() = runTest {
+        namingRuleDAO.addNewNamingRule(
+            replace = " Lyrics",
+            replaceBy = "",
+            priority = 2
+        )
+        namingRuleDAO.addNewNamingRule(
+            replace = " Official Video",
+            replaceBy = "",
+            priority = 2
+        )
+        val namingRules = namingRuleDAO.allNamingRules()
+        assert(namingRules.size == 2)
+    }
+
+    @Test
     fun namingRule() = runTest {
         namingRuleDAO.addNewNamingRule(
             replace = " Lyrics",

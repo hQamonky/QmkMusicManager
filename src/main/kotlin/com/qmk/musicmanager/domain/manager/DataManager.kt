@@ -6,6 +6,7 @@ import org.jaudiotagger.audio.exceptions.CannotReadException
 import java.io.File
 
 class DataManager(
+    private val configurationManager: ConfigurationManager,
     private val playlistDAO: PlaylistDAO,
     private val platformPlaylistDAO: PlatformPlaylistDAO,
     private val musicDAO: MusicDAO,
@@ -85,7 +86,7 @@ class DataManager(
 
     suspend fun addFilesToDatabase() {
         val id3Manager = Id3Manager()
-        val audioDir = File(ConfigurationManager().getConfiguration().audioFolder)
+        val audioDir = File(configurationManager.getConfiguration().audioFolder)
 
         audioDir.walk().forEach lit@{
             if (it.isDirectory || it.extension == "m3u8") return@lit
@@ -94,7 +95,7 @@ class DataManager(
                 val id = metadata.comments?.source?.id ?: "qmk${generateNonce()}"
                 val music = musicDAO.music(id) ?: musicDAO.addNewMusic(
                     platformId = id,
-                    fileName = it.name,
+                    fileName = it.nameWithoutExtension,
                     fileExtension = it.extension,
                     title = metadata.title,
                     artist = metadata.artist,
@@ -104,6 +105,10 @@ class DataManager(
                     isNew = false
                 ) ?: return@lit
                 metadata.comments?.playlists?.forEach { playlistName ->
+                    val playlist = playlistDAO.playlist(playlistName) ?: playlistDAO.addNewPlaylist(playlistName)
+                    if (playlist?.music?.contains(music.fileName) == false) {
+                        playlistDAO.addMusicToPlaylist(music.fileName, playlistName)
+                    }
                     if (!mopidyManager.isMusicInPlaylist(music, playlistName)) {
                         mopidyManager.createPlaylist(playlistName)
                         mopidyManager.addMusicToPlaylist(music, playlistName)

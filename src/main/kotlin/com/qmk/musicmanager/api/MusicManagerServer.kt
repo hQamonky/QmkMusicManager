@@ -35,6 +35,7 @@ class MusicManagerServer {
     private val youtubeManager = YoutubeManager()
 
     private val dataManager = DataManager(
+        configurationManager = configurationManager,
         playlistDAO = playlistDAO,
         musicDAO = musicDAO,
         uploaderDAO = uploaderDAO,
