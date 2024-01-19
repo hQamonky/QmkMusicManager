@@ -26,7 +26,11 @@ class Id3Manager {
         }
     }
 
-    fun getMetadataFromYoutube(videoInfo: MusicInfo, namingFormat: NamingFormat, namingRules: List<NamingRule>): Metadata {
+    fun getMetadataFromYoutube(
+        videoInfo: MusicInfo,
+        namingFormat: NamingFormat,
+        namingRules: List<NamingRule>
+    ): Metadata {
         val name = videoInfo.title.toAuthorizedFileName()
         val formattedTitle = videoInfo.title.applyNamingRules(namingRules)
         val splitTitle = formattedTitle.split(namingFormat.separator)
@@ -67,7 +71,7 @@ class Id3Manager {
         val f = AudioFileIO.read(file)
         val tag: Tag = f.tag
         return Metadata(
-            name = "",
+            name = file.nameWithoutExtension,
             title = tag.getFirst(FieldKey.TITLE),
             artist = tag.getFirst(FieldKey.ARTIST),
             genre = tag.getFirst(FieldKey.GENRE),
@@ -88,7 +92,7 @@ class Id3Manager {
         tag.setField(FieldKey.ARTIST, metadata.artist)
         tag.setField(FieldKey.ALBUM, metadata.album)
         tag.setField(FieldKey.GENRE, metadata.genre)
-        tag.setField(FieldKey.YEAR, metadata.year)
+//        tag.setField(FieldKey.YEAR, metadata.year) // Not working anymore for some reason
         tag.setField(FieldKey.COMMENT, metadata.comments?.toJson(gson))
         f.commit()
     }
