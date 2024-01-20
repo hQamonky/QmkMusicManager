@@ -8,7 +8,9 @@ import org.jaudiotagger.audio.AudioFileIO
 import org.jaudiotagger.tag.FieldKey
 import org.jaudiotagger.tag.Tag
 import java.io.File
-import javax.activation.MimetypesFileTypeMap
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 
 class TagsMigrationManager(private val configurationManager: ConfigurationManager = ConfigurationManager()) {
     data class OldMetadata(
@@ -49,10 +51,22 @@ class TagsMigrationManager(private val configurationManager: ConfigurationManage
         }
     }
 
-    private fun isMetadataIsOld(tag: Tag): Boolean {
+    fun isMetadataIsOld(tag: Tag): Boolean {
         return try {
-            Gson().fromJson(tag.getFirst(FieldKey.COMMENT), CommentsTag::class.java)
-            false
+            val gson = Gson()
+            val tagKey = tag.getFirst(FieldKey.COMMENT)
+            val comment = gson.fromJson(tagKey, CommentsTag::class.java)
+            val isNull = comment == null
+            if (isNull) {
+                true
+            } else {
+                val isNewTag = comment == CommentsTag()
+                if (isNewTag) {
+                    true
+                } else {
+                    false
+                }
+            }
         } catch (e: Exception) {
             println("Error parsing comments to json. Metadata is old format.")
             true
@@ -62,12 +76,12 @@ class TagsMigrationManager(private val configurationManager: ConfigurationManage
         }
     }
 
-    private fun getNewCommentTagFromOldFile(file: File): CommentsTag {
+    fun getNewCommentTagFromOldFile(file: File): CommentsTag {
         val oldMetadata = getOldMetadata(file)
         return if (oldMetadata.comment == null) {
             CommentsTag(
                 source = null,
-                playlists = listOf(),
+                playlists = getPlaylistsOfMusic(file),
                 customTags = listOf(),
                 downloadDate = ""
             )
@@ -115,12 +129,33 @@ class TagsMigrationManager(private val configurationManager: ConfigurationManage
         f.commit()
     }
 
-    fun convertAllFilesMetadata(): String? {
+    fun getAudioFiles() : List<File>? {
         val audioFolder = File(configurationManager.getConfiguration().audioFolder)
-        if (!audioFolder.isDirectory) return "Failed to get music folder."
+        if (!audioFolder.isDirectory) return null
+        val files = mutableListOf<File>()
         audioFolder.walk().forEach lit1@{ musicFile ->
-            val fileType = MimetypesFileTypeMap().getContentType(musicFile)
+            val fileType = getFileType(musicFile.toString())
             if (!fileType.contains("audio")) return@lit1
+            files.add(musicFile)
+        }
+        return files
+    }
+
+    private fun getFileType(filePath: String): String {
+        val path: Path = Paths.get(filePath)
+        return try {
+            val contentType = Files.probeContentType(path)
+            contentType ?: "Unknown"
+        } catch (e: Exception) {
+            // Handle exceptions as needed
+            e.printStackTrace()
+            "Unknown"
+        }
+    }
+
+    fun convertAllFilesMetadata(): String? {
+        val files = getAudioFiles() ?: return "Failed to get music folder."
+        files.forEach { musicFile ->
             convertFileMetadata(musicFile)
         }
         return null

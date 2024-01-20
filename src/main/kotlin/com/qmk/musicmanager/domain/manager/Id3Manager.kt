@@ -92,7 +92,7 @@ class Id3Manager {
         tag.setField(FieldKey.ARTIST, metadata.artist)
         tag.setField(FieldKey.ALBUM, metadata.album)
         tag.setField(FieldKey.GENRE, metadata.genre)
-//        tag.setField(FieldKey.YEAR, metadata.year) // Not working anymore for some reason
+//        tag.setField(FieldKey.YEAR, metadata.year) // Not working anymore for some reason. Maybe it's an Int and not a String ?
         tag.setField(FieldKey.COMMENT, metadata.comments?.toJson(gson))
         f.commit()
     }
