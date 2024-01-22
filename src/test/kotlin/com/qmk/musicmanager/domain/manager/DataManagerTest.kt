@@ -258,12 +258,83 @@ class DataManagerTest {
         assert(powerAmpCasual.size == 2)
         assert(powerAmpCasual.contains("test - music 1"))
         assert(powerAmpCasual.contains("test - music 2"))
-        val powerAmpSunshine = powerAmpManager.getFilesFromPlaylist("Sunshine Rosé").map { File(it).nameWithoutExtension }
+        val powerAmpSunshine =
+            powerAmpManager.getFilesFromPlaylist("Sunshine Rosé").map { File(it).nameWithoutExtension }
         assert(powerAmpSunshine.size == 1)
         assert(powerAmpSunshine.contains("test - music 1"))
         val powerAmpChill = powerAmpManager.getFilesFromPlaylist("Chill").map { File(it).nameWithoutExtension }
         assert(powerAmpChill.size == 1)
         assert(powerAmpChill.contains("test - music 2"))
+    }
 
+    @Test
+    fun addRealFilesToDatabase() = runBlocking {
+//        configurationManager.setConfiguration(
+//            Settings(
+//                audioFolder = "src/test/DataMigrationTest/TestAudio",
+//                playlistsFolder = "src/test/DataMigrationTest/Playlists",
+//                archiveFolder = "src/test/DataMigrationTest/Archive"
+//            )
+//        )
+//
+//        val casual = mopidyManager.getFilesFromPlaylist("Casual")
+//        val chill = mopidyManager.getFilesFromPlaylist("Chill")
+//        val deepHouseMix = mopidyManager.getFilesFromPlaylist("Deep House Mix")
+//        val mix = mopidyManager.getFilesFromPlaylist("Mix")
+//        val partyHard = mopidyManager.getFilesFromPlaylist("Party Hard")
+//        val reflectOnLife = mopidyManager.getFilesFromPlaylist("Reflect on Life")
+//        val relax = mopidyManager.getFilesFromPlaylist("Relax")
+//        val sunshineRose = mopidyManager.getFilesFromPlaylist("Sunshine Rosé")
+//        val vicGazole = mopidyManager.getFilesFromPlaylist("Vic Gazole")
+//        assert(casual.isNotEmpty())
+//        assert(chill.isNotEmpty())
+//        assert(deepHouseMix.isNotEmpty())
+//        assert(mix.isNotEmpty())
+//        assert(partyHard.isNotEmpty())
+//        assert(reflectOnLife.isNotEmpty())
+//        assert(relax.isNotEmpty())
+//        assert(sunshineRose.isNotEmpty())
+//        assert(vicGazole.isNotEmpty())
+//
+//        configurationManager.setPlaylistsFolder("src/test/DataMigrationTest/TestPlaylists")
+//        manager.addFilesToDatabase()
+//
+//        val newCasual = mopidyManager.getFilesFromPlaylist("Casual")
+//        val newChill = mopidyManager.getFilesFromPlaylist("Chill")
+//        val newDeepHouseMix = mopidyManager.getFilesFromPlaylist("Deep House Mix")
+//        val newMix = mopidyManager.getFilesFromPlaylist("Mix")
+//        val newPartyHard = mopidyManager.getFilesFromPlaylist("Party Hard")
+//        val newReflectOnLife = mopidyManager.getFilesFromPlaylist("Reflect on Life")
+//        val newRelax = mopidyManager.getFilesFromPlaylist("Relax")
+//        val newSunshineRose = mopidyManager.getFilesFromPlaylist("Sunshine Rosé")
+//        val newVicGazole = mopidyManager.getFilesFromPlaylist("Vic Gazole")
+//        assert(casual.size == newCasual.size)
+//        assert(chill.size == newChill.size)
+//        assert(deepHouseMix.size == newDeepHouseMix.size)
+//        assert(mix.size == newMix.size)
+//        assert(partyHard.size == newPartyHard.size)
+//        assert(reflectOnLife.size == newReflectOnLife.size)
+//        assert(relax.size == newRelax.size)
+//        assert(sunshineRose.size == newSunshineRose.size)
+//        assert(vicGazole.size == newVicGazole.size)
+//
+//        val newCasualPA = powerAmpManager.getFilesFromPlaylist("Casual")
+//        val newChillPA = powerAmpManager.getFilesFromPlaylist("Chill")
+//        val newDeepHouseMixPA = powerAmpManager.getFilesFromPlaylist("Deep House Mix")
+//        val newMixPA = powerAmpManager.getFilesFromPlaylist("Mix")
+//        val newPartyHardPA = powerAmpManager.getFilesFromPlaylist("Party Hard")
+//        val newReflectOnLifePA = powerAmpManager.getFilesFromPlaylist("Reflect on Life")
+//        val newRelaxPA = powerAmpManager.getFilesFromPlaylist("Relax")
+//        val newSunshineRosePA = powerAmpManager.getFilesFromPlaylist("Sunshine Rosé")
+//        val newVicGazolePA = powerAmpManager.getFilesFromPlaylist("Vic Gazole")
+//        assert(casual.size == newCasualPA.size)
+//        assert(chill.size == newChillPA.size)
+//        assert(deepHouseMix.size == newDeepHouseMixPA.size)
+//        assert(mix.size == newMixPA.size)
+//        assert(partyHard.size == newPartyHardPA.size)
+//        assert(reflectOnLife.size == newReflectOnLifePA.size)
+//        assert(relax.size == newRelaxPA.size)
+//        assert(sunshineRose.size == newSunshineRosePA.size)
+//        assert(vicGazole.size == newVicGazolePA.size)
     }
 }

@@ -94,11 +94,11 @@ class DataManager(
                 val metadata = id3Manager.getMetadata(it)
                 val id = metadata.comments?.source?.id ?: "qmk${generateNonce()}"
                 val music = musicDAO.music(id) ?: musicDAO.addNewMusic(
-                    platformId = id,
                     fileName = it.nameWithoutExtension,
                     fileExtension = it.extension,
                     title = metadata.title,
                     artist = metadata.artist,
+                    platformId = id,
                     uploaderId = metadata.comments?.source?.uploaderId ?: "",
                     uploadDate = metadata.comments?.source?.uploadDate ?: "",
                     tags = metadata.comments?.customTags ?: listOf(),
