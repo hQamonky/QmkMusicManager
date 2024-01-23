@@ -41,6 +41,11 @@ class MopidyManager(
         File("$playlistDir/$oldName.m3u8").renameTo(File("$playlistDir/$newName.m3u8"))
     }
 
+    fun deletePlaylist(name: String) {
+        updateMembers()
+        File("$playlistDir/$name.m3u8").delete()
+    }
+
     fun addMusicToPlaylist(music: Music, playlistName: String) {
         updateMembers()
         val line = convertFileToMopidyPath(File("$audioDir/${music.fileName}.${music.fileExtension}"))

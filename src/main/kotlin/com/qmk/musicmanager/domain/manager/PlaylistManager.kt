@@ -33,7 +33,7 @@ class PlaylistManager(
         return playlistDAO.playlist(name) != null
     }
 
-    suspend fun getYoutubePlaylistId(playlistUrl: String): String {
+    fun getYoutubePlaylistId(playlistUrl: String): String {
         val gson = Gson()
         val playlistInfo = gson.fromJson(
             youtubeManager.getPlaylistInfo(playlistUrl, DownloadTool.YT_DLP),
@@ -74,9 +74,10 @@ class PlaylistManager(
         val playlist = playlistDAO.playlist(name) ?: return false
         playlist.music.forEach {
             val music = musicDAO.music(it) ?: return false
-            removeMusicFromPlaylistFiles(music, playlist.name)
             id3Manager.removeMusicFromPlaylist(music.toFile(configurationManager.getConfiguration().audioFolder), name)
         }
+        mopidyManager.deletePlaylist(name)
+        powerAmpManager.deletePlaylist(name)
         return playlistDAO.deletePlaylist(name)
     }
 
@@ -286,13 +287,13 @@ class PlaylistManager(
     }
 
     private fun removeMusicFromPlaylistFiles(music: Music, playlistName: String) {
-        if (!mopidyManager.isMusicInPlaylist(music, playlistName))
+        if (mopidyManager.isMusicInPlaylist(music, playlistName))
             mopidyManager.removeMusicFromPlaylist(music, playlistName)
-        if (!powerAmpManager.isMusicInPlaylist(music, playlistName))
+        if (powerAmpManager.isMusicInPlaylist(music, playlistName))
             powerAmpManager.removeMusicFromPlaylist(music, playlistName)
     }
 
-    suspend fun archiveMusic(): List<String> {
+    fun archiveMusic(): List<String> {
         val archivePlaylist = mopidyManager.archivePlaylistName
         val archiveFolder = File(configurationManager.getConfiguration().audioFolder)
         if (!archiveFolder.exists()) archiveFolder.mkdir()

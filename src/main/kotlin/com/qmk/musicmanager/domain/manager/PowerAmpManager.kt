@@ -40,6 +40,11 @@ class PowerAmpManager(
         File("$playlistDir/$oldName.m3u8").renameTo(File("$playlistDir/$newName.m3u8"))
     }
 
+    fun deletePlaylist(name: String) {
+        updateMembers()
+        File("$playlistDir/$name.m3u8").delete()
+    }
+
     fun addMusicToPlaylist(music: Music, playlistName: String) {
         updateMembers()
         val line = "primary/${File(audioDir).name}/${music.fileName}.${music.fileExtension}"
