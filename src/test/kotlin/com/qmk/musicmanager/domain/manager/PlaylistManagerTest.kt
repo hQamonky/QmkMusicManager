@@ -4,6 +4,7 @@ import com.google.gson.Gson
 import com.qmk.musicmanager.database.dao.*
 import com.qmk.musicmanager.database.model.DatabaseFactory
 import com.qmk.musicmanager.domain.model.CommentsTag
+import com.qmk.musicmanager.domain.model.Music
 import com.qmk.musicmanager.domain.model.Settings
 import com.qmk.musicmanager.domain.model.SourceTag
 import kotlinx.coroutines.runBlocking
@@ -124,23 +125,10 @@ class PlaylistManagerTest {
     }
 
     @Test
-    fun getPlaylists() {
-    }
-
-    @Test
-    fun getPlaylist() {
-    }
-
-    @Test
-    fun doesPlaylistExist() {
-    }
-
-    @Test
     fun getYoutubePlaylistId() {
-    }
-
-    @Test
-    fun doesPlaylistIdExist() {
+        val plId =
+            playlistManager.getYoutubePlaylistId("https://www.youtube.com/playlist?list=PLCVGGn6GhhDsqtlR4F1F9hbllr2My19Uq")
+        assert(plId == "PLCVGGn6GhhDsqtlR4F1F9hbllr2My19Uq")
     }
 
     @Test
@@ -157,7 +145,38 @@ class PlaylistManagerTest {
     }
 
     @Test
-    fun renamePlaylist() {
+    fun renamePlaylist() = runTest {
+        playlistManager.create("My Playlist 1")
+        playlistManager.create("My Playlist 2")
+        playlistDAO.addMusicToPlaylist(musicFile.nameWithoutExtension, "My Playlist 1")
+        playlistDAO.addMusicToPlaylist(musicFile.nameWithoutExtension, "My Playlist 2")
+
+        val result = playlistManager.renamePlaylist("My Playlist 1", "Best of WilliTracks")
+        assert(result)
+
+        val music = musicDAO.music(musicFile.nameWithoutExtension)
+        assert(music?.playlists?.size == 2)
+        assert(music?.playlists?.contains("My Playlist 1") == false)
+        assert(music?.playlists?.contains("Best of WilliTracks") == true)
+
+        val metadata = id3Manager.getMetadata(musicFile)
+        assert(metadata.comments?.playlists?.contains("My Playlist 1") == false)
+        assert(metadata.comments?.playlists?.contains("Best of WilliTracks") == true)
+
+        val oldPlFromDAO = playlistDAO.playlist("My Playlist 1")
+        assert(oldPlFromDAO == null)
+        val newPlFromDAO = playlistDAO.playlist("Best of WilliTracks")
+        assert(newPlFromDAO != null)
+
+        val oldMopidyPl = File("$playlistDir/Mopidy/My Playlist 1.m3u8")
+        assert(!oldMopidyPl.exists())
+        val newMopidyPl = File("$playlistDir/Mopidy/Best of WilliTracks.m3u8")
+        assert(newMopidyPl.exists())
+
+        val oldPowerAmpPl = File("$playlistDir/PowerAmp/My Playlist 1.m3u8")
+        assert(!oldPowerAmpPl.exists())
+        val newPowerAmpPl = File("$playlistDir/PowerAmp/Best of WilliTracks.m3u8")
+        assert(newPowerAmpPl.exists())
     }
 
     @Test
@@ -187,19 +206,71 @@ class PlaylistManagerTest {
     }
 
     @Test
-    fun getYoutubePlaylist() {
+    fun getYoutubePlaylist() = runBlocking {
+        playlistManager.create("My Playlist 1")
+        playlistManager.create("My Playlist 2")
+        playlistManager.createYoutubePlaylist(
+            "https://www.youtube.com/playlist?list=PLCVGGn6GhhDsqtlR4F1F9hbllr2My19Uq",
+            listOf("My Playlist 1", "My Playlist 3")
+        )
+
+        val playlist = playlistManager.getYoutubePlaylist("PLCVGGn6GhhDsqtlR4F1F9hbllr2My19Uq")
+        assert(playlist?.playlists?.size == 2)
+        assert(playlist?.playlists?.contains("My Playlist 1") == true)
+        assert(playlist?.playlists?.contains("My Playlist 3") == true)
+        assert(playlist?.name == "Best of WilliTracks 2023 part 2")
     }
 
     @Test
-    fun createYoutubePlaylist() {
+    fun createYoutubePlaylist() = runBlocking {
+        playlistManager.create("My Playlist 1")
+        playlistManager.create("My Playlist 2")
+        playlistManager.createYoutubePlaylist(
+            "https://www.youtube.com/playlist?list=PLCVGGn6GhhDsqtlR4F1F9hbllr2My19Uq",
+            listOf("My Playlist 1", "My Playlist 3")
+        )
+        val plPlaylist = platformPlaylistDAO.playlist("PLCVGGn6GhhDsqtlR4F1F9hbllr2My19Uq")
+        assert(plPlaylist?.playlists?.size == 2)
+        assert(plPlaylist?.playlists?.contains("My Playlist 1") == true)
+        assert(plPlaylist?.playlists?.contains("My Playlist 3") == true)
+        assert(plPlaylist?.name == "Best of WilliTracks 2023 part 2")
+
+        val playlist3 = playlistDAO.playlist("My Playlist 3")
+        assert(playlist3 != null)
     }
 
     @Test
-    fun editYoutubePlaylist() {
+    fun editYoutubePlaylist() = runBlocking {
+        playlistManager.create("My Playlist 1")
+        playlistManager.create("My Playlist 2")
+        playlistManager.createYoutubePlaylist(
+            "https://www.youtube.com/playlist?list=PLCVGGn6GhhDsqtlR4F1F9hbllr2My19Uq",
+            listOf("My Playlist 1", "My Playlist 3")
+        )
+
+        playlistManager.editYoutubePlaylist(
+            "PLCVGGn6GhhDsqtlR4F1F9hbllr2My19Uq",
+            listOf("My Playlist 2")
+        )
+
+        val plPlaylist = platformPlaylistDAO.playlist("PLCVGGn6GhhDsqtlR4F1F9hbllr2My19Uq")
+        assert(plPlaylist?.playlists?.size == 1)
+        assert(plPlaylist?.playlists?.contains("My Playlist 2") == true)
     }
 
     @Test
-    fun deletePlatformPlaylist() {
+    fun deletePlatformPlaylist() = runBlocking {
+        playlistManager.create("My Playlist 1")
+        playlistManager.create("My Playlist 2")
+        playlistManager.createYoutubePlaylist(
+            "https://www.youtube.com/playlist?list=PLCVGGn6GhhDsqtlR4F1F9hbllr2My19Uq",
+            listOf("My Playlist 1", "My Playlist 3")
+        )
+
+        playlistManager.deletePlatformPlaylist("PLCVGGn6GhhDsqtlR4F1F9hbllr2My19Uq")
+
+        val plPlaylist = platformPlaylistDAO.playlist("PLCVGGn6GhhDsqtlR4F1F9hbllr2My19Uq")
+        assert(plPlaylist == null)
     }
 
     @Test
@@ -240,18 +311,71 @@ class PlaylistManagerTest {
     }
 
     @Test
-    fun download() {
+    fun download() = runBlocking {
+        playlistManager.create("My Playlist 1")
+        playlistManager.create("My Playlist 2")
+        playlistManager.createYoutubePlaylist(
+            "https://www.youtube.com/playlist?list=PLCVGGn6GhhDtYoqlNGqGFdg3ODeofpkLl",
+            listOf("My Playlist 1")
+        )
+        playlistManager.createYoutubePlaylist(
+            "https://www.youtube.com/playlist?list=PLCVGGn6GhhDvZ0iCVONTYnzkjW3ZA6jwf",
+            listOf("My Playlist 2")
+        )
+        val result = playlistManager.download()
+        assert(result.size == 2)
     }
 
     @Test
-    fun testDownload() {
+    fun downloadYoutubePlaylist() = runBlocking {
+        playlistManager.create("My Playlist 1")
+        playlistManager.createYoutubePlaylist(
+            "https://www.youtube.com/playlist?list=PLCVGGn6GhhDtYoqlNGqGFdg3ODeofpkLl",
+            listOf("My Playlist 1")
+        )
+
+        val result = playlistManager.downloadYoutubePlaylist("PLCVGGn6GhhDtYoqlNGqGFdg3ODeofpkLl")
+        assert(result.downloaded.size == 2)
     }
 
     @Test
-    fun downloadYoutubePlaylist() {
-    }
+    fun archiveMusic() = runTest {
+        val pl1 = "My Playlist 1"
+        val pl2 = "My Playlist 2"
+        val archivesPl = mopidyManager.archivePlaylistName
+        playlistManager.create(pl1)
+        playlistManager.create(pl2)
+        var music: Music? = Music(
+            fileName = musicFile.nameWithoutExtension,
+            title = "",
+            artist = "",
+            platformId = "",
+            uploaderId = "",
+            uploadDate = "",
+            playlists = listOf(pl1, pl2, archivesPl)
+        )
+        playlistManager.addMusicToPlaylist(music!!, pl1)
+        playlistManager.addMusicToPlaylist(music, pl2)
 
-    @Test
-    fun archiveMusic() {
+        playlistManager.create(archivesPl)
+        playlistManager.addMusicToPlaylist(music, archivesPl)
+
+        val result = playlistManager.archiveMusic()
+        assert(result.size == 1)
+
+        music = musicDAO.music(musicFile.nameWithoutExtension)
+        assert(music != null)
+        assert(music?.playlists?.contains(archivesPl) == true)
+        assert(music?.playlists?.contains(pl1) == false)
+        assert(music?.playlists?.contains(pl2) == false)
+        assert(!mopidyManager.isMusicInPlaylist(music!!, pl1))
+        assert(!mopidyManager.isMusicInPlaylist(music, pl2))
+        assert(!powerAmpManager.isMusicInPlaylist(music, pl1))
+        assert(!powerAmpManager.isMusicInPlaylist(music, pl2))
+        val newFile = File("src/test/MusicTestDir/Archive/${music.fileName}.${music.fileExtension}")
+        val metadata = id3Manager.getMetadata(newFile)
+        assert(metadata.comments?.playlists?.size == 1)
+        assert(metadata.comments?.playlists?.contains(archivesPl) == true)
+        newFile.delete()
     }
 }

@@ -65,7 +65,9 @@ class PlaylistManager(
         val audioDir = configurationManager.getConfiguration().audioFolder
         playlist.music.forEach { musicFileName ->
             val music = musicDAO.music(musicFileName) // TODO : Check and throw "MusicNotFoundException
-            music?.let { id3Manager.renamePlaylistForMusic(oldName, newName, it.toFile(audioDir)) }
+            music?.let {
+                id3Manager.renamePlaylistForMusic(oldName, newName, it.toFile(audioDir))
+            }
         }
         return playlistDAO.renamePlaylist(playlist.name, newName)
     }
@@ -161,7 +163,9 @@ class PlaylistManager(
             youtubeManager.getPlaylistInfo("${youtubeManager.playlistUrl}${plPlaylist.id}", DownloadTool.YT_DLP),
             PlaylistInfo::class.java
         ).entries
-            .map { it.id }
+            .mapNotNull {
+                it?.id
+            }
             .forEach { plMusicId ->
                 val music = musicDAO.getMusicFromPlatformId(plMusicId)
                 if (music != null) {
@@ -293,9 +297,9 @@ class PlaylistManager(
             powerAmpManager.removeMusicFromPlaylist(music, playlistName)
     }
 
-    fun archiveMusic(): List<String> {
+    suspend fun archiveMusic(): List<String> {
         val archivePlaylist = mopidyManager.archivePlaylistName
-        val archiveFolder = File(configurationManager.getConfiguration().audioFolder)
+        val archiveFolder = File(configurationManager.getConfiguration().archiveFolder)
         if (!archiveFolder.exists()) archiveFolder.mkdir()
         val musicToArchive = mopidyManager.getMusicToArchive()
         mopidyManager.mergePowerAmpPlaylist(archivePlaylist)
@@ -304,9 +308,15 @@ class PlaylistManager(
         powerAmpManager.archiveMusic()
         val result = mutableListOf<String>()
         musicToArchive.forEach {
-            val music = File(it)
-            music.moveTo("${archiveFolder.path}/${music.name}")
-            result.add(music.name)
+            val file = File(it)
+            val music = musicDAO.music(file.nameWithoutExtension)
+            music?.playlists?.forEach { playlist ->
+                if (playlist != archivePlaylist)
+                    removeMusicFromPlaylist(music, playlist)
+            }
+            id3Manager.updateMetadata(file = file, playlists = listOf(archivePlaylist))
+            file.moveTo("${archiveFolder.path}/${file.name}")
+            result.add(file.name)
         }
         return result
     }

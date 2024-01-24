@@ -36,6 +36,9 @@ class PlaylistDAOImpl: PlaylistDAO {
     }
 
     override suspend fun renamePlaylist(oldName: String, newName: String): Boolean = dbQuery {
+        PlaylistMusic.update({ PlaylistMusic.playlist eq oldName }) {
+            it[playlist] = newName
+        }
         Playlists.update({ Playlists.name eq oldName }) {
             it[name] = newName
         } > 0
