@@ -1,7 +1,7 @@
 package com.qmk.musicmanager.domain.manager
 
 import com.qmk.musicmanager.domain.model.Metadata
-import com.qmk.musicmanager.shazam_api.ShazamAPI
+import com.qmk.musicmanager.api.ShazamAPI
 import java.io.File
 
 class RapidapiManager(

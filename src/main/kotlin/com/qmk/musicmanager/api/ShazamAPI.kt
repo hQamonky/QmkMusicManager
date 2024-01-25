@@ -1,4 +1,4 @@
-package com.qmk.musicmanager.shazam_api
+package com.qmk.musicmanager.api
 
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull

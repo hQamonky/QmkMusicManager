@@ -1,4 +1,4 @@
-package com.qmk.musicmanager.api.model
+package com.qmk.musicmanager.controller.model
 
 data class BasicAPIResponse(
     val successful: Boolean,

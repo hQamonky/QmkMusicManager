@@ -1,8 +1,8 @@
-package com.qmk.musicmanager.api.route
+package com.qmk.musicmanager.controller.route
 
-import com.qmk.musicmanager.api.model.BasicAPIResponse
-import com.qmk.musicmanager.api.model.MigrateMetadata
-import com.qmk.musicmanager.api.model.ServerError
+import com.qmk.musicmanager.controller.model.BasicAPIResponse
+import com.qmk.musicmanager.controller.model.MigrateMetadata
+import com.qmk.musicmanager.controller.model.ServerError
 import com.qmk.musicmanager.server
 import io.ktor.http.*
 import io.ktor.server.application.*

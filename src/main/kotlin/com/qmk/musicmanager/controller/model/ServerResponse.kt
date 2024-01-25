@@ -1,4 +1,4 @@
-package com.qmk.musicmanager.api.model
+package com.qmk.musicmanager.controller.model
 
 import com.google.gson.Gson
 import com.qmk.musicmanager.domain.model.*

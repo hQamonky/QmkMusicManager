@@ -1,13 +1,10 @@
-package com.qmk.musicmanager.api.route
+package com.qmk.musicmanager.controller.route
 
 import com.google.gson.JsonParser
-import com.qmk.musicmanager.api.model.*
-import com.qmk.musicmanager.api.session.MusicManagerSession
+import com.qmk.musicmanager.controller.model.*
+import com.qmk.musicmanager.controller.session.MusicManagerSession
 import com.qmk.musicmanager.gson
 import com.qmk.musicmanager.server
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import io.ktor.server.websocket.*

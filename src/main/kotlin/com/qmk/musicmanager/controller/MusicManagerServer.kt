@@ -1,6 +1,6 @@
-package com.qmk.musicmanager.api
+package com.qmk.musicmanager.controller
 
-import com.qmk.musicmanager.api.model.*
+import com.qmk.musicmanager.controller.model.*
 import com.qmk.musicmanager.database.dao.*
 import com.qmk.musicmanager.domain.exception.NoPlaylistsFoundException
 import com.qmk.musicmanager.domain.manager.*

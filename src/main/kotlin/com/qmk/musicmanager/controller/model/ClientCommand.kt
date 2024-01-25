@@ -1,4 +1,4 @@
-package com.qmk.musicmanager.api.model
+package com.qmk.musicmanager.controller.model
 
 class ClientCommand {
     object ConnectClient : BaseModel(ClientCommandType.CONNECT_CLIENT)

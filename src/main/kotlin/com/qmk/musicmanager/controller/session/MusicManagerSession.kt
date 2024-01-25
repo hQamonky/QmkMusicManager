@@ -1,4 +1,4 @@
-package com.qmk.musicmanager.api.session
+package com.qmk.musicmanager.controller.session
 
 data class MusicManagerSession(
     val clientId: String,

@@ -1,8 +1,7 @@
-package com.qmk.musicmanager.api.route
+package com.qmk.musicmanager.controller.route
 
-import com.qmk.musicmanager.api.model.*
+import com.qmk.musicmanager.controller.model.*
 import com.qmk.musicmanager.domain.model.PlatformPlaylist
-import com.qmk.musicmanager.domain.model.Playlist
 import com.qmk.musicmanager.domain.model.PlaylistEntry
 import com.qmk.musicmanager.server
 import io.ktor.http.*

@@ -1,4 +1,5 @@
 
+val qmkMusicManagerVersion: String by project
 val ktorVersion: String by project
 val kotlinVersion: String by project
 val coroutinesVersion: String by project
@@ -13,7 +14,7 @@ plugins {
 }
 
 group = "com.music-manager.qmk"
-version = "0.0.1"
+version = qmkMusicManagerVersion
 
 application {
     mainClass.set("com.music-manager.qmk.ApplicationKt")
@@ -68,4 +69,12 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("net.jthink:jaudiotagger:3.0.1")
     testImplementation("org.testng:testng:7.1.0")
+}
+
+tasks.named<JavaExec>("run") {
+    systemProperty("qmkMusicManagerVersion", findProperty("qmkMusicManagerVersion") ?: "Unknown")
+}
+
+tasks.named<JavaExec>("run") {
+    systemProperty("appName", findProperty("appName") ?: "QmkMusicManager")
 }
