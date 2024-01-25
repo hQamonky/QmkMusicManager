@@ -365,17 +365,17 @@ class PlaylistManagerTest {
 
         music = musicDAO.music(musicFile.nameWithoutExtension)
         assert(music != null)
-        assert(music?.playlists?.contains(archivesPl) == true)
+        assert(music?.playlists?.contains(archivesPl) == false)
         assert(music?.playlists?.contains(pl1) == false)
         assert(music?.playlists?.contains(pl2) == false)
         assert(!mopidyManager.isMusicInPlaylist(music!!, pl1))
         assert(!mopidyManager.isMusicInPlaylist(music, pl2))
         assert(!powerAmpManager.isMusicInPlaylist(music, pl1))
         assert(!powerAmpManager.isMusicInPlaylist(music, pl2))
+        assert(!musicFile.exists())
         val newFile = File("src/test/MusicTestDir/Archive/${music.fileName}.${music.fileExtension}")
         val metadata = id3Manager.getMetadata(newFile)
-        assert(metadata.comments?.playlists?.size == 1)
-        assert(metadata.comments?.playlists?.contains(archivesPl) == true)
+        assert(metadata.comments?.playlists?.isEmpty() == true)
         newFile.delete()
     }
 }

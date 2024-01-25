@@ -311,10 +311,9 @@ class PlaylistManager(
             val file = File(it)
             val music = musicDAO.music(file.nameWithoutExtension)
             music?.playlists?.forEach { playlist ->
-                if (playlist != archivePlaylist)
-                    removeMusicFromPlaylist(music, playlist)
+                removeMusicFromPlaylist(music, playlist)
             }
-            id3Manager.updateMetadata(file = file, playlists = listOf(archivePlaylist))
+            id3Manager.updateMetadata(file = file, playlists = listOf())
             file.moveTo("${archiveFolder.path}/${file.name}")
             result.add(file.name)
         }
