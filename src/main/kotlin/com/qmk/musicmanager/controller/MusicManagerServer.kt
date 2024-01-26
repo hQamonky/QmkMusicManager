@@ -413,6 +413,12 @@ class MusicManagerServer {
         return SetRapidapiKey()
     }
 
+    suspend fun setAccoustidApiKey(key: String): ServerResponse {
+        configurationManager.setAccoustidApiKey(key)
+        // TODO : implement error handling
+        return SetAccoustidApiKey()
+    }
+
     suspend fun getUploaders(): ServerResponse {
         return GetUploaders(uploaderDAO.allUploaders())
     }

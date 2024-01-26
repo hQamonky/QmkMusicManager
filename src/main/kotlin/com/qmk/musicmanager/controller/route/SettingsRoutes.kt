@@ -135,4 +135,19 @@ fun Route.settingsRoutes() {
             call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
         }
     }
+    route("/api/settings/accoustid-api-key") {
+        post {
+            val apiKey = call.receiveNullable<String>()
+            if (apiKey == null) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@post
+            }
+            val result = server.setAccoustidApiKey(apiKey)
+            if (result is ServerError) {
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                return@post
+            }
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
+        }
+    }
 }

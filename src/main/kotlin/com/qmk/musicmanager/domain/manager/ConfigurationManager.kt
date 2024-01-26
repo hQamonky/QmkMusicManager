@@ -6,6 +6,7 @@ import java.io.File
 
 class ConfigurationManager(
     private val configurationFile: File = File("./data/configuration.json"),
+    private val accoustidApiKey: File = File("./data/accoustidapikey"),
     configuration: Settings = Settings()
 ) {
 
@@ -49,5 +50,15 @@ class ConfigurationManager(
 
     fun setRapidapiKey(key: String) {
         setConfiguration(getConfiguration().copy(rapidapiKey = key))
+    }
+
+    fun setAccoustidApiKey(key: String) {
+        if (!accoustidApiKey.exists()) accoustidApiKey.createNewFile()
+        accoustidApiKey.writeText(text = key)
+    }
+
+    fun getAccoustidApiKey(): String? {
+        if (!accoustidApiKey.exists()) return null
+        return accoustidApiKey.readText(Charsets.UTF_8)
     }
 }

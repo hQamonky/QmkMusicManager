@@ -68,7 +68,10 @@ dependencies {
     // Tools
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("net.jthink:jaudiotagger:3.0.1")
-    testImplementation("org.testng:testng:7.1.0")
+    testImplementation("org.testng:testng:7.7.0")
+
+    // jaudioTagger
+    implementation("net.jthink:jaudiotagger:3.0.1")
 }
 
 tasks.named<JavaExec>("run") {

@@ -131,6 +131,8 @@ class SetAutoDownload : ServerResponse(true)
 
 class SetRapidapiKey : ServerResponse(true)
 
+class SetAccoustidApiKey : ServerResponse(true)
+
 class GetUploaders(
     response: List<Uploader>
 ) : ServerResponse(response)
