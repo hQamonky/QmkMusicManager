@@ -18,27 +18,32 @@ class DeezerManager(
         return audioHeader.trackLength
     }
 
-    suspend fun findFullMetadata(title: String, artist: String, duration: Int): DeezerAPI.TrackInfo? {
-        return searchFullMetadata(title, artist, duration) ?: searchFullMetadata(artist, title, duration)
+    suspend fun findFullMetadata(title: String, artist: String, duration: Int): Metadata? {
+        return (searchFullMetadata(
+            title, artist, duration
+        ) ?: searchFullMetadata(
+            artist, title, duration
+        ))?.toMetadata()
     }
 
     suspend fun searchFullMetadata(title: String, artist: String, duration: Int): DeezerAPI.TrackInfo? {
         var result = search("$artist $title")
-        if (result != null && result.total > 0 && result.total < 10) {
+        if (result != null && result.total > 0 && result.total < 8) {
             return result.data[0]
         }
         result = search(simplifyQuery("$artist $title"))
-        if (result != null && result.total > 0 && result.total < 10) {
+        if (result != null && result.total > 0 && result.total < 8) {
             return result.data[0]
         }
         result = advancedSearch(title, artist, duration - 20, duration + 20)
-        if (result != null && result.total > 0 && result.total < 10) {
+        if (result != null && result.total > 0 && result.total < 8) {
             return result.data[0]
         }
-        val simpleTitle = simplifyQuery(title)
-        for (i in simpleTitle.split(" ").size-1..1) {
-            result = advancedSearch(simpleTitle.removeLastWord(), artist, duration - 20, duration + 20)
-            if (result != null && result.total > 0 && result.total < 10) {
+        var simpleTitle = simplifyQuery(title)
+        for (i in 1 until simpleTitle.split(" ").size) {
+            simpleTitle = simpleTitle.removeLastWord()
+            result = advancedSearch(simpleTitle, artist, duration - 20, duration + 20)
+            if (result != null && result.total > 0 && result.total < 8) {
                 return result.data[0]
             }
         }
@@ -63,12 +68,21 @@ class DeezerManager(
         return newQuery.trim()
     }
 
-    suspend fun search(query: String): DeezerAPI.SearchResult? {
+    private suspend fun getAlbumInfo(albumId: String): DeezerAPI.AlbumInfo? {
+        val response = api.getAlbum(albumId)
+        if (!response.isSuccessful) {
+            println("Deezer API error : ${response.message} - error code : ${response.code}")
+            return null
+        }
+        return Gson().fromJson(response.body?.string(), DeezerAPI.AlbumInfo::class.java)
+    }
+
+    private suspend fun search(query: String): DeezerAPI.SearchResult? {
         val response = api.search(query)
         return handleSearchResponse(response)
     }
 
-    suspend fun advancedSearch(
+    private suspend fun advancedSearch(
         title: String,
         artist: String,
         minDuration: Int,
@@ -89,5 +103,36 @@ class DeezerManager(
             return null
         }
         return Gson().fromJson(response.body?.string(), DeezerAPI.SearchResult::class.java)
+    }
+
+    data class Metadata(
+        val title: String,
+        val artist: String,
+        val album: String,
+        val genre: String,
+        val releaseDate: String
+    )
+
+
+    private suspend fun DeezerAPI.TrackInfo.toMetadata(): Metadata {
+        val album = getAlbumInfo(this.album.id)
+        val genres = album?.genres?.data?.map { it.name }
+        var genre = ""
+        var isFirst = true
+        genres?.forEach {
+            if (isFirst) {
+                isFirst = false
+            } else {
+                genre += ", "
+            }
+            genre += it
+        }
+        return DeezerManager.Metadata(
+            this.title,
+            this.artist.name,
+            this.album.title,
+            genre,
+            album?.release_date ?: ""
+        )
     }
 }

@@ -7,6 +7,10 @@ import okhttp3.Response
 
 class DeezerAPI(private val client: OkHttpClient = OkHttpClient()) {
 
+    suspend fun getAlbum(id: String): Response {
+        return runRequest(AlbumRequest(id))
+    }
+
     suspend fun search(query: String): Response {
         return runRequest(SearchRequest(query))
     }
@@ -22,6 +26,12 @@ class DeezerAPI(private val client: OkHttpClient = OkHttpClient()) {
         maxBPM: Int? = null
     ): Response {
         return runRequest(AdvanceSearchRequest(artist, album, track, label, minDuration, maxDuration, minBPM, maxBPM))
+    }
+
+    class AlbumRequest(private val albumId: String) : DeezerApiRequest("album") {
+        override fun buildUrl(): String {
+            return "$baseUrl/$albumId"
+        }
     }
 
     class SearchRequest(private val query: String) : DeezerApiRequest("search") {
@@ -105,6 +115,23 @@ class DeezerAPI(private val client: OkHttpClient = OkHttpClient()) {
             val id: String,
             val title: String
         )
+    }
+
+    data class AlbumInfo(
+        val id: String,
+        val title: String,
+        val genres: GenresData?,
+        val label: String,
+        val release_date: String
+    ) {
+        data class GenresData(
+            val data: List<Genre>?
+        ) {
+            data class Genre(
+                val id: String,
+                val name: String
+            )
+        }
     }
 
     companion object {

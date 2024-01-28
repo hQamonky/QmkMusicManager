@@ -82,7 +82,7 @@ class DeezerManagerTest {
         val duration = manager.getAudioDuration(musicFile)
         val result = manager.findFullMetadata(metadataFromYt.title, metadataFromYt.artist, duration)
         assert(result != null)
-        assert(result?.artist?.name?.lowercase(Locale.getDefault())?.contains("italobrothers") == true)
+        assert(result?.artist?.lowercase(Locale.getDefault())?.contains("italobrothers") == true)
         assert(result?.title?.lowercase(Locale.getDefault())?.contains("1001 arabian nights") == true)
     }
 
@@ -90,23 +90,23 @@ class DeezerManagerTest {
     fun `Search full metadata of 1001 Arabian Nights (Lyrics) - ItaloBrothers, Chipz text`() = runBlocking {
         val result = manager.findFullMetadata("ItaloBrothers, Chipz", "1001 Arabian Nights (Lyrics)", 175)
         assert(result != null)
-        assert(result?.artist?.name?.lowercase(Locale.getDefault())?.contains("italobrothers") == true)
+        assert(result?.artist?.lowercase(Locale.getDefault())?.contains("italobrothers") == true)
         assert(result?.title?.lowercase(Locale.getDefault())?.contains("1001 arabian nights") == true)
     }
 
     @Test
-    fun `Search full metadata of Aaron Ahrends - Focus (Niconé Remix) text`() = runBlocking {
+    fun `Search full metadata of Aaron Ahrends - Focus (Nicone Remix) text`() = runBlocking {
         val result = manager.findFullMetadata("Focus (Niconé Remix)", "Aaron Ahrends", 462)
         assert(result != null)
-        assert(result?.artist?.name?.lowercase(Locale.getDefault())?.contains("aaron ahrends") == true)
+        assert(result?.artist?.lowercase(Locale.getDefault())?.contains("aaron ahrends") == true)
         assert(result?.title?.lowercase(Locale.getDefault())?.contains("focus") == true)
     }
 
     @Test
-    fun `Search full metadata of Aaron Ahrends - Focus Niconé Remix text`() = runBlocking {
-        val result = manager.findFullMetadata("Focus (Niconé Remix)", "Aaron Ahrends", 462)
+    fun `Search full metadata of Aaron Ahrends - Focus Nicone Remix text`() = runBlocking {
+        val result = manager.findFullMetadata("Focus Niconé Remix", "Aaron Ahrends", 462)
         assert(result != null)
-        assert(result?.artist?.name?.lowercase(Locale.getDefault())?.contains("aaron ahrends") == true)
+        assert(result?.artist?.lowercase(Locale.getDefault())?.contains("aaron ahrends") == true)
         assert(result?.title?.lowercase(Locale.getDefault())?.contains("focus") == true)
     }
 
