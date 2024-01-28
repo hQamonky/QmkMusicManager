@@ -111,6 +111,22 @@ class DeezerManagerTest {
     }
 
     @Test
+    fun `Search full metadata of 2 Souls - Lonely (feat Nara) NCS Release text`() = runBlocking {
+        val result = manager.findFullMetadata("Lonely (feat. Nara) [NCS Release]", "2 Souls", 462)
+        assert(result != null)
+        assert(result?.artist?.lowercase(Locale.getDefault())?.contains("2 souls") == true)
+        assert(result?.title?.lowercase(Locale.getDefault())?.contains("lonely") == true)
+    }
+
+    @Test
+    fun `Search full metadata of 2 Souls - Lonely feat Nara NCS Release text`() = runBlocking {
+        val result = manager.findFullMetadata("Lonely feat. Nara [NCS Release]", "2 Souls", 462)
+        assert(result != null)
+        assert(result?.artist?.lowercase(Locale.getDefault())?.contains("2 souls") == true)
+        assert(result?.title?.lowercase(Locale.getDefault())?.contains("lonely") == true)
+    }
+
+    @Test
     fun search() {
     }
 

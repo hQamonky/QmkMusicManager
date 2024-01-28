@@ -27,23 +27,27 @@ class DeezerManager(
     }
 
     suspend fun searchFullMetadata(title: String, artist: String, duration: Int): DeezerAPI.TrackInfo? {
-        var result = search("$artist $title")
-        if (result != null && result.total > 0 && result.total < 8) {
+        var result = advancedSearch(title, artist, duration - 20, duration + 20)
+        if (result != null && result.total > 0) {
+            return result.data[0]
+        }
+        result = advancedSearch(simplifyQuery(title), artist, duration - 20, duration + 20)
+        if (result != null && result.total > 0) {
+            return result.data[0]
+        }
+        result = search("$artist $title")
+        if (result != null && result.total > 0) {
             return result.data[0]
         }
         result = search(simplifyQuery("$artist $title"))
-        if (result != null && result.total > 0 && result.total < 8) {
-            return result.data[0]
-        }
-        result = advancedSearch(title, artist, duration - 20, duration + 20)
-        if (result != null && result.total > 0 && result.total < 8) {
+        if (result != null && result.total > 0) {
             return result.data[0]
         }
         var simpleTitle = simplifyQuery(title)
         for (i in 1 until simpleTitle.split(" ").size) {
             simpleTitle = simpleTitle.removeLastWord()
             result = advancedSearch(simpleTitle, artist, duration - 20, duration + 20)
-            if (result != null && result.total > 0 && result.total < 8) {
+            if (result != null && result.total > 0) {
                 return result.data[0]
             }
         }
@@ -127,7 +131,7 @@ class DeezerManager(
             }
             genre += it
         }
-        return DeezerManager.Metadata(
+        return Metadata(
             this.title,
             this.artist.name,
             this.album.title,
