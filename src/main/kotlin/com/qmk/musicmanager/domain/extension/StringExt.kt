@@ -35,3 +35,44 @@ fun String.toAuthorizedFileName(): String {
     }
     return formattedText
 }
+
+fun String.removeParentheses(): String {
+    val result = this.replace("\\s*\\([^\\)]*\\)\\s*".toRegex(), "")
+    return if (result.contains(")"))
+        this.replace("\\(.*\\)".toRegex(), "")
+    else result.trim()
+}
+
+fun String.removeBrackets(): String {
+    val result = this.replace("\\s*\\[[^\\]]*\\]\\s*".toRegex(), "")
+    return if (result.contains("]"))
+        this.replace("\\[.*\\]".toRegex(), "")
+    else result.trim()
+}
+
+fun String.removeCurlyBrackets(): String {
+    val result = this.replace("\\s*\\{[^\\}]*\\}\\s*".toRegex(), "")
+    return if (result.contains("}"))
+        this.replace("\\{.*\\}".toRegex(), "")
+    else result.trim()
+}
+
+fun String.removeAnyKindOfParentheses(): String {
+    var result = this
+    if (this.contains("(") && this.contains(")")) {
+        result = this.removeParentheses()
+    }
+    if (result.contains("[") && result.contains("]")) {
+        result = result.removeBrackets()
+    }
+    if (result.contains("{") && result.contains("}")) {
+        result = result.removeCurlyBrackets()
+    }
+    return result.trim()
+}
+
+fun String.removeLastWord(): String {
+    val splitTitle = this.split(" ")
+    val lastWord = splitTitle[splitTitle.size-1]
+    return this.dropLast(lastWord.length).trim()
+}
