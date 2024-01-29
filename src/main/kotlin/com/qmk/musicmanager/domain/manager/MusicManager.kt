@@ -9,11 +9,18 @@ class MusicManager(
     private val musicDAO: MusicDAO,
     private val configurationManager: ConfigurationManager = ConfigurationManager(),
     private val id3Manager: Id3Manager = Id3Manager(),
-    private val playlistManager: PlaylistManager
+    private val playlistManager: PlaylistManager,
+    private val deezerManager: DeezerManager
 ) {
-    suspend fun editMusic(music: Music) : Boolean {
+    suspend fun editMusic(music: Music): Boolean {
         val audioFolder = configurationManager.getConfiguration().audioFolder
         val oldMusic = musicDAO.music(music.fileName) ?: return false
+        // Get album and genre
+        val deezerMetadata = deezerManager.findFullMetadata(
+            music.title,
+            music.artist,
+            music.toFile(configurationManager.getConfiguration().audioFolder)
+        )
         // Handle playlists
         val oldPlaylists = oldMusic.playlists
         val newPlaylists = music.playlists
@@ -45,6 +52,9 @@ class MusicManager(
             file = File("${audioFolder}/${music.fileName}.${music.fileExtension}"),
             title = music.title,
             artist = music.artist,
+            album = deezerMetadata?.album,
+            genre = deezerMetadata?.genre,
+            year = deezerMetadata?.releaseDate,
             playlists = music.playlists,
             customTags = music.tags
         )
@@ -62,7 +72,7 @@ class MusicManager(
         )
     }
 
-    suspend fun getNewMusic() : List<Music> {
+    suspend fun getNewMusic(): List<Music> {
         return musicDAO.newMusic()
     }
 }

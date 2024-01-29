@@ -32,6 +32,7 @@ class PlaylistManagerTest {
     private lateinit var powerAmpManager: PowerAmpManager
     private lateinit var dataManager: DataManager
     private lateinit var musicFile: File
+    private lateinit var deezerManager: DeezerManager
 
     @Before
     fun setUp() {
@@ -52,6 +53,7 @@ class PlaylistManagerTest {
         namingRuleDAO = NamingRuleDAOImpl()
         mopidyManager = MopidyManager(configurationManager)
         powerAmpManager = PowerAmpManager(configurationManager)
+        deezerManager = DeezerManager()
         playlistManager = PlaylistManager(
             playlistDAO,
             platformPlaylistDAO,
@@ -62,7 +64,8 @@ class PlaylistManagerTest {
             configurationManager,
             id3Manager,
             mopidyManager,
-            powerAmpManager
+            powerAmpManager,
+            deezerManager
         )
         dataManager = DataManager(
             configurationManager,

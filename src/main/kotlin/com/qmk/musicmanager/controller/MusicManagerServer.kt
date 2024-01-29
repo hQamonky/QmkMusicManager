@@ -33,6 +33,7 @@ class MusicManagerServer {
     private val mopidyManager = MopidyManager()
     private val powerAmpManager = PowerAmpManager()
     private val youtubeManager = YoutubeManager()
+    private val deezerManager = DeezerManager()
 
     private val dataManager = DataManager(
         configurationManager = configurationManager,
@@ -55,14 +56,16 @@ class MusicManagerServer {
         configurationManager = configurationManager,
         id3Manager = id3Manager,
         mopidyManager = mopidyManager,
-        powerAmpManager = powerAmpManager
+        powerAmpManager = powerAmpManager,
+        deezerManager = deezerManager
     )
     private val musicManager =
         MusicManager(
             musicDAO = musicDAO,
             configurationManager = configurationManager,
             id3Manager = id3Manager,
-            playlistManager = playlistManager
+            playlistManager = playlistManager,
+            deezerManager = deezerManager
         )
 
     private var processChangeListener: ((oldAction: ServerAction, newAction: ServerAction) -> Unit)? = null

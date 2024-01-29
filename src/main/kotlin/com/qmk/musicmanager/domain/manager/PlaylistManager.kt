@@ -4,8 +4,8 @@ import com.google.gson.Gson
 import com.qmk.musicmanager.database.dao.*
 import com.qmk.musicmanager.domain.exception.NoPlaylistsFoundException
 import com.qmk.musicmanager.domain.exception.PlaylistNotFoundException
-import com.qmk.musicmanager.domain.model.*
 import com.qmk.musicmanager.domain.extension.moveTo
+import com.qmk.musicmanager.domain.model.*
 import java.io.File
 
 
@@ -19,7 +19,8 @@ class PlaylistManager(
     private val configurationManager: ConfigurationManager = ConfigurationManager(),
     private val id3Manager: Id3Manager = Id3Manager(),
     private val mopidyManager: MopidyManager = MopidyManager(),
-    private val powerAmpManager: PowerAmpManager = PowerAmpManager()
+    private val powerAmpManager: PowerAmpManager = PowerAmpManager(),
+    private val deezerManager: DeezerManager = DeezerManager()
 ) {
     suspend fun getPlaylists(): List<Playlist> {
         return playlistDAO.allPlaylists()
@@ -218,7 +219,7 @@ class PlaylistManager(
         println("$downloadResult")
         // Set metadata
         println("Setting ID3 tags...")
-        val metadata = when (platform) {
+        val metadataFromPlatform = when (platform) {
             "youtube" -> {
                 val metadataWithoutPlaylists = id3Manager.getMetadataFromYoutube(
                     musicInfo,
@@ -234,22 +235,37 @@ class PlaylistManager(
                 )
             }
 
-            else -> null
+            else -> return null
         }
+        val deezerMetadata = run {
+            val fileDuration = deezerManager.getAudioDuration(File(outputFile))
+            deezerManager.findFullMetadata(
+                metadataFromPlatform.title,
+                metadataFromPlatform.artist,
+                fileDuration
+            ) ?: deezerManager.findFullMetadata(metadataFromPlatform.title)
+        }
+
+        val metadata = if (deezerMetadata != null) {
+            metadataFromPlatform.copy(
+                title = deezerMetadata.title,
+                artist = deezerMetadata.artist,
+                genre = deezerMetadata.genre,
+                album = deezerMetadata.album,
+                year = deezerMetadata.releaseDate
+            )
+        } else metadataFromPlatform
+
         println(
-            "title = ${metadata?.title}\n" +
-                    "artist = ${metadata?.artist}\n" +
-                    "album = ${metadata?.album}\n" +
-                    "year = ${metadata?.year}\n" +
-                    "downloadDate = ${metadata?.comments?.downloadDate}\n" +
-                    "id = ${metadata?.comments?.source?.id}\n" +
-                    "uploaderId = ${metadata?.comments?.source?.uploaderId}\n" +
-                    "uploadDate = ${metadata?.comments?.source?.uploadDate}\n"
+            "title = ${metadata.title}\n" +
+                    "artist = ${metadata.artist}\n" +
+                    "album = ${metadata.album}\n" +
+                    "year = ${metadata.year}\n" +
+                    "downloadDate = ${metadata.comments?.downloadDate}\n" +
+                    "id = ${metadata.comments?.source?.id}\n" +
+                    "uploaderId = ${metadata.comments?.source?.uploaderId}\n" +
+                    "uploadDate = ${metadata.comments?.source?.uploadDate}\n"
         )
-        if (metadata == null) {
-            println("Error getting metadata. ")
-            return null
-        }
         id3Manager.setMetadata(File(outputFile), metadata)
         val music = Music(
             platformId = musicInfo.id,

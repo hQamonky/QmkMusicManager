@@ -26,6 +26,19 @@ class DeezerManager(
         ))?.toMetadata()
     }
 
+    suspend fun findFullMetadata(title: String, artist: String, file: File): Metadata? {
+        val duration = getAudioDuration(file)
+        return (searchFullMetadata(
+            title, artist, duration
+        ) ?: searchFullMetadata(
+            artist, title, duration
+        ))?.toMetadata()
+    }
+
+    suspend fun findFullMetadata(query: String): Metadata? {
+        return (searchFullMetadata(query))?.toMetadata()
+    }
+
     suspend fun searchFullMetadata(title: String, artist: String, duration: Int): DeezerAPI.TrackInfo? {
         var result = advancedSearch(title, artist, duration - 20, duration + 20)
         if (result != null && result.total > 0) {
@@ -53,6 +66,29 @@ class DeezerManager(
         }
         println(
             "DeezerManager : ${result?.total} songs found with title \"$title\", from artist \"$artist\" and with $duration duration."
+        )
+        return null
+    }
+
+    suspend fun searchFullMetadata(query: String): DeezerAPI.TrackInfo? {
+        var result = search(query)
+        if (result != null && result.total > 0) {
+            return result.data[0]
+        }
+        result = search(simplifyQuery(query))
+        if (result != null && result.total > 0) {
+            return result.data[0]
+        }
+        var simpleQuery = simplifyQuery(query)
+        for (i in 2 until simpleQuery.split(" ").size) {
+            simpleQuery = simpleQuery.removeLastWord()
+            result = search(simpleQuery)
+            if (result != null && result.total > 0) {
+                return result.data[0]
+            }
+        }
+        println(
+            "DeezerManager : ${result?.total} songs found for $query."
         )
         return null
     }

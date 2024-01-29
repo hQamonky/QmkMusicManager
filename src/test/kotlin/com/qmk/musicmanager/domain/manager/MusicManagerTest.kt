@@ -31,6 +31,7 @@ class MusicManagerTest {
     private lateinit var mopidyManager: MopidyManager
     private lateinit var powerAmpManager: PowerAmpManager
     private lateinit var dataManager: DataManager
+    private lateinit var deezerManager: DeezerManager
 
     @Before
     fun setUp() {
@@ -51,6 +52,7 @@ class MusicManagerTest {
         namingRuleDAO = NamingRuleDAOImpl()
         mopidyManager = MopidyManager(configurationManager)
         powerAmpManager = PowerAmpManager(configurationManager)
+        deezerManager = DeezerManager()
         playlistManager = PlaylistManager(
             playlistDAO,
             platformPlaylistDAO,
@@ -61,9 +63,10 @@ class MusicManagerTest {
             configurationManager,
             id3Manager,
             mopidyManager,
-            powerAmpManager
+            powerAmpManager,
+            deezerManager
         )
-        musicManager = MusicManager(musicDAO, configurationManager, id3Manager, playlistManager)
+        musicManager = MusicManager(musicDAO, configurationManager, id3Manager, playlistManager, deezerManager)
         dataManager = DataManager(
             configurationManager,
             playlistDAO,
@@ -147,5 +150,50 @@ class MusicManagerTest {
         assert(music?.tags?.contains("tag1") == true)
         assert(music?.tags?.contains("tag3") == true)
         assert(music?.isNew == true)
+    }
+
+    @Test
+    fun editRealMusic() = runTest {
+        var music = musicDAO.music(musicFile.nameWithoutExtension)
+        assert(music != null)
+        assert(music?.title == "music")
+        assert(music?.artist == "test")
+        assert(music?.playlists?.size == 2)
+        assert(music?.playlists?.contains("My Playlist 1") == true)
+        assert(music?.playlists?.contains("My Playlist 2") == true)
+        assert(music?.tags?.size == 2)
+        assert(music?.tags?.contains("tag1") == true)
+        assert(music?.tags?.contains("tag2") == true)
+        assert(music?.isNew == false)
+
+        musicManager.editMusic(music!!.copy(
+            title = "Drugs",
+            artist = "AllttA",
+            playlists = listOf("My Playlist 2"),
+            tags = listOf("tag1", "tag3"),
+            isNew = true
+        ))
+
+        music = musicDAO.music(musicFile.nameWithoutExtension)
+        assert(music?.title == "Drugs")
+        assert(music?.artist == "AllttA")
+        assert(music?.playlists?.size == 1)
+        assert(music?.playlists?.contains("My Playlist 2") == true)
+        assert(music?.tags?.size == 2)
+        assert(music?.tags?.contains("tag1") == true)
+        assert(music?.tags?.contains("tag3") == true)
+        assert(music?.isNew == true)
+
+        val metadata = id3Manager.getMetadata(musicFile)
+        assert(metadata.title == "Drugs")
+        assert(metadata.artist == "AllttA")
+        assert(metadata.album == "The Upper Hand")
+        assert(metadata.genre == "Rap/Hip Hop")
+        assert(metadata.year == "2017-02-17")
+        assert(metadata.comments?.playlists?.size == 1)
+        assert(metadata.comments?.playlists?.contains("My Playlist 2") == true)
+        assert(metadata.comments?.customTags?.size == 2)
+        assert(metadata.comments?.customTags?.contains("tag1") == true)
+        assert(metadata.comments?.customTags?.contains("tag3") == true)
     }
 }
