@@ -1,11 +1,16 @@
 package com.qmk.musicmanager.domain.manager
 
+import com.google.gson.Gson
 import com.qmk.musicmanager.database.dao.*
 import com.qmk.musicmanager.database.model.DatabaseFactory
+import com.qmk.musicmanager.domain.model.CommentsTag
+import com.qmk.musicmanager.domain.model.Metadata
 import com.qmk.musicmanager.domain.model.Settings
+import com.qmk.musicmanager.domain.model.SourceTag
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.*
 import org.jaudiotagger.audio.AudioFileIO
+import org.jaudiotagger.tag.FieldKey
 import org.jaudiotagger.tag.Tag
 import org.junit.After
 import org.junit.Before
@@ -19,7 +24,6 @@ class TagsMigrationManagerTest {
 
     @Before
     fun setUp() {
-
         configurationManager = ConfigurationManager()
         configurationManager.setConfiguration(
             Settings(
@@ -404,5 +408,44 @@ class TagsMigrationManagerTest {
 //        assert(relax.size == newRelax.size)
 //        assert(sunshineRose.size == newSunshineRose.size)
 //        assert(vicGazole.size == newVicGazole.size)
+    }
+
+    @Test
+    fun addInfoFromDeezer() = runBlocking {
+        val id3Manager = Id3Manager()
+
+        val initialFile = File("src/test/MusicTestDir/Audio/Cara yeaaah VFWJd69f9F0.mp3")
+        val musicFile = File("src/test/MusicTestDir/Audio/test - music.mp3")
+        initialFile.copyTo(musicFile, true)
+
+        val f = AudioFileIO.read(musicFile)
+        val tag: Tag = f.tag
+        tag.setField(FieldKey.TITLE, "Drugs")
+        tag.setField(FieldKey.ARTIST, "AllttA")
+        tag.setField(FieldKey.ALBUM, "MyChannel")
+        tag.setField(FieldKey.GENRE, "")
+        f.commit()
+
+        manager.addInfoFromDeezer(musicFile)
+
+        val metadata = id3Manager.getMetadata(musicFile)
+        assert(metadata.title == "Drugs")
+        assert(metadata.artist == "AllttA")
+        assert(metadata.album == "The Upper Hand")
+        assert(metadata.genre == "Rap/Hip Hop")
+    }
+
+    @Test
+    fun addAllFilesDeezerMetadata() = runBlocking {
+//        configurationManager.setAudioFolder("src/test/DataMigrationTest/Audio")
+//        val result = manager.addAllFilesDeezerMetadata()
+//        assert(result == null)
+    }
+
+    @Test
+    fun addMissingFilesDeezerMetadata() = runBlocking {
+//        configurationManager.setAudioFolder("src/test/DataMigrationTest/Audio")
+//        val result = manager.addAllFilesDeezerMetadataForMissingArtist()
+//        assert(result == null)
     }
 }

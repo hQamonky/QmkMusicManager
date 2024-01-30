@@ -61,11 +61,7 @@ class TagsMigrationManager(private val configurationManager: ConfigurationManage
                 true
             } else {
                 val isNewTag = comment == CommentsTag()
-                if (isNewTag) {
-                    true
-                } else {
-                    false
-                }
+                isNewTag
             }
         } catch (e: Exception) {
             println("Error parsing comments to json. Metadata is old format.")
@@ -129,7 +125,7 @@ class TagsMigrationManager(private val configurationManager: ConfigurationManage
         f.commit()
     }
 
-    fun getAudioFiles() : List<File>? {
+    fun getAudioFiles(): List<File>? {
         val audioFolder = File(configurationManager.getConfiguration().audioFolder)
         if (!audioFolder.isDirectory) return null
         val files = mutableListOf<File>()
@@ -157,6 +153,61 @@ class TagsMigrationManager(private val configurationManager: ConfigurationManage
         val files = getAudioFiles() ?: return "Failed to get music folder."
         files.forEach { musicFile ->
             convertFileMetadata(musicFile)
+        }
+        return null
+    }
+
+    suspend fun addInfoFromDeezer(file: File) {
+        val deezerManager = DeezerManager()
+        val id3Manager = Id3Manager()
+        val currentMetadata = id3Manager.getMetadata(file)
+        if (currentMetadata.comments?.source == null) return
+        val deezerMetadata = deezerManager.findFullMetadata(currentMetadata.title, currentMetadata.artist, file)
+        val finalMetadata = deezerMetadata?.let {
+            currentMetadata.copy(
+                title = it.title,
+                artist = it.artist,
+                genre = it.genre,
+                album = it.album,
+                year = it.releaseDate
+            )
+        } ?: return
+        id3Manager.setMetadata(file, finalMetadata)
+    }
+
+    suspend fun addAllFilesDeezerMetadata(): String? {
+        val files = getAudioFiles() ?: return "Failed to get music folder."
+        files.forEach { musicFile ->
+            addInfoFromDeezer(musicFile)
+        }
+        return null
+    }
+
+    private suspend fun addInfoFromDeezerForMissingArtist(file: File) {
+        val deezerManager = DeezerManager()
+        val id3Manager = Id3Manager()
+        val currentMetadata = id3Manager.getMetadata(file)
+        if (currentMetadata.comments?.source == null) return
+        if (currentMetadata.genre != "") return
+        if (currentMetadata.artist != currentMetadata.album) return
+        val deezerMetadata = deezerManager.findFullMetadata(currentMetadata.title)
+        val finalMetadata = deezerMetadata?.let {
+            currentMetadata.copy(
+                title = it.title,
+                artist = it.artist,
+                genre = it.genre,
+                album = it.album,
+                year = it.releaseDate
+            )
+        } ?: return
+        println("Set tag of ${file.nameWithoutExtension} : title = ${finalMetadata.title}, artist = ${finalMetadata.artist}")
+        id3Manager.setMetadata(file, finalMetadata)
+    }
+
+    suspend fun addAllFilesDeezerMetadataForMissingArtist(): String? {
+        val files = getAudioFiles() ?: return "Failed to get music folder."
+        files.forEach { musicFile ->
+            addInfoFromDeezerForMissingArtist(musicFile)
         }
         return null
     }
