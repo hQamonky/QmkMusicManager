@@ -3,17 +3,14 @@ package com.qmk.musicmanager
 import com.google.gson.Gson
 import com.qmk.musicmanager.controller.MusicManagerServer
 import com.qmk.musicmanager.controller.route.*
-import com.qmk.musicmanager.plugins.configureMonitoring
-import com.qmk.musicmanager.plugins.configureRouting
-import com.qmk.musicmanager.plugins.configureSerialization
-import com.qmk.musicmanager.plugins.configureSockets
 import com.qmk.musicmanager.controller.session.MusicManagerSession
 import com.qmk.musicmanager.database.model.DatabaseFactory
+import com.qmk.musicmanager.plugins.configureMonitoring
+import com.qmk.musicmanager.plugins.configureSerialization
+import com.qmk.musicmanager.plugins.configureSockets
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import io.ktor.server.plugins.openapi.*
-import io.ktor.server.plugins.swagger.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import io.ktor.util.*
@@ -30,6 +27,18 @@ fun Application.module() {
 
     DatabaseFactory.init()
 
+    install(Routing) {
+//        swaggerUI(path = "swagger", swaggerFile = "openapi/documentation.yaml")
+//        openAPI(path="openapi", swaggerFile = "openapi/documentation.yaml")
+        systemRoutes()
+        playlistsRoutes()
+        youtubePlaylistsRoutes()
+        musicRoutes()
+        namingRulesRoutes()
+        settingsRoutes()
+        uploadersRoutes()
+    }
+
     install(Sessions) {
         cookie<MusicManagerSession>("SESSION")
     }
@@ -43,17 +52,7 @@ fun Application.module() {
     configureSerialization()
     configureSockets()
     configureMonitoring()
-    configureRouting()
+//    configureRouting()
 
-    install(Routing) {
-        swaggerUI(path = "swagger", swaggerFile = "openapi/documentation.yaml")
-        openAPI(path="openapi", swaggerFile = "openapi/documentation.yaml")
-        systemRoutes()
-        playlistsRoutes()
-        youtubePlaylistsRoutes()
-        musicRoutes()
-        namingRulesRoutes()
-        settingsRoutes()
-        uploadersRoutes()
-    }
+//    install(WebSockets)
 }

@@ -80,11 +80,13 @@ class MusicManagerServer {
             }
         }
 
-    private var downloadTimer: Timer = Timer()
-    private val downloadTask: TimerTask = object : TimerTask() {
-        override fun run() {
-            GlobalScope.launch {
-                downLoadPlaylists()
+    private var downloadTimer: Timer? = null
+    private fun getNewDownloadTask() : TimerTask {
+        return object : TimerTask() {
+            override fun run() {
+                GlobalScope.launch {
+                    downLoadPlaylists()
+                }
             }
         }
     }
@@ -102,10 +104,13 @@ class MusicManagerServer {
 
     private fun handleDownloadTimerTask() {
         val settings = configurationManager.getConfiguration()
-        downloadTimer.cancel()
         if (settings.autoDownload) {
+            if (downloadTimer == null) downloadTimer = Timer()
             val occurrence = (settings.downloadOccurrence * 60 * 1000).toLong()
-            downloadTimer.schedule(downloadTask, 0L, occurrence)
+            downloadTimer?.schedule(getNewDownloadTask(), 0L, occurrence)
+        } else {
+            downloadTimer?.cancel()
+            downloadTimer = null
         }
     }
 
@@ -367,8 +372,14 @@ class MusicManagerServer {
     }
 
     suspend fun setSettings(settings: Settings): ServerResponse {
+        val oldSettings = configurationManager.getConfiguration()
         configurationManager.setConfiguration(settings)
         // TODO : implement error handling
+        if (oldSettings.autoDownload != settings.autoDownload || oldSettings.downloadOccurrence != settings.downloadOccurrence) {
+            downloadTimer?.cancel()
+            downloadTimer = null
+            handleDownloadTimerTask()
+        }
         return SetSettings()
     }
 
@@ -399,7 +410,10 @@ class MusicManagerServer {
     suspend fun setDownloadOccurrence(occurrence: Int): ServerResponse {
         configurationManager.setDownloadOccurrence(occurrence)
         // TODO : implement error handling
-        handleDownloadTimerTask()
+        downloadTimer?.cancel()
+        downloadTimer = Timer()
+        val occurrenceInMillis = (occurrence * 60 * 1000).toLong()
+        downloadTimer?.schedule(getNewDownloadTask(), 0L, occurrenceInMillis)
         return SetDownloadOccurrence()
     }
 
