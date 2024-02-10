@@ -69,7 +69,7 @@ fun Route.youtubePlaylistsRoutes() {
             }
             when (val result = server.getPlatformPlaylist(playlistId, "youtube")) {
                 is ServerError -> call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.response.toString()))
-                is GetYoutubePlaylist -> call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toString()))
+                is GetYoutubePlaylist -> call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
             }
         }
         post {
