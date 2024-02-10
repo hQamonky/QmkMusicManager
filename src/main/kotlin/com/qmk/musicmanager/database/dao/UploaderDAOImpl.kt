@@ -31,7 +31,12 @@ class UploaderDAOImpl : UploaderDAO {
             .singleOrNull()
     }
 
-    override suspend fun addNewUploader(id: String, name: String, namingFormat: NamingFormat, platform: String): Uploader? = dbQuery {
+    override suspend fun addNewUploader(
+        id: String,
+        name: String,
+        namingFormat: NamingFormat,
+        platform: String
+    ): Uploader? = dbQuery {
         val insertStatement = Uploaders.insert {
             it[Uploaders.id] = id
             it[Uploaders.name] = name
