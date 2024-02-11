@@ -2,6 +2,8 @@ package com.qmk.musicmanager.controller.route
 
 import com.google.gson.Gson
 import com.qmk.musicmanager.controller.model.BasicAPIResponse
+import com.qmk.musicmanager.controller.model.GetNamingRule
+import com.qmk.musicmanager.controller.model.GetNamingRules
 import com.qmk.musicmanager.database.dao.*
 import com.qmk.musicmanager.database.model.DatabaseFactory
 import com.qmk.musicmanager.domain.manager.ConfigurationManager
@@ -10,6 +12,7 @@ import com.qmk.musicmanager.domain.manager.MopidyManager
 import com.qmk.musicmanager.domain.manager.PowerAmpManager
 import com.qmk.musicmanager.domain.model.NamingRule
 import com.qmk.musicmanager.domain.model.Settings
+import com.qmk.musicmanager.extension.fromJson
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -71,8 +74,9 @@ class NamingRulesRoutesKtTest {
         assertEquals(HttpStatusCode.OK, response.status)
         val body = gson.fromJson(response.bodyAsText(), BasicAPIResponse::class.java)
         assertEquals(true, body.successful)
-        val namingRules = gson.fromJson(body.message, Array<NamingRule>::class.java).asList()
-        assertEquals(2, namingRules.size)
+        val serverResponse = body.message?.fromJson(GetNamingRules::class.java)
+        val namingRules = serverResponse?.response?.fromJson(Array<NamingRule>::class.java)?.asList()
+        assertEquals(2, namingRules?.size)
     }
 
     @Test
@@ -104,7 +108,8 @@ class NamingRulesRoutesKtTest {
         assertEquals(HttpStatusCode.OK, response.status)
         val body = gson.fromJson(response.bodyAsText(), BasicAPIResponse::class.java)
         assertEquals(true, body.successful)
-        val namingRule = gson.fromJson(body.message, NamingRule::class.java)
+        val serverResponse = body.message?.fromJson(GetNamingRule::class.java)
+        val namingRule = serverResponse?.response?.fromJson(NamingRule::class.java)
         assertEquals(initNamingRule, namingRule)
     }
 

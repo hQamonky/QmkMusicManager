@@ -2,6 +2,8 @@ package com.qmk.musicmanager.controller.route
 
 import com.google.gson.Gson
 import com.qmk.musicmanager.controller.model.BasicAPIResponse
+import com.qmk.musicmanager.controller.model.GetUploader
+import com.qmk.musicmanager.controller.model.GetUploaders
 import com.qmk.musicmanager.database.dao.*
 import com.qmk.musicmanager.database.model.DatabaseFactory
 import com.qmk.musicmanager.domain.manager.ConfigurationManager
@@ -11,15 +13,15 @@ import com.qmk.musicmanager.domain.manager.PowerAmpManager
 import com.qmk.musicmanager.domain.model.NamingFormat
 import com.qmk.musicmanager.domain.model.Settings
 import com.qmk.musicmanager.domain.model.Uploader
+import com.qmk.musicmanager.extension.fromJson
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import kotlinx.coroutines.runBlocking
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Before
-
-import org.junit.Assert.*
 import org.junit.Test
 
 class UploadersRoutesKtTest {
@@ -82,8 +84,9 @@ class UploadersRoutesKtTest {
         assertEquals(HttpStatusCode.OK, response.status)
         val body = gson.fromJson(response.bodyAsText(), BasicAPIResponse::class.java)
         assertEquals(true, body.successful)
-        val uploaders = gson.fromJson(body.message, Array<Uploader>::class.java).asList()
-        assertEquals(2, uploaders.size)
+        val serverResponse = body.message?.fromJson(GetUploaders::class.java)
+        val uploaders = serverResponse?.response?.fromJson(Array<Uploader>::class.java)?.asList()
+        assertEquals(2, uploaders?.size)
     }
 
     @Test
@@ -99,8 +102,9 @@ class UploadersRoutesKtTest {
         assertEquals(HttpStatusCode.OK, response.status)
         val body = gson.fromJson(response.bodyAsText(), BasicAPIResponse::class.java)
         assertEquals(true, body.successful)
-        val uploader = gson.fromJson(body.message, Uploader::class.java)
-        assertEquals("channel1Name", uploader.name)
+        val serverResponse = body.message?.fromJson(GetUploader::class.java)
+        val uploader = serverResponse?.response?.fromJson(Uploader::class.java)
+        assertEquals("channel1Name", uploader?.name)
     }
 
     @Test

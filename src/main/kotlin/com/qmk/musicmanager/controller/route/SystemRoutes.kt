@@ -14,7 +14,7 @@ fun Route.systemRoutes() {
         post {
             val result = server.factoryReset()
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result))
                 return@post
             }
             call.respond(HttpStatusCode.OK, BasicAPIResponse(true))
@@ -23,7 +23,7 @@ fun Route.systemRoutes() {
     route("/api/yt-dlp/update") {
         post {
             val result = server.updateYtDlp()
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result))
         }
     }
     route("/api/migrate-metadata") {
@@ -35,7 +35,7 @@ fun Route.systemRoutes() {
                         is MigrateMetadata -> true
                         is ServerError -> false
                         else -> false
-                    }, result.toJson()
+                    }, result
                 )
             )
         }

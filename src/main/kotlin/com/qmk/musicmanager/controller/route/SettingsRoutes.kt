@@ -14,7 +14,7 @@ fun Route.settingsRoutes() {
     route("/api/settings") {
         get {
             val settings = server.getSettings()
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, settings.toJson()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, settings))
         }
         post {
             val settings = call.receiveNullable<Settings>()
@@ -24,10 +24,10 @@ fun Route.settingsRoutes() {
             }
             val result = server.setSettings(settings)
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result))
                 return@post
             }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result))
         }
     }
     route("/api/settings/audio-folder") {
@@ -39,10 +39,10 @@ fun Route.settingsRoutes() {
             }
             val result = server.setAudioFolder(path)
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result))
                 return@post
             }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result))
         }
     }
     route("/api/settings/playlists-folder") {
@@ -54,10 +54,10 @@ fun Route.settingsRoutes() {
             }
             val result = server.setPlaylistsFolder(path)
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result))
                 return@post
             }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result))
         }
     }
     route("/api/settings/archive-folder") {
@@ -69,10 +69,10 @@ fun Route.settingsRoutes() {
             }
             val result = server.setArchiveFolder(path)
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result))
                 return@post
             }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result))
         }
     }
     route("/api/settings/audio-format") {
@@ -84,10 +84,10 @@ fun Route.settingsRoutes() {
             }
             val result = server.setAudioFormat(format)
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result))
                 return@post
             }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result))
         }
     }
     route("/api/settings/download-occurrence") {
@@ -99,10 +99,10 @@ fun Route.settingsRoutes() {
             }
             val result = server.setDownloadOccurrence(occurrence)
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result))
                 return@post
             }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result))
         }
     }
     route("/api/settings/auto-download") {
@@ -114,10 +114,10 @@ fun Route.settingsRoutes() {
             }
             val result = server.setAutoDownload(autoDownload)
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result))
                 return@post
             }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result))
         }
     }
     route("/api/settings/rapidapi-key") {
@@ -129,10 +129,10 @@ fun Route.settingsRoutes() {
             }
             val result = server.setRapidapiKey(rapidapiKey)
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result))
                 return@post
             }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result))
         }
     }
     route("/api/settings/accoustid-api-key") {
@@ -144,10 +144,10 @@ fun Route.settingsRoutes() {
             }
             val result = server.setAccoustidApiKey(apiKey)
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result))
                 return@post
             }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result))
         }
     }
 }

@@ -21,7 +21,7 @@ fun Route.musicRoutes() {
             }
             val result = server.editMusic(music)
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result))
             }
             call.respond(HttpStatusCode.OK, BasicAPIResponse(true))
         }
@@ -29,7 +29,7 @@ fun Route.musicRoutes() {
     route("/api/music/new") {
         get {
             val result = server.getNewMusic()
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result))
         }
     }
 }

@@ -13,7 +13,7 @@ fun Route.playlistsRoutes() {
     route("/api/playlists") {
         get {
             val playlists = server.getPlaylists()
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, playlists.toJson()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, playlists))
         }
     }
     route("/api/playlists/download") {
@@ -30,10 +30,10 @@ fun Route.playlistsRoutes() {
                 return@post
             }
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result))
                 return@post
             }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toString()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result))
         }
     }
     route("/api/playlists/{name}") {
@@ -48,7 +48,7 @@ fun Route.playlistsRoutes() {
                         HttpStatusCode.OK,
                         BasicAPIResponse(false, "The playlist \"$playlistName\" does not exist.")
                     )
-                is GetPlaylist -> call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
+                is GetPlaylist -> call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result))
             }
         }
         post {
@@ -67,7 +67,7 @@ fun Route.playlistsRoutes() {
             }
             val result = server.renamePlaylist(playlistName, playlist.name)
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result))
             }
             call.respond(HttpStatusCode.OK, BasicAPIResponse(true))
         }
@@ -78,7 +78,7 @@ fun Route.playlistsRoutes() {
                 return@delete
             }
             when (val result = server.deletePlaylist(playlistName)) {
-                is ServerError -> call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                is ServerError -> call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result))
                 is DeletePlaylist -> call.respond(HttpStatusCode.OK, BasicAPIResponse(true))
             }
         }
@@ -107,10 +107,10 @@ fun Route.playlistsRoutes() {
                 return@post
             }
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result))
                 return@post
             }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result))
         }
 
     }
@@ -128,10 +128,10 @@ fun Route.playlistsRoutes() {
                 return@post
             }
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result))
                 return@post
             }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result))
         }
     }
 }

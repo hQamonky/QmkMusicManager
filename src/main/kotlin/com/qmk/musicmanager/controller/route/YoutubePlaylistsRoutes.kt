@@ -14,7 +14,7 @@ fun Route.youtubePlaylistsRoutes() {
     route("/api/playlists/youtube") {
         get {
             val playlists = server.getYoutubePlaylists()
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, playlists.toJson()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, playlists))
         }
         post {
             val request = call.receiveNullable<PlaylistEntry>()
@@ -33,7 +33,7 @@ fun Route.youtubePlaylistsRoutes() {
             val playlist = server.addPlatformPlaylist(request.url, request.playlists)
             if (playlist is ServerError) {
                 call.respond(
-                    HttpStatusCode.OK, BasicAPIResponse(false, playlist.toJson())
+                    HttpStatusCode.OK, BasicAPIResponse(false, playlist)
                 )
                 return@post
             }
@@ -54,10 +54,10 @@ fun Route.youtubePlaylistsRoutes() {
                 return@post
             }
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result))
                 return@post
             }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toString()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result))
         }
     }
     route("/api/playlists/youtube/{id}") {
@@ -68,8 +68,8 @@ fun Route.youtubePlaylistsRoutes() {
                 return@get
             }
             when (val result = server.getPlatformPlaylist(playlistId, "youtube")) {
-                is ServerError -> call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.response.toString()))
-                is GetYoutubePlaylist -> call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
+                is ServerError -> call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.response))
+                is GetYoutubePlaylist -> call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result))
             }
         }
         post {
@@ -81,7 +81,7 @@ fun Route.youtubePlaylistsRoutes() {
             }
             val result = server.editPlaylist(playlist)
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result))
             }
             call.respond(HttpStatusCode.OK, BasicAPIResponse(true))
         }
@@ -92,7 +92,7 @@ fun Route.youtubePlaylistsRoutes() {
                 return@delete
             }
             when (val result = server.deletePlatformPlaylist(playlistId)) {
-                is ServerError -> call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                is ServerError -> call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result))
                 is DeletePlaylist -> call.respond(HttpStatusCode.OK, BasicAPIResponse(true))
             }
         }
@@ -121,10 +121,10 @@ fun Route.youtubePlaylistsRoutes() {
                 return@post
             }
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result))
                 return@post
             }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result))
         }
 
     }
@@ -142,10 +142,10 @@ fun Route.youtubePlaylistsRoutes() {
                 return@post
             }
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result))
                 return@post
             }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result))
         }
     }
 }

@@ -2,10 +2,12 @@ package com.qmk.musicmanager.controller.route
 
 import com.google.gson.Gson
 import com.qmk.musicmanager.controller.model.BasicAPIResponse
+import com.qmk.musicmanager.controller.model.GetNewMusic
 import com.qmk.musicmanager.database.dao.*
 import com.qmk.musicmanager.database.model.DatabaseFactory
 import com.qmk.musicmanager.domain.manager.*
 import com.qmk.musicmanager.domain.model.*
+import com.qmk.musicmanager.extension.fromJson
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -15,9 +17,8 @@ import org.jaudiotagger.audio.AudioFileIO
 import org.jaudiotagger.tag.FieldKey
 import org.jaudiotagger.tag.Tag
 import org.junit.After
-import org.junit.Before
-
 import org.junit.Assert.*
+import org.junit.Before
 import org.junit.Test
 import java.io.File
 
@@ -154,7 +155,8 @@ class MusicRoutesKtTest {
         assertEquals(HttpStatusCode.OK, response.status)
         val body = gson.fromJson(response.bodyAsText(), BasicAPIResponse::class.java)
         assertEquals(true, body.successful)
-        val newMusic = gson.fromJson(body.message, Array<Music>::class.java).asList()
-        assertEquals(1, newMusic.size)
+        val serverResponse = body.message?.fromJson(GetNewMusic::class.java)
+        val newMusic = serverResponse?.response?.fromJson(Array<Music>::class.java)?.asList()
+        assertEquals(1, newMusic?.size)
     }
 }

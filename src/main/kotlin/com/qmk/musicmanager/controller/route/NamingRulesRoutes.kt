@@ -14,7 +14,7 @@ fun Route.namingRulesRoutes() {
     route("/api/naming-rules") {
         get {
             val namingRules = server.getNamingRules()
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, namingRules.toJson()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, namingRules))
         }
         post {
             val namingRule = call.receiveNullable<NamingRule>()
@@ -24,10 +24,10 @@ fun Route.namingRulesRoutes() {
             }
             val result = server.addNamingRule(namingRule.replace, namingRule.replaceBy, namingRule.priority)
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result))
                 return@post
             }
-            call.respond(HttpStatusCode.Created, BasicAPIResponse(true, result.toJson()))
+            call.respond(HttpStatusCode.Created, BasicAPIResponse(true, result))
         }
     }
     route("/api/naming-rules/{id}") {
@@ -39,10 +39,10 @@ fun Route.namingRulesRoutes() {
             }
             val result = server.getNamingRule(id)
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result))
                 return@get
             }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result))
         }
         post {
             val namingRuleId = call.parameters["id"]?.toInt()
@@ -54,10 +54,10 @@ fun Route.namingRulesRoutes() {
             val result =
                 server.editNamingRule(namingRuleId, namingRule.replace, namingRule.replaceBy, namingRule.priority)
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result))
                 return@post
             }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result))
         }
         delete {
             val id = call.parameters["id"]?.toInt()
@@ -67,10 +67,10 @@ fun Route.namingRulesRoutes() {
             }
             val result = server.deleteNamingRule(id)
             if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result.toJson()))
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result))
                 return@delete
             }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result.toJson()))
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result))
         }
     }
 }

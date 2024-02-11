@@ -2,5 +2,5 @@ package com.qmk.musicmanager.controller.model
 
 data class BasicAPIResponse(
     val successful: Boolean,
-    val message: String? = null
+    val message: Any? = null
 )

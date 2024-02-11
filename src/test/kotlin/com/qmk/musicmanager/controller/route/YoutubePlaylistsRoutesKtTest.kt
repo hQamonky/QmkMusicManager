@@ -2,22 +2,24 @@ package com.qmk.musicmanager.controller.route
 
 import com.google.gson.Gson
 import com.qmk.musicmanager.controller.model.BasicAPIResponse
+import com.qmk.musicmanager.controller.model.GetYoutubePlaylist
+import com.qmk.musicmanager.controller.model.GetYoutubePlaylists
 import com.qmk.musicmanager.database.dao.*
 import com.qmk.musicmanager.database.model.DatabaseFactory
 import com.qmk.musicmanager.domain.manager.*
 import com.qmk.musicmanager.domain.model.PlatformPlaylist
 import com.qmk.musicmanager.domain.model.PlaylistEntry
 import com.qmk.musicmanager.domain.model.Settings
+import com.qmk.musicmanager.extension.fromJson
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import kotlinx.coroutines.runBlocking
 import org.junit.After
+import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
-
-import org.junit.Assert.*
 
 class YoutubePlaylistsRoutesKtTest {
     private val route = "/api/playlists/youtube"
@@ -89,8 +91,9 @@ class YoutubePlaylistsRoutesKtTest {
         assertEquals(HttpStatusCode.OK, response.status)
         val body = gson.fromJson(response.bodyAsText(), BasicAPIResponse::class.java)
         assertEquals(true, body.successful)
-        val playlists = gson.fromJson(body.message, Array<PlatformPlaylist>::class.java).asList()
-        assertEquals(2, playlists.size)
+        val serverResponse = body.message?.fromJson(GetYoutubePlaylists::class.java)
+        val playlists = serverResponse?.response?.fromJson(Array<PlatformPlaylist>::class.java)?.asList()
+        assertEquals(2, playlists?.size)
     }
 
     @Test
@@ -123,8 +126,9 @@ class YoutubePlaylistsRoutesKtTest {
         assertEquals(HttpStatusCode.OK, response.status)
         val body = gson.fromJson(response.bodyAsText(), BasicAPIResponse::class.java)
         assertEquals(true, body.successful)
-        val playlist = gson.fromJson(body.message, PlatformPlaylist::class.java)
-        assertEquals("PLCVGGn6GhhDtYoqlNGqGFdg3ODeofpkLl", playlist.id)
+        val serverResponse = body.message?.fromJson(GetYoutubePlaylist::class.java)
+        val playlist = serverResponse?.response?.fromJson(PlatformPlaylist::class.java)
+        assertEquals("PLCVGGn6GhhDtYoqlNGqGFdg3ODeofpkLl", playlist?.id)
     }
 
     @Test
