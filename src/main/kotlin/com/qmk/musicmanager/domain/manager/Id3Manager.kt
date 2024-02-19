@@ -8,6 +8,9 @@ import org.jaudiotagger.audio.AudioFileIO
 import org.jaudiotagger.tag.FieldKey
 import org.jaudiotagger.tag.Tag
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -203,6 +206,64 @@ class Id3Manager {
         } catch (e: Exception) {
             e.printStackTrace()
             return false
+        }
+    }
+
+    fun addMetadataToExternalFiles(audioFolder: File): String? {
+        val files = getAudioFiles(audioFolder) ?: return "Failed to get music folder."
+        files.forEach { musicFile ->
+            val metadata = getMetadata(musicFile)
+            if (metadata.comments == null) {
+                val f = AudioFileIO.read(musicFile)
+                val tag: Tag = f.tag
+                tag.setField(FieldKey.COMMENT,CommentsTag(
+                    downloadDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                ).toJson(gson))
+                f.commit()
+            }
+        }
+        return null
+    }
+
+    fun addUntaggedFilesToPlaylists(audioFolder: File, playlists: List<String>): List<File>? {
+        val files = getAudioFiles(audioFolder) ?: return null
+        val externalFiles = mutableListOf<File>()
+        files.forEach { musicFile ->
+            val metadata = getMetadata(musicFile)
+            if (metadata.comments == null) {
+                val f = AudioFileIO.read(musicFile)
+                val tag: Tag = f.tag
+                tag.setField(FieldKey.COMMENT,CommentsTag(
+                    playlists = playlists,
+                    downloadDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                ).toJson(gson))
+                f.commit()
+                externalFiles.add(musicFile)
+            }
+        }
+        return externalFiles
+    }
+
+    private fun getAudioFiles(audioFolder: File): List<File>? {
+        if (!audioFolder.isDirectory) return null
+        val files = mutableListOf<File>()
+        audioFolder.walk().forEach lit1@{ musicFile ->
+            val fileType = getFileType(musicFile.toString())
+            if (!fileType.contains("audio")) return@lit1
+            files.add(musicFile)
+        }
+        return files
+    }
+
+    private fun getFileType(filePath: String): String {
+        val path: Path = Paths.get(filePath)
+        return try {
+            val contentType = Files.probeContentType(path)
+            contentType ?: "Unknown"
+        } catch (e: Exception) {
+            // Handle exceptions as needed
+            e.printStackTrace()
+            "Unknown"
         }
     }
 }

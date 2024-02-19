@@ -20,6 +20,16 @@ fun Route.systemRoutes() {
             call.respond(HttpStatusCode.OK, BasicAPIResponse(true))
         }
     }
+    route("/api/soft-reset") {
+        post {
+            val result = server.softReset()
+            if (result is ServerError) {
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result))
+                return@post
+            }
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true))
+        }
+    }
     route("/api/yt-dlp/update") {
         post {
             val result = server.updateYtDlp()

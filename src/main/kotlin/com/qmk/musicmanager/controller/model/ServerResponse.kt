@@ -147,4 +147,6 @@ class MopidyLocalScan(
     response: String
 ) : ServerResponse(response)
 
+class AddExternalMusicToPlaylists : ServerResponse(true)
+
 class MigrateMetadata(result: String) : ServerResponse(result)

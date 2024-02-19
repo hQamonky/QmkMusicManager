@@ -1,7 +1,6 @@
 package com.qmk.musicmanager.domain.manager
 
 import com.qmk.musicmanager.database.dao.*
-import io.ktor.util.*
 import org.jaudiotagger.audio.exceptions.CannotReadException
 import java.io.File
 
@@ -25,6 +24,10 @@ class DataManager(
         val tagDeleted = tagDAO.deleteAllTags()
 
         return playlistDeleted == platformPlaylistDeleted == musicDeleted == namingRulesDeleted == uploaderDeleted == tagDeleted
+    }
+
+    suspend fun removeMusicEntries(): Boolean {
+        return musicDAO.deleteAllMusic()
     }
 
     suspend fun addDefaultNamingRules(): Boolean {
@@ -88,17 +91,16 @@ class DataManager(
         val id3Manager = Id3Manager()
         val audioDir = File(configurationManager.getConfiguration().audioFolder)
 
-        audioDir.walk().forEach lit@{
-            if (it.isDirectory || it.extension == "m3u8") return@lit
+        audioDir.walk().forEach lit@{ file ->
+            if (file.isDirectory || file.extension == "m3u8") return@lit
             try {
-                val metadata = id3Manager.getMetadata(it)
-                val id = metadata.comments?.source?.id ?: "qmk${generateNonce()}"
-                val music = musicDAO.music(id) ?: musicDAO.addNewMusic(
-                    fileName = it.nameWithoutExtension,
-                    fileExtension = it.extension,
+                val metadata = id3Manager.getMetadata(file)
+                val music = musicDAO.music(file.nameWithoutExtension) ?: musicDAO.addNewMusic(
+                    fileName = file.nameWithoutExtension,
+                    fileExtension = file.extension,
                     title = metadata.title,
                     artist = metadata.artist,
-                    platformId = id,
+                    platformId = metadata.comments?.source?.id ?: "",
                     uploaderId = metadata.comments?.source?.uploaderId ?: "",
                     uploadDate = metadata.comments?.source?.uploadDate ?: "",
                     tags = metadata.comments?.customTags ?: listOf(),

@@ -134,4 +134,19 @@ fun Route.playlistsRoutes() {
             call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result))
         }
     }
+    route("/api/playlists/add-external-files") {
+        post {
+            val playlists = call.receiveNullable<List<String>>()
+            if (playlists == null) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@post
+            }
+            val result = server.addExternalFilesToPlaylists(playlists)
+            if (result is ServerError) {
+                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result))
+                return@post
+            }
+            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result))
+        }
+    }
 }

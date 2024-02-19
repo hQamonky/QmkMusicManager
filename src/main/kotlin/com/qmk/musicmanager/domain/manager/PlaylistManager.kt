@@ -125,16 +125,16 @@ class PlaylistManager(
     }
 
     suspend fun download(): List<DownloadResult> {
-        val playlists = platformPlaylistDAO.allPlaylists()
-        if (playlists.isEmpty()) {
+        val plPlaylists = platformPlaylistDAO.allPlaylists()
+        if (plPlaylists.isEmpty()) {
             println("Error : no playlists found.")
             throw NoPlaylistsFoundException()
         }
-        println("${playlists.size} found.")
+        println("${plPlaylists.size} found.")
         val result = mutableListOf<DownloadResult>()
-        playlists.forEach { playlist ->
-            println("Start process for ${playlist.name} :")
-            result.add(downloadYoutubePlaylist(playlist.id))
+        plPlaylists.forEach { plPlaylist ->
+            println("Start process for ${plPlaylist.name} :")
+            result.add(downloadYoutubePlaylist(plPlaylist))
         }
         return result
     }
@@ -143,13 +143,13 @@ class PlaylistManager(
         val youtubePlaylists = platformPlaylistDAO.plPlaylistsFromPlaylist(name)
         val result: MutableList<DownloadResult> = mutableListOf()
         youtubePlaylists.forEach { id ->
-            result.add(downloadYoutubePlaylist(id))
+            val plPlaylist = platformPlaylistDAO.playlist(id)
+            result.add(downloadYoutubePlaylist(plPlaylist))
         }
         return result
     }
 
-    suspend fun downloadYoutubePlaylist(plPlaylistId: String): DownloadResult {
-        val plPlaylist = platformPlaylistDAO.playlist(plPlaylistId)
+    suspend fun downloadYoutubePlaylist(plPlaylist: PlatformPlaylist?): DownloadResult {
         if (plPlaylist == null) {
             println("Error : playlist not found.")
             throw PlaylistNotFoundException()
@@ -158,7 +158,6 @@ class PlaylistManager(
         println(youtubeManager.updateYtDlp())
         println("Downloading ${plPlaylist.name}...")
         val result = DownloadResult(playlist = plPlaylist.name)
-        val playlists = platformPlaylistDAO.playlistsFromPlPlaylist(plPlaylistId)
         val gson = Gson()
         gson.fromJson(
             youtubeManager.getPlaylistInfo("${youtubeManager.playlistUrl}${plPlaylist.id}", DownloadTool.YT_DLP),
@@ -172,7 +171,7 @@ class PlaylistManager(
                 if (music != null) {
                     println("Not downloading ${music.fileName} because is has already been done.")
                     result.skipped.add(music.fileName)
-                    playlists.forEach { playlist ->
+                    plPlaylist.playlists.forEach { playlist ->
                         if (!music.playlists.contains(playlist)) {
                             println("Adding music to $playlist.")
                             playlistDAO.addMusicToPlaylist(music.fileName, playlist)
@@ -194,15 +193,14 @@ class PlaylistManager(
     }
 
     private suspend fun downloadAndProcessMusic(
-        videoId: String,
+        plMusicId: String,
         plPlaylist: PlatformPlaylist,
         platform: String = "youtube"
     ): Music? {
-        val plPlaylistId = plPlaylist.id
         // Get video info
-        println("Getting info for $videoId...")
+        println("Getting info for $plMusicId...")
         val musicInfo =
-            Gson().fromJson(youtubeManager.getVideoInfo(videoId, DownloadTool.YT_DLP), MusicInfo::class.java)
+            Gson().fromJson(youtubeManager.getVideoInfo(plMusicId, DownloadTool.YT_DLP), MusicInfo::class.java)
         // Create uploader if not exist
         var uploader = uploaderDAO.uploader(musicInfo.channel_id)
         if (uploader == null) {
@@ -228,9 +226,7 @@ class PlaylistManager(
                 )
                 metadataWithoutPlaylists.copy(
                     comments = metadataWithoutPlaylists.comments?.copy(
-                        playlists = platformPlaylistDAO.playlistsFromPlPlaylist(
-                            plPlaylistId
-                        )
+                        playlists = plPlaylist.playlists
                     )
                 )
             }
@@ -264,7 +260,8 @@ class PlaylistManager(
                     "downloadDate = ${metadata.comments?.downloadDate}\n" +
                     "id = ${metadata.comments?.source?.id}\n" +
                     "uploaderId = ${metadata.comments?.source?.uploaderId}\n" +
-                    "uploadDate = ${metadata.comments?.source?.uploadDate}\n"
+                    "uploadDate = ${metadata.comments?.source?.uploadDate}\n" +
+                    "playlists = ${metadata.comments?.playlists.toString()}\n"
         )
         id3Manager.setMetadata(File(outputFile), metadata)
         val music = Music(

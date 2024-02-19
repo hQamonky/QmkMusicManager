@@ -17,7 +17,7 @@ group = "com.music-manager.qmk"
 version = qmkMusicManagerVersion
 
 application {
-    mainClass.set("com.music-manager.qmk.ApplicationKt")
+    mainClass.set("com.qmk.musicmanager.MusicmanagerApplicationKt")
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")

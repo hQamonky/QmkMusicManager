@@ -2,11 +2,11 @@ package com.qmk.musicmanager.controller
 
 import com.qmk.musicmanager.controller.model.*
 import com.qmk.musicmanager.database.dao.*
-import com.qmk.musicmanager.domain.exception.NoPlaylistsFoundException
 import com.qmk.musicmanager.domain.manager.*
 import com.qmk.musicmanager.domain.model.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.*
+import java.io.File
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -81,7 +81,7 @@ class MusicManagerServer {
         }
 
     private var downloadTimer: Timer? = null
-    private fun getNewDownloadTask() : TimerTask {
+    private fun getNewDownloadTask(): TimerTask {
         return object : TimerTask() {
             override fun run() {
                 GlobalScope.launch {
@@ -162,14 +162,22 @@ class MusicManagerServer {
      * @return error message. Returns null if succeeded.
      */
     suspend fun factoryReset(): ServerResponse {
-        val removedAllEntries = dataManager.removeAllEntries()
-        if (!removedAllEntries) {
-            return ServerError("Failed to empty database.")
-        }
+        dataManager.removeAllEntries()
         val addedDefaultNamingRules = dataManager.addDefaultNamingRules()
         if (!addedDefaultNamingRules) {
             return ServerError("Failed to add default naming rules.")
         }
+        dataManager.addFilesToDatabase()
+        // TODO : add return to dataManager.addFilesToDatabase() to handle errors
+        return FactoryReset()
+    }
+
+    /**
+     * Removes all database entries, adds default naming rules and fills database from music file's metadata.
+     * @return error message. Returns null if succeeded.
+     */
+    suspend fun softReset(): ServerResponse {
+        dataManager.removeMusicEntries()
         dataManager.addFilesToDatabase()
         // TODO : add return to dataManager.addFilesToDatabase() to handle errors
         return FactoryReset()
@@ -254,11 +262,11 @@ class MusicManagerServer {
         GlobalScope.launch {
             try {
                 val downloadResult = playlistManager.download()
-                processingAction = ServerAction.NONE
                 notifyAllClients(DownloadPlaylists(downloadResult))
-            } catch (e: NoPlaylistsFoundException) {
-                processingAction = ServerAction.NONE
+            } catch (e: Exception) {
                 notifyAllClients(ServerError(e.toString()))
+            } finally {
+                processingAction = ServerAction.NONE
             }
             val mopidyLocalScanResult = mopidyManager.mopidyLocalScan()
             notifyAllClients(MopidyLocalScan(mopidyLocalScanResult))
@@ -274,11 +282,11 @@ class MusicManagerServer {
         GlobalScope.launch {
             try {
                 val downloadResult = playlistManager.download(playlistName)
-                processingAction = ServerAction.NONE
                 notifyAllClients(DownloadPlaylists(downloadResult))
-            } catch (e: NoPlaylistsFoundException) {
-                processingAction = ServerAction.NONE
+            } catch (e: Exception) {
                 notifyAllClients(ServerError(e.toString()))
+            } finally {
+                processingAction = ServerAction.NONE
             }
             val mopidyLocalScanResult = mopidyManager.mopidyLocalScan()
             notifyAllClients(MopidyLocalScan(mopidyLocalScanResult))
@@ -293,12 +301,13 @@ class MusicManagerServer {
         processingAction = ServerAction.DOWNLOADING_PLAYLIST
         GlobalScope.launch {
             try {
-                val downloadResult = playlistManager.downloadYoutubePlaylist(playlistId)
-                processingAction = ServerAction.NONE
+                val plPlaylist = platformPlaylistDAO.playlist(playlistId)
+                val downloadResult = playlistManager.downloadYoutubePlaylist(plPlaylist)
                 notifyAllClients(DownloadPlaylist(downloadResult))
-            } catch (e: NoPlaylistsFoundException) {
-                processingAction = ServerAction.NONE
+            } catch (e: Exception) {
                 notifyAllClients(ServerError(e.toString()))
+            } finally {
+                processingAction = ServerAction.NONE
             }
             val mopidyLocalScanResult = mopidyManager.mopidyLocalScan()
             notifyAllClients(MopidyLocalScan(mopidyLocalScanResult))
@@ -314,11 +323,11 @@ class MusicManagerServer {
         GlobalScope.launch {
             try {
                 val result = playlistManager.archiveMusic()
-                processingAction = ServerAction.NONE
                 notifyAllClients(ArchiveMusic(result))
-            } catch (e: NoPlaylistsFoundException) {
-                processingAction = ServerAction.NONE
+            } catch (e: Exception) {
                 notifyAllClients(ServerError(e.toString()))
+            } finally {
+                processingAction = ServerAction.NONE
             }
             val mopidyLocalScanResult = mopidyManager.mopidyLocalScan()
             notifyAllClients(MopidyLocalScan(mopidyLocalScanResult))
@@ -451,6 +460,35 @@ class MusicManagerServer {
                 namingFormat
             )
         ) EditUploaderNamingFormat() else ServerError("Error editing naming format.")
+    }
+
+    suspend fun addExternalFilesToPlaylists(playlists: List<String>): ServerResponse {
+        val folder = configurationManager.getConfiguration().audioFolder
+        val files = id3Manager.addUntaggedFilesToPlaylists(File(folder), playlists)
+            ?: return ServerError("Error while getting audio files.")
+        if (files.isEmpty()) return ServerError("No external music found.")
+        files.forEach { musicFile ->
+            val metadata = id3Manager.getMetadata(musicFile)
+            val music = musicDAO.addNewMusic(
+                fileName = musicFile.nameWithoutExtension,
+                fileExtension = musicFile.extension,
+                title = metadata.title,
+                artist = metadata.artist,
+                platformId = "",
+                uploaderId = "",
+                uploadDate = "",
+                tags = listOf(),
+                isNew = false
+            ) ?: return ServerError("Error adding music to database.")
+            playlists.forEach { playlist ->
+                playlistManager.create(playlist)
+                val result = playlistManager.addMusicToPlaylist(music, playlist)
+                if (!result) {
+                    return ServerError("Error adding ${musicFile.name} to $playlist.")
+                }
+            }
+        }
+        return AddExternalMusicToPlaylists()
     }
 
     suspend fun migrateMetadata(): ServerResponse {

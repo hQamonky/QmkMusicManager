@@ -332,12 +332,12 @@ class PlaylistManagerTest {
     @Test
     fun downloadYoutubePlaylist() = runBlocking {
         playlistManager.create("My Playlist 1")
-        playlistManager.createYoutubePlaylist(
+        val ytPlaylist = playlistManager.createYoutubePlaylist(
             "https://www.youtube.com/playlist?list=PLCVGGn6GhhDtYoqlNGqGFdg3ODeofpkLl",
             listOf("My Playlist 1")
         )
 
-        val result = playlistManager.downloadYoutubePlaylist("PLCVGGn6GhhDtYoqlNGqGFdg3ODeofpkLl")
+        val result = playlistManager.downloadYoutubePlaylist(ytPlaylist)
         assert(result.downloaded.size == 2)
     }
 
