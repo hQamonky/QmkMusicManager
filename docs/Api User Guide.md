@@ -15,34 +15,46 @@ Manage, through this API, a daemon that automatically downloads music from YouTu
     - Add/Edit/Delete rules
     - Strings replace (ex: replace " [Official Music Video]" by "")
     - Set title/artist format to apply depending on YouTube channel 
+    - Uses Deezer API to search for metadata information.
 ## List of endpoints
-- `/`
-- `/settings`
-- `/settings/music-folder`
-- `/settings/download-occurrence`
-- `/factory-reset`
-- `/youtube-dl/update`
-- `/playlists`
-- `/playlists/download`
-- `/playlists/<identifier>`
-- `/playlists/<identifier>/download`
-- `/music/new`
-- `/music/<identifier>`
-- `/naming-rules`
-- `/naming-rules/<identifier>`
-- `/uploaders`
-- `/uploaders/<identifier>`
+- `/api/settings`
+- `/api/settings/audio-folder`
+- `/api/settings/playlists-folder`
+- `/api/settings/archive-folder`
+- `/api/settings/audio-format`
+- `/api/settings/download-occurrence`
+- `/api/settings/auto-download`
+- `/api/factory-reset`
+- `/api/soft-reset`
+- `/api/yt-dlp/update`
+- `/api/playlists`
+- `/api/playlists/download`
+- `/api/playlists/<name>`
+- `/api/playlists/<name>/download`
+- `/api/playlists/youtube`
+- `/api/playlists/youtube/download`
+- `/api/playlists/youtube/<id>`
+- `/api/playlists/youtube/<id>/download`
+- `/api/playlists/archive-music`
+- `/api/playlists/add-external-files`
+- `/api/music/<filename>`
+- `/api/music/new`
+- `/api/naming-rules`
+- `/api/naming-rules/<id>`
+- `/api/uploaders`
+- `/api/uploaders/<id>`
+- `/ws/qmk-music-manager`
 ## Usage
 All requests will have the `Application/json` header.  
 All `POST` requests will take a `json` as a body.  
 All responses will have the form :  
 ```json
 {
-    "data": "Mixed type holding the content of the response",
-    "message": "Description of what happened"
+    "successful": "States if the operation was successful or not.",
+    "message": "(Optional) awaited data, or error message if an error occurred (and successful is false)"
 }
 ```
-Subsequent response definitions will only detail the expected value of the `data field`.  
+Subsequent response definitions will only detail the expected value of the `message field`.  
 Also, they will only define the responses of `GET` request. Post requests usually return the full json object that was modified.  
 
 ## `/settings`
@@ -51,9 +63,12 @@ Get the configuration file.
 *Response*  
 ```json
 {
-    "musicFolder": "~/Music",
-    "downloadOccurrence": 60,
-    "autoDownload": true
+  "autoDownload": true,
+  "downloadOccurrence": 60,
+  "audioFolder": "~/Music/Audio",
+  "playlistsFolder": "~/Music/Playlists",
+  "archiveFolder": "~/Music/Archive",
+  "audioFormat": "mp3"
 }
 ```
 ### `POST`  
@@ -61,18 +76,37 @@ Set the configuration.
 *Body*  
 ```json
 {
-    "musicFolder": "~/Music",
-    "downloadOccurrence": 60,
-    "autoDownload": true
+  "autoDownload": true,
+  "downloadOccurrence": 60,
+  "audioFolder": "~/Music/Audio",
+  "playlistsFolder": "~/Music/Playlists",
+  "archiveFolder": "~/Music/Archive",
+  "audioFormat": "mp3"
 }
 ```
 
-## `/settings/music-folder`
-### `POST`  
-Set the path to the music library.  
-*Body*  
+## `/settings/audio-folder`
+### `POST`
+Set the path to the music library, where the audio files will be downloaded.  
+*Body*
 ```json
-"~/Music"
+"~/Music/Audio"
+```
+
+## `/settings/playlists-folder`
+### `POST`
+Set the path to the folder that contains the playlists files.  
+*Body*
+```json
+"~/Music/Playlists"
+```
+
+## `/settings/archive-folder`
+### `POST`
+Set the path to the folder where audio files will be moved when archived.  
+*Body*
+```json
+"~/Music/Archive"
 ```
 
 ## `/settings/download-occurrence`
@@ -80,18 +114,31 @@ Set the path to the music library.
 Give an interval of time for when the service will automatically download all the playlists.  
 The interval is defined in minutes and the default is 60.   
 The first download will occur as soon as the server is running.  
-*Body*  
+*Body*
 ```json
 60
 ```
 
-## `/factory-reset`
-### `POST`  
-Reset configuration and database to default. 
+## `/settings/auto-download`
+### `POST`
+Set if QMK Music Manager must run download of al playlists automatically and recurrently at an interval defined by `download-occurrence`.  
+*Body*
+```json
+true
+```
 
-## `/youtube-dl/update`
-If you get an internal server error, updating youtube-dl might be a quick fix.  
-If not, you'll have to wait for an update from qmk YtMusicDownloader.  
+## `/factory-reset`
+### `POST`
+Reset the database to default. Platform playlists will be deleted but music playlists will be restored.   
+
+## `/soft-reset`
+### `POST`
+Reset the database of music and playlists by using the file's data.
+
+## `/yt-dlp/update`
+Update yt-dlp.  
+If you get an internal server error, updating yt-dlp might be a quick fix.  
+If not, you'll have to wait for an update from QMK Music Manager.  
 
 ## `/playlists`
 ### `GET`  

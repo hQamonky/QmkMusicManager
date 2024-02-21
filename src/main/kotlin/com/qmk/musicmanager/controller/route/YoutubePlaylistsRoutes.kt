@@ -128,24 +128,4 @@ fun Route.youtubePlaylistsRoutes() {
         }
 
     }
-    route("/api/playlists/archive-music") {
-        post {
-            val result = server.archiveMusic()
-            if (result is ServerBusy) {
-                val message = when (result.response as ServerAction) {
-                    ServerAction.DOWNLOADING_PLAYLISTS -> "Server is busy downloading playlists, try again later"
-                    ServerAction.DOWNLOADING_PLAYLIST -> "Server is busy downloading a playlist, try again later"
-                    ServerAction.ARCHIVING_MUSIC -> "Server is busy archiving music, try again later"
-                    ServerAction.NONE -> "Internal server error."
-                }
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, message))
-                return@post
-            }
-            if (result is ServerError) {
-                call.respond(HttpStatusCode.OK, BasicAPIResponse(false, result))
-                return@post
-            }
-            call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result))
-        }
-    }
 }

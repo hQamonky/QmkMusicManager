@@ -12,7 +12,7 @@ import io.ktor.websocket.*
 import kotlinx.coroutines.channels.consumeEach
 
 fun Route.musicManagerWebSocketRoute() {
-    route("ws/qmk-music-manager") {
+    route("/ws/qmk-music-manager") {
         standardWebSocket { socket, clientId, _, payload ->
             when (payload) {
                 is ClientCommand.ConnectClient -> {
