@@ -112,7 +112,6 @@ fun Route.playlistsRoutes() {
             }
             call.respond(HttpStatusCode.OK, BasicAPIResponse(true, result))
         }
-
     }
     route("/api/playlists/archive-music") {
         post {

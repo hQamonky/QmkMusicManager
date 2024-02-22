@@ -142,55 +142,107 @@ If not, you'll have to wait for an update from QMK Music Manager.
 
 ## `/playlists`
 ### `GET`  
-Get information on the registered playlists in the database.  
+Get information on playlists.  
 *Response*  
 ```json
 [
     {
-        "id": "PLCVGGn6GhhDu_4yn_9eN3xBYB4POkLBYT",
-        "name": "Best of Willi tracks",
-        "musicIds": []
+        "name": "Chill",
+        "music": []
     },{
-        "id": "PLCVGGn6GhhDtHxCJcPNymXhCtyEisxERY",
-        "name": "Best of Chill Music",
-        "musicIds": []
+        "name": "Party Hard",
+        "music": []
     }
 ]
-```
-### `POST`  
-Register a playlist in the database.  
-*Body*  
-```json
-{
-    "name": "Best of Willy tracks",
-    "url": "https://www.youtube.com/playlist?list=PLCVGGn6GhhDu_4yn_9eN3xBYB4POkLBYT"
-}
 ```
 
 ## `/playlists/download`
 *Response*  
-### `GET`  
-Trigger download of all registered playlists.   
-
-## `/playlists/<identifier>`
-### `GET`
-Get specified playlist
 ### `POST`  
-Edit a specified playlist.  
+Trigger download of all playlists.   
+
+## `/playlists/<name>`
+### `GET`
+Get specified playlist (see `GET playlists` for playlist structure).
+### `POST`  
+Rename the specified playlist. The name of the playlist to rename is specified in the url and the new name is specified in the body.  
 *Body*  
 ```json
 {
-    "name": "Best of Willy tracks",
-    "url": "https://www.youtube.com/playlist?list=PLCVGGn6GhhDu_4yn_9eN3xBYB4POkLBYT"
+  "name": "Chill",
+  "music": []
 }
 ```
 ### `DELETE`
-Remove a registered playlist from the database. Downloaded files from this playlist are not touched.  
-If you re-register a removed playlist, it will re-download all the music (excluding those that were already downloaded).   
+Delete the specified playlist. 
 
-## `/playlists/<identifier>/download`  
-### `GET`  
+## `/playlists/<name>/download`  
+### `POST`  
 Trigger download of the specified playlist.  
+
+## `/playlists/youtube`
+### `GET`  
+Get information on registered YouTube playlists.  
+*Response*  
+```json
+[
+  {
+    "id": "PLCVGGn6GhhDu_4yn_9eN3xBYB4POkLBYT",
+    "name": "Best of Willi tracks",
+    "platform": "youtube",
+    "playlists": []
+  },
+  {
+    "id": "PLCVGGn6GhhDtHxCJcPNymXhCtyEisxERY",
+    "name": "Best of Chill Music",
+    "platform": "youtube",
+    "playlists": []
+  }
+]
+```
+### `POST`
+Register a YouTube playlist in the database. YouTube playlists are linked to playlists in which to add the music from the YouTube playlist.  
+*Body*
+```json
+{
+  "url": "https://www.youtube.com/playlist?list=PLCVGGn6GhhDu_4yn_9eN3xBYB4POkLBYT",
+  "platform": "youtube",
+  "playlists": [ "Casual" ]
+}
+```
+
+## `/playlists/youtube/download`
+*Response*  
+### `POST`  
+Trigger download of all playlists.   
+
+## `/playlists/youtube/<id>`
+### `GET`
+Get specified YouTube playlist (see `GET playlists/youtube` for playlist structure).
+### `POST`  
+Edit the playlists linked to the specified YouTube playlist.
+*Body*  
+```json
+{
+  "id": "PLCVGGn6GhhDtHxCJcPNymXhCtyEisxERY",
+  "name": "Best of Chill Music",
+  "platform": "youtube",
+  "playlists": []
+}
+```
+### `DELETE`
+Delete the specified playlist. 
+
+## `/playlists/youtube/<id>/download`  
+### `POST`  
+Trigger download of the specified playlist. Associated playlists and music will not be deleted. If playlist is re-added, music which have already been downloaded will not be re-downloaded.   
+
+## `/playlists/archive-music`
+### `POST`
+Archive the music that are in the "Archives" playlist. This will remove the music from any other playlist it currently is in and will move the file to the archive folder (specified in the settings).  
+## `/playlists/archive-music`
+### `POST`
+Trigger download of the specified playlist.
 
 ## `/music/new`
 ### `GET`  
