@@ -250,40 +250,56 @@ Returns list of "not seen" music (where the "isNew" parameter equals "true").
 *Response*  
 ```json
 [
-    {
-        "id": "ftshNCG_RPk",
-        "fileName": "Bad Computer - Riddle [Monstercat Release]",
-        "fileExtension": "mp3",
-        "title": "Riddle",
-        "artist": "Bad Computer",
-        "uploaderId": "Monstercat: Uncaged",
-        "uploadDate": "13/04/2020",
-        "isNew": "true",
-        "playlistIds": ["PLCVGGn6GhhDu_4yn_9eN3xBYB4POkLBYT"]
-    },
-    {
-        "id": "5S5zfXao-h0",
-        "fileName": "Netrum - Colorblind (feat. Halvorsen) [NCS Release]",
-        "fileExtension": "mp3",
-        "title": "Colorblind (feat. Halvorsen)",
-        "artist": "Netrum",
-        "uploaderId": "NoCopyrightSounds",
-        "uploadDate": "14/04/2020",
-        "isNew": "true",
-        "playlistIds": ["PLCVGGn6GhhDu_4yn_9eN3xBYB4POkLBYT"]
-    }
+  {
+    "fileName": "Bad Computer - Riddle [Monstercat Release]",
+    "fileExtension": "mp3",
+    "title": "Riddle",
+    "artist": "Bad Computer",
+    "platformId": "ftshNCG_RPk",
+    "uploaderId": "Monstercat: Uncaged",
+    "uploadDate": "13/04/2020",
+    "playlistIds": [
+      "Chill"
+    ],
+    "tags": [],
+    "isNew": "true"
+  },
+  {
+    "fileName": "Netrum - Colorblind (feat. Halvorsen) [NCS Release]",
+    "fileExtension": "mp3",
+    "title": "Colorblind (feat. Halvorsen)",
+    "artist": "Netrum",
+    "platformId": "5S5zfXao-h0",
+    "uploaderId": "NoCopyrightSounds",
+    "uploadDate": "14/04/2020",
+    "playlists": [
+      "Chill",
+      "Casual"
+    ],
+    "tags": [],
+    "isNew": "true"
+  }
 ]
 ```
 
-## `/music/<identifier>`
+## `/music/<fileName>`
 ### `POST`  
-- Rename a musics title and artist.  
+- Edit a music. Only the following fields can be edited : title, artiste, playlists, tags and isNew.  
 *Body*  
 ```json
 {
-    "title": "Riddle",
-    "artist": "Bad Computer",
-    "isNew": "false"
+  "fileName": "Netrum - Colorblind (feat. Halvorsen) [NCS Release]",
+  "fileExtension": "mp3",
+  "title": "Colorblind (feat. Halvorsen)",
+  "artist": "Netrum",
+  "platformId": "5S5zfXao-h0",
+  "uploaderId": "NoCopyrightSounds",
+  "uploadDate": "14/04/2020",
+  "playlists": [
+    "Chill"
+  ],
+  "tags": ["NCS"],
+  "isNew": "false"
 }
 ```
 
