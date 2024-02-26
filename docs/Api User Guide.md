@@ -344,7 +344,7 @@ Add a new rule with the following parameters :
 }
 ```
 
-## `/naming-rules/<identifier>`
+## `/naming-rules/<id>`
 ### `GET`  
 Get the specified rule.
 *Response*  
@@ -375,26 +375,28 @@ The first time that a video is downloaded from a channel, the channel is automat
 *Response*  
 ```json
 [
-    {
-        "id": "sdfkjgnsower",
-        "name": "Monstercat: Uncaged",
-        "namingFormat": {
-            "separator": " - ",
-            "artist_before_title": "false"
-        }
+  {
+    "id": "sdfkjgnsower",
+    "name": "Monstercat: Uncaged",
+    "namingFormat": {
+      "separator": " - ",
+      "artist_before_title": "false"
     },
-    {
-        "id": "pmwsfbvhgbvsfdgsdoq",
-        "name": "Pegboard Nerds",
-        "namingFormat": {
-            "separator": " - ",
-            "artist_before_title": "false"
-        }
-    }
+    "platform": "youtube"
+  },
+  {
+    "id": "pmwsfbvhgbvsfdgsdoq",
+    "name": "Pegboard Nerds",
+    "namingFormat": {
+      "separator": " - ",
+      "artist_before_title": "false"
+    },
+    "platform": "youtube"
+  }
 ]
 ```
 
-## `/uploaders/<identifier>`
+## `/uploaders/<id>`
 ### `GET`  
 Get the specified channel.  
 *Response*  
@@ -405,7 +407,8 @@ Get the specified channel.
     "namingFormat": {
         "separator": " - ",
         "artist_before_title": "false"
-    }
+    },
+  "platform": "youtube"
 }
 ```
 ### `POST`
