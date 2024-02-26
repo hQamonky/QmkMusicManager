@@ -20,12 +20,13 @@ fun main() {
         .start(wait = true)
 }
 
-val server = MusicManagerServer()
+lateinit var server: MusicManagerServer
 val gson = Gson()
 
 fun Application.module() {
 
     DatabaseFactory.init()
+    server = MusicManagerServer()
 
     install(Routing) {
 //        swaggerUI(path = "swagger", swaggerFile = "openapi/documentation.yaml")
