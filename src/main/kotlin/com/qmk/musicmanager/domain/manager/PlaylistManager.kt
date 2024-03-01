@@ -179,7 +179,7 @@ class PlaylistManager(
                                 music.toFile(configurationManager.getConfiguration().audioFolder),
                                 playlist
                             )
-                            insertMusicInPlaylistFiles(music, plPlaylist.name)
+                            insertMusicInPlaylistFiles(music, playlist)
                         } else {
                             println("${music.fileName} is already in $playlist.")
                         }
