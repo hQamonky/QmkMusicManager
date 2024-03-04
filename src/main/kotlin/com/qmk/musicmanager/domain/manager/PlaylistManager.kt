@@ -159,36 +159,38 @@ class PlaylistManager(
         println("Downloading ${plPlaylist.name}...")
         val result = DownloadResult(playlist = plPlaylist.name)
         val gson = Gson()
-        gson.fromJson(
+        val musicFromPlaylist = gson.fromJson(
             youtubeManager.getPlaylistInfo("${youtubeManager.playlistUrl}${plPlaylist.id}", DownloadTool.YT_DLP),
             PlaylistInfo::class.java
         ).entries
             .mapNotNull {
                 it?.id
             }
-            .forEach { plMusicId ->
-                val music = musicDAO.getMusicFromPlatformId(plMusicId)
-                if (music != null) {
-                    println("Not downloading ${music.fileName} because is has already been done.")
-                    result.skipped.add(music.fileName)
-                    plPlaylist.playlists.forEach { playlist ->
-                        if (!music.playlists.contains(playlist)) {
-                            println("Adding music to $playlist.")
-                            playlistDAO.addMusicToPlaylist(music.fileName, playlist)
-                            id3Manager.addMusicToPlaylist(
-                                music.toFile(configurationManager.getConfiguration().audioFolder),
-                                playlist
-                            )
-                            insertMusicInPlaylistFiles(music, playlist)
-                        } else {
-                            println("${music.fileName} is already in $playlist.")
-                        }
+        println(musicFromPlaylist.size)
+        musicFromPlaylist.forEach { plMusicId ->
+            val music = musicDAO.getMusicFromPlatformId(plMusicId)
+            if (music != null) {
+                println("Not downloading ${music.fileName} because is has already been done.")
+                result.skipped.add(music.fileName)
+                plPlaylist.playlists.forEach { playlist ->
+                    if (!music.playlists.contains(playlist)) {
+                        println("Adding music to $playlist.")
+                        playlistDAO.addMusicToPlaylist(music.fileName, playlist)
+                        id3Manager.addMusicToPlaylist(
+                            music.toFile(configurationManager.getConfiguration().audioFolder),
+                            playlist
+                        )
+                        insertMusicInPlaylistFiles(music, playlist)
+                    } else {
+                        println("${music.fileName} is already in $playlist.")
                     }
-                } else {
-                    val downloadedMusic = downloadAndProcessMusic(plMusicId, plPlaylist)
-                    if (downloadedMusic != null) result.downloaded.add(downloadedMusic.fileName)
                 }
+            } else {
+                val downloadedMusic = downloadAndProcessMusic(plMusicId, plPlaylist)
+                if (downloadedMusic != null) result.downloaded.add(downloadedMusic.fileName)
+                else result.failed.add(plMusicId)
             }
+        }
         return result
     }
 
@@ -201,6 +203,10 @@ class PlaylistManager(
         println("Getting info for $plMusicId...")
         val musicInfo =
             Gson().fromJson(youtubeManager.getVideoInfo(plMusicId, DownloadTool.YT_DLP), MusicInfo::class.java)
+        if (musicInfo == null) {
+            println("$plMusicId is unavailable.")
+            return null
+        }
         // Create uploader if not exist
         var uploader = uploaderDAO.uploader(musicInfo.channel_id)
         if (uploader == null) {

@@ -69,15 +69,21 @@ data class DownloadResult(
     )
     val playlist: String,
     @field:Schema(
-        description = "The list music that were skipped because they already have been downloaded.",
-        example = "Best of Willi Tracks",
+        description = "The list of music that were skipped because they already have been downloaded.",
+        example = "qgcoqCyap7Y",
         type = "MutableList<String>"
     )
     val skipped: MutableList<String> = mutableListOf(),
     @field:Schema(
-        description = "The list downloaded music.",
-        example = "Best of Willi Tracks",
+        description = "The list of downloaded music.",
+        example = "qgcoqCyap7Y",
         type = "MutableList<String>"
     )
-    val downloaded: MutableList<String> = mutableListOf()
+    val downloaded: MutableList<String> = mutableListOf(),
+    @field:Schema(
+        description = "The list of music which failed to download.",
+        example = "aATSfC4hvEk",
+        type = "MutableList<String>"
+    )
+    val failed: MutableList<String> = mutableListOf()
 )
