@@ -245,7 +245,7 @@ class PlaylistManager(
                 metadataFromPlatform.title,
                 metadataFromPlatform.artist,
                 fileDuration
-            ) ?: deezerManager.findFullMetadata(metadataFromPlatform.title)
+            )
         }
 
         val metadata = if (deezerMetadata != null) {
