@@ -16,7 +16,7 @@ class MusicManager(
         val audioFolder = configurationManager.getConfiguration().audioFolder
         val oldMusic = musicDAO.music(music.fileName) ?: return false
         // Get album and genre
-        val deezerMetadata = deezerManager.findFullMetadata(
+        val deezerMetadata = deezerManager.getFullMetadata(
             music.title,
             music.artist,
             music.toFile(configurationManager.getConfiguration().audioFolder)
@@ -52,7 +52,7 @@ class MusicManager(
             file = File("${audioFolder}/${music.fileName}.${music.fileExtension}"),
             title = music.title,
             artist = music.artist,
-            album = deezerMetadata?.album,
+            album = deezerMetadata?.album ,
             genre = deezerMetadata?.genre,
             year = deezerMetadata?.releaseDate,
             playlists = music.playlists,

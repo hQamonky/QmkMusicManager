@@ -35,6 +35,14 @@ class DeezerManager(
         ))?.toMetadata()
     }
 
+    suspend fun getFullMetadata(title: String, artist: String, file: File): Metadata? {
+        val duration = getAudioDuration(file)
+        val result = advancedSearch(title, artist, duration - 20, duration + 20)
+        return if (result != null && result.total > 0) {
+            result.data[0].toMetadata()
+        } else null
+    }
+
     suspend fun findFullMetadata(query: String): Metadata? {
         return (searchFullMetadata(query))?.toMetadata()
     }
