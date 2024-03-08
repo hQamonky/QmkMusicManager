@@ -15,12 +15,13 @@ class MusicManager(
     suspend fun editMusic(music: Music): Boolean {
         val audioFolder = configurationManager.getConfiguration().audioFolder
         val oldMusic = musicDAO.music(music.fileName) ?: return false
+        val searchWithDeezer = music.title != oldMusic.title || music.artist != oldMusic.artist
         // Get album and genre
-        val deezerMetadata = deezerManager.getFullMetadata(
+        val deezerMetadata = if (searchWithDeezer) deezerManager.getFullMetadata(
             music.title,
             music.artist,
             music.toFile(configurationManager.getConfiguration().audioFolder)
-        )
+        ) else null
         // Handle playlists
         val oldPlaylists = oldMusic.playlists
         val newPlaylists = music.playlists
@@ -52,9 +53,9 @@ class MusicManager(
             file = File("${audioFolder}/${music.fileName}.${music.fileExtension}"),
             title = music.title,
             artist = music.artist,
-            album = deezerMetadata?.album ,
-            genre = deezerMetadata?.genre,
-            year = deezerMetadata?.releaseDate,
+            album = if (searchWithDeezer) deezerMetadata?.album ?: "" else null ,
+            genre = if (searchWithDeezer) deezerMetadata?.genre ?: "" else null,
+            year = if (searchWithDeezer) deezerMetadata?.releaseDate ?: "" else null,
             playlists = music.playlists,
             customTags = music.tags
         )
