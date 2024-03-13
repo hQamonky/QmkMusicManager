@@ -11,6 +11,7 @@ class ConfigurationManager(
 ) {
 
     init {
+        configurationFile.parentFile.mkdirs()
         if (configurationFile.createNewFile()) {
             configurationFile.writeText(configuration.toJson())
         }
